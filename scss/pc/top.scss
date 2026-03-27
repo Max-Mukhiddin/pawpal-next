@@ -1,0 +1,315 @@
+/**
+ * PawPal global navigation (libs/components/Top.tsx)
+ * Uses --pp-nav-* tokens from _theme.tokens.scss
+ */
+
+/* LayoutHome / LayoutFull: main is the second child of #pc-wrap (after header) — offset fixed bar */
+#pc-wrap > #main:nth-child(2) {
+	padding-top: 72px;
+}
+
+#pc-wrap #pawpal-header .navbar.navbar-pawpal {
+	.navbar-pawpal__bar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		z-index: 99;
+		padding: 14px 0;
+		box-sizing: border-box;
+		background: var(--pp-nav-bg);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border-bottom: 1px solid var(--pp-nav-border);
+		transition: background 0.2s ease, border-color 0.2s ease;
+
+		&.is-scrolled {
+			background: var(--pp-nav-bg-scrolled);
+		}
+	}
+
+	.navbar-pawpal__inner.container {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: 28px;
+		flex-wrap: nowrap;
+		width: 1300px;
+		max-width: 100%;
+	}
+
+	.navbar-pawpal__brand {
+		flex-shrink: 0;
+		font-family: $font;
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		color: var(--pp-nav-text);
+		text-decoration: none;
+		line-height: 1.1;
+
+		&:hover {
+			color: var(--pp-nav-accent);
+		}
+	}
+
+	.navbar-pawpal__nav {
+		flex: 1;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		gap: 8px 28px;
+		flex-wrap: wrap;
+		min-width: 0;
+	}
+
+	.navbar-pawpal__link {
+		position: relative;
+		padding: 8px 2px;
+		font-family: $font;
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--pp-nav-text-muted);
+		text-decoration: none;
+		white-space: nowrap;
+		transition: color 0.15s ease;
+
+		&:hover {
+			color: var(--pp-nav-text);
+		}
+
+		&.is-active {
+			color: var(--pp-nav-accent);
+
+			&::after {
+				content: '';
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				height: 2px;
+				border-radius: 2px;
+				background: var(--pp-nav-accent);
+			}
+		}
+	}
+
+	.navbar-pawpal__actions {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 4px 12px;
+	}
+
+	.navbar-pawpal__icon-btn {
+		color: var(--pp-nav-text-muted);
+
+		&:hover {
+			color: var(--pp-nav-text);
+			background: var(--pp-nav-link-hover);
+		}
+	}
+
+	.navbar-pawpal__join {
+		display: inline-flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 10px 18px;
+		border-radius: 999px;
+		border: 1px solid var(--pp-nav-border);
+		cursor: pointer;
+		text-decoration: none;
+		transition: border-color 0.15s ease, background 0.15s ease;
+
+		svg {
+			color: var(--pp-nav-accent);
+		}
+
+		span {
+			font-family: $font;
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--pp-nav-text);
+		}
+
+		&:hover {
+			border-color: var(--pp-nav-accent);
+			background: var(--pp-nav-link-hover);
+		}
+	}
+
+	.navbar-pawpal__avatar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		background: none;
+		padding: 0;
+		cursor: pointer;
+		border-radius: 50%;
+
+		img {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid var(--pp-nav-border);
+		}
+	}
+
+	.navbar-pawpal__notify {
+		color: var(--pp-nav-text-muted);
+		font-size: 22px;
+	}
+
+	.navbar-pawpal__lan-box {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-left: 4px;
+	}
+
+	.navbar-pawpal__lang-btn {
+		min-width: 0;
+		padding: 6px 8px;
+		color: var(--pp-nav-text-muted);
+
+		.MuiButton-endIcon {
+			color: var(--pp-nav-text-muted);
+		}
+	}
+
+	.navbar-pawpal__img-flag {
+		width: 24px;
+		height: 17px;
+		border-radius: 2px;
+		margin-right: 10px;
+	}
+
+	.navbar-pawpal__menu-icon {
+		margin-right: 10px;
+		color: var(--pp-primary);
+	}
+}
+
+#mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile,
+#pc-wrap.layout-home--mobile #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile {
+	padding: 12px 14px 10px;
+	background: var(--pp-nav-bg);
+	border-bottom: 1px solid var(--pp-nav-border);
+
+	.navbar-pawpal__mobile-top {
+		margin-bottom: 10px;
+	}
+
+	.navbar-pawpal__brand {
+		font-family: $font;
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		color: var(--pp-nav-text);
+		text-decoration: none;
+
+		&:hover {
+			color: var(--pp-nav-accent);
+		}
+	}
+
+	.navbar-pawpal__mobile-actions {
+		gap: 4px;
+	}
+
+	.navbar-pawpal__mobile-nav {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 6px 14px;
+		margin-bottom: 12px;
+	}
+
+	.navbar-pawpal__mobile-nav .navbar-pawpal__link {
+		font-family: $font;
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--pp-nav-text-muted);
+		text-decoration: none;
+
+		&.is-active {
+			color: var(--pp-nav-accent);
+		}
+	}
+
+	.navbar-pawpal__mobile-meta {
+		padding-top: 8px;
+		border-top: 1px solid var(--pp-nav-border);
+		gap: 12px;
+	}
+
+	.navbar-pawpal__join {
+		display: inline-flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 6px;
+		text-decoration: none;
+
+		svg {
+			color: var(--pp-nav-accent);
+		}
+
+		span {
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--pp-nav-text);
+		}
+	}
+
+	.navbar-pawpal__avatar img {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 2px solid var(--pp-nav-border);
+	}
+
+	.navbar-pawpal__icon-btn {
+		color: var(--pp-nav-text-muted);
+	}
+
+	/* Same as desktop bar: mobile nav does not inherit #pc-wrap rules — flag must stay bounded */
+	.navbar-pawpal__flag img {
+		width: 24px;
+		height: 17px;
+		border-radius: 2px;
+		display: block;
+		object-fit: cover;
+	}
+}
+
+#mobile-wrap > #main:nth-child(2),
+#pc-wrap.layout-home--mobile > #main:nth-child(2) {
+	padding-top: 140px;
+}
+
+/* MUI Menu is rendered in a body-level portal, so this must stay global. */
+.navbar-pawpal__img-flag {
+	width: 24px;
+	height: 17px;
+	border-radius: 2px;
+	margin-right: 10px;
+	flex: 0 0 auto;
+	object-fit: cover;
+}
+
+/* Language button flag: must apply on all breakpoints (mobile bar is outside #pc-wrap desktop block). */
+.navbar-pawpal__flag img {
+	width: 24px;
+	height: 17px;
+	border-radius: 2px;
+	display: block;
+	object-fit: cover;
+}

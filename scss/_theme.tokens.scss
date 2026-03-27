@@ -1,0 +1,207 @@
+/**
+ * PawPal theme tokens for SCSS (mirrors MUI palette direction).
+ * React sets `document.documentElement[data-theme="light|dark"]` from ThemeModeProvider.
+ *
+ * Usage: prefer `var(--pp-*)` instead of raw hex in new/refactored styles.
+ * Existing rules can migrate incrementally — no need to touch all files at once.
+ */
+
+:root[data-theme='light'],
+:root:not([data-theme]) {
+	color-scheme: light;
+
+	/* Homepage editorial width — wider than legacy 1200px “card in a page” feel */
+	--pp-home-content-max: min(1440px, calc(100vw - clamp(28px, 7vw, 88px)));
+	--pp-home-section-pad-x: clamp(20px, 5vw, 56px);
+
+	--pp-bg: #f5f0e8;
+	--pp-bg-paper: #faf7f2;
+	--pp-bg-elevated: #fffefb;
+	--pp-text: #2a241e;
+	--pp-text-muted: #6b5d52;
+	--pp-border: rgba(42, 36, 30, 0.12);
+	--pp-primary: #b85c38;
+	--pp-primary-contrast: #ffffff;
+	--pp-secondary: #5c5340;
+
+	/* Top navigation (see scss/pc/top.scss) */
+	--pp-nav-bg: rgba(250, 247, 242, 0.88);
+	--pp-nav-bg-scrolled: rgba(245, 240, 232, 0.96);
+	--pp-nav-text: var(--pp-text);
+	--pp-nav-text-muted: var(--pp-text-muted);
+	--pp-nav-border: var(--pp-border);
+	--pp-nav-accent: var(--pp-primary);
+	--pp-nav-link-hover: rgba(184, 92, 56, 0.15);
+
+	/* Homepage hero (scss/pc/homepage/hero-section.scss) */
+	--pp-hero-page-bg: var(--pp-bg);
+	--pp-hero-overlay-strong: rgba(18, 16, 14, 0.82);
+	--pp-hero-overlay-mid: rgba(28, 24, 20, 0.52);
+	--pp-hero-overlay-soft: rgba(36, 32, 28, 0.28);
+	--pp-hero-heading: #fdfbf7;
+	--pp-hero-subtitle: rgba(253, 251, 247, 0.9);
+	--pp-hero-accent: var(--pp-primary);
+	--pp-hero-accent-text: var(--pp-primary-contrast);
+	--pp-hero-shadow: 0 28px 72px rgba(42, 36, 30, 0.14);
+	--pp-hero-card-radius: clamp(38px, 5.8vw, 58px);
+	--pp-hero-strip-bg: #ffffff;
+	--pp-hero-strip-text: rgba(42, 36, 30, 0.58);
+	--pp-hero-strip-heading: var(--pp-text);
+	--pp-hero-badge-bg: #1c1917;
+	--pp-hero-badge-text: #fdfbf7;
+	--pp-hero-badge-inner: #fffefb;
+	--pp-hero-badge-arrow: #1c1917;
+	--pp-hero-arrow-bg: rgba(253, 251, 247, 0.12);
+	--pp-hero-arrow-border: rgba(253, 251, 247, 0.38);
+	--pp-hero-avatar-ring: #ffffff;
+
+	/* Our services cards (scss/pc/homepage/our-services.scss) */
+	--pp-our-services-bg: #f9f8f3;
+	--pp-our-services-border: rgba(42, 36, 30, 0.08);
+	--pp-our-services-card-radius: 20px;
+	--pp-our-services-card-shadow: 0 6px 24px rgba(42, 36, 30, 0.07);
+	--pp-our-services-card-shadow-hover: 0 12px 36px rgba(42, 36, 30, 0.11);
+	--pp-our-services-surface-bg: rgba(255, 252, 247, 0.35);
+	--pp-our-services-surface-border: rgba(42, 36, 30, 0.04);
+	--pp-our-services-surface-shadow: 0 12px 40px rgba(42, 36, 30, 0.04);
+	--pp-our-services-surface-radius: clamp(28px, 4.8vw, 44px);
+	--pp-our-services-overlay-strong: rgba(28, 24, 22, 0.88);
+	--pp-our-services-overlay-mid: rgba(28, 24, 22, 0.35);
+	--pp-our-services-card-heading: #fdfbf7;
+	--pp-our-services-card-body: rgba(253, 251, 247, 0.88);
+	--pp-our-services-action-bg: #ffffff;
+	--pp-our-services-action-icon: #2a241e;
+	--pp-our-services-action-shadow: 0 4px 14px rgba(42, 36, 30, 0.12);
+	--pp-our-services-browse-border: rgba(42, 36, 30, 0.14);
+	--pp-our-services-browse-bg: #fffefb;
+	--pp-our-services-browse-hover-bg: #ffffff;
+	--pp-our-services-nav-bg: #fffefb;
+	--pp-our-services-nav-border: rgba(42, 36, 30, 0.12);
+	--pp-our-services-nav-icon: #2a241e;
+	--pp-our-services-nav-shadow: 0 4px 16px rgba(42, 36, 30, 0.08);
+	--pp-our-services-dot: rgba(42, 36, 30, 0.22);
+	--pp-our-services-dot-active: var(--pp-primary);
+
+	/* Why PawPal (scss/pc/homepage/why-pawpal.scss) */
+	--pp-why-pawpal-bg: #fdfbf7;
+	--pp-why-pawpal-border: rgba(42, 36, 30, 0.07);
+	--pp-why-pawpal-icon-bg: rgba(184, 92, 56, 0.09);
+	--pp-why-pawpal-icon-color: var(--pp-primary);
+	--pp-why-pawpal-lead: rgba(42, 36, 30, 0.62);
+	--pp-why-pawpal-decor: rgba(184, 92, 56, 0.07);
+	--pp-why-pawpal-focal-shadow: 0 20px 50px rgba(42, 36, 30, 0.1);
+	--pp-why-pawpal-cta-shadow: 0 10px 28px rgba(184, 92, 56, 0.28);
+	--pp-why-pawpal-pet-ring: #fffefb;
+	--pp-why-pawpal-story-bg: #f3efe6;
+
+	/* Top pet specialists / team (scss/pc/homepage/top-pet-specialists.scss) */
+	--pp-team-bg: #f9f6f1;
+	--pp-team-border: rgba(42, 36, 30, 0.07);
+	--pp-team-card-bg: #ffffff;
+	--pp-team-card-shadow: 0 28px 70px rgba(42, 36, 30, 0.08);
+	--pp-team-rail-bg: rgba(184, 92, 56, 0.06);
+	--pp-team-photo-well: #ede8df;
+
+	/* Footer: surface color, independent of page background */
+	--pp-footer-bg: #a9b9d8;
+	--pp-footer-text: #1a1a1a;
+	--pp-footer-muted: rgba(0, 0, 0, 0.6);
+	--pp-footer-border: rgba(0, 0, 0, 0.1);
+	--pp-footer-accent: #c49a6c;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+
+	--pp-home-content-max: min(1440px, calc(100vw - clamp(28px, 7vw, 88px)));
+	--pp-home-section-pad-x: clamp(20px, 5vw, 56px);
+
+	--pp-bg: #121218;
+	--pp-bg-paper: #1a1a22;
+	--pp-bg-elevated: #22222c;
+	--pp-text: #ebe7e0;
+	--pp-text-muted: #9b948f;
+	--pp-border: rgba(235, 231, 224, 0.12);
+	--pp-primary: #c49a6c;
+	--pp-primary-contrast: #121218;
+	--pp-secondary: #9a9285;
+
+	--pp-nav-bg: rgba(18, 18, 24, 0.88);
+	--pp-nav-bg-scrolled: rgba(26, 26, 34, 0.96);
+	--pp-nav-text: var(--pp-text);
+	--pp-nav-text-muted: var(--pp-text-muted);
+	--pp-nav-border: var(--pp-border);
+	--pp-nav-accent: var(--pp-primary);
+	--pp-nav-link-hover: rgba(196, 154, 108, 0.12);
+
+	--pp-hero-page-bg: var(--pp-bg);
+	--pp-hero-overlay-strong: rgba(6, 6, 10, 0.85);
+	--pp-hero-overlay-mid: rgba(10, 10, 14, 0.58);
+	--pp-hero-overlay-soft: rgba(14, 14, 20, 0.38);
+	--pp-hero-heading: #f7f4ef;
+	--pp-hero-subtitle: rgba(247, 244, 239, 0.86);
+	--pp-hero-accent: var(--pp-primary);
+	--pp-hero-accent-text: var(--pp-primary-contrast);
+	--pp-hero-shadow: 0 32px 80px rgba(0, 0, 0, 0.38);
+	--pp-hero-card-radius: clamp(38px, 5.8vw, 58px);
+	--pp-hero-strip-bg: #f4f1eb;
+	--pp-hero-strip-text: rgba(42, 36, 30, 0.65);
+	--pp-hero-strip-heading: #2a241e;
+	--pp-hero-badge-bg: #0c0c10;
+	--pp-hero-badge-text: #f7f4ef;
+	--pp-hero-badge-inner: #f4f1eb;
+	--pp-hero-badge-arrow: #0c0c10;
+	--pp-hero-arrow-bg: rgba(253, 251, 247, 0.1);
+	--pp-hero-arrow-border: rgba(253, 251, 247, 0.32);
+	--pp-hero-avatar-ring: #f4f1eb;
+
+	--pp-our-services-bg: var(--pp-bg-paper);
+	--pp-our-services-border: var(--pp-border);
+	--pp-our-services-card-radius: 20px;
+	--pp-our-services-card-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+	--pp-our-services-card-shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.32);
+	--pp-our-services-surface-bg: rgba(30, 30, 39, 0.5);
+	--pp-our-services-surface-border: rgba(235, 231, 224, 0.05);
+	--pp-our-services-surface-shadow: 0 14px 44px rgba(0, 0, 0, 0.22);
+	--pp-our-services-surface-radius: clamp(28px, 4.8vw, 44px);
+	--pp-our-services-overlay-strong: rgba(8, 8, 12, 0.92);
+	--pp-our-services-overlay-mid: rgba(8, 8, 12, 0.45);
+	--pp-our-services-card-heading: #f7f4ef;
+	--pp-our-services-card-body: rgba(247, 244, 239, 0.88);
+	--pp-our-services-action-bg: #f7f4ef;
+	--pp-our-services-action-icon: #1a1a22;
+	--pp-our-services-action-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+	--pp-our-services-browse-border: rgba(235, 231, 224, 0.18);
+	--pp-our-services-browse-bg: var(--pp-bg-elevated);
+	--pp-our-services-browse-hover-bg: rgba(196, 154, 108, 0.12);
+	--pp-our-services-nav-bg: var(--pp-bg-elevated);
+	--pp-our-services-nav-border: rgba(235, 231, 224, 0.14);
+	--pp-our-services-nav-icon: var(--pp-text);
+	--pp-our-services-nav-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+	--pp-our-services-dot: rgba(235, 231, 224, 0.28);
+	--pp-our-services-dot-active: var(--pp-primary);
+
+	--pp-why-pawpal-bg: #1a1a22;
+	--pp-why-pawpal-border: rgba(235, 231, 224, 0.08);
+	--pp-why-pawpal-icon-bg: rgba(196, 154, 108, 0.12);
+	--pp-why-pawpal-icon-color: var(--pp-primary);
+	--pp-why-pawpal-lead: rgba(235, 231, 224, 0.68);
+	--pp-why-pawpal-decor: rgba(196, 154, 108, 0.08);
+	--pp-why-pawpal-focal-shadow: 0 22px 56px rgba(0, 0, 0, 0.35);
+	--pp-why-pawpal-cta-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+	--pp-why-pawpal-pet-ring: #22222c;
+	--pp-why-pawpal-story-bg: #22222c;
+
+	--pp-team-bg: #16161c;
+	--pp-team-border: rgba(235, 231, 224, 0.08);
+	--pp-team-card-bg: #1e1e26;
+	--pp-team-card-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+	--pp-team-rail-bg: rgba(196, 154, 108, 0.08);
+	--pp-team-photo-well: #252530;
+
+	--pp-footer-bg: #0f0f14;
+	--pp-footer-text: #f2efe8;
+	--pp-footer-muted: rgba(242, 239, 232, 0.7);
+	--pp-footer-border: rgba(255, 255, 255, 0.08);
+	--pp-footer-accent: #c49a6c;
+}
