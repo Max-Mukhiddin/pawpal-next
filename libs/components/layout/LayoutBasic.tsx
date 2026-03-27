@@ -97,7 +97,7 @@ const withLayoutBasic = (Component: any) => {
 						<meta name={'title'} content={`pawpal`} />
 					</Head>
 					<Stack id="mobile-wrap">
-						<Stack id={'top'}>
+						<Stack id="pawpal-header">
 							<Top />
 						</Stack>
 
@@ -119,7 +119,7 @@ const withLayoutBasic = (Component: any) => {
 						<meta name={'title'} content={`pawpal`} />
 					</Head>
 					<Stack id="pc-wrap">
-						<Stack id={'top'}>
+						<Stack id="pawpal-header">
 							<Top />
 						</Stack>
 

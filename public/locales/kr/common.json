@@ -1,5 +1,10 @@
 {
   "Home": "홈",
+  "Services": "서비스",
+  "Products": "제품",
+  "Specialists": "전문가",
+  "Cart": "장바구니",
+  "Logout": "로그아웃",
   "Properties": "매물",
   "Agents": "에이전트",
   "Community": "커뮤니티",

@@ -1,139 +1,197 @@
+import Link from 'next/link';
 import FacebookOutlinedIcon from '@mui/icons-material/FacebookOutlined';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import TelegramIcon from '@mui/icons-material/Telegram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import PinterestIcon from '@mui/icons-material/Pinterest';
 import TwitterIcon from '@mui/icons-material/Twitter';
-import useDeviceDetect from '../hooks/useDeviceDetect';
 import { Stack, Box } from '@mui/material';
 import moment from 'moment';
 
-const Footer = () => {
-	const device = useDeviceDetect();
+const contactStrip = [
+	{
+		icon: '/icons/footer-chat.svg',
+		title: 'Help / Chat',
+		desc: 'Questions about bookings, care, or your account — we are here to help.',
+	},
+	{
+		icon: '/icons/footer-location.svg',
+		title: 'Location',
+		desc: 'Visit our care centre or find partner clinics near you.',
+	},
+	{
+		icon: '/icons/footer-phone.svg',
+		title: 'Call',
+		desc: 'Speak with our team during business hours for urgent pet care needs.',
+	},
+	{
+		icon: '/icons/footer-mail.svg',
+		title: 'Email',
+		desc: 'Send us a message anytime — we reply within one business day.',
+	},
+];
 
-	if (device == 'mobile') {
-		return (
-			<Stack className={'footer-container'}>
-				<Stack className={'main'}>
-					<Stack className={'left'}>
-						<Box component={'div'} className={'footer-box'}>
-							<img src="/img/logo/logoWhite.svg" alt="" className={'logo'} />
-						</Box>
-						<Box component={'div'} className={'footer-box'}>
-							<span>total free customer care</span>
-							<p>+82 10 4867 2909</p>
-						</Box>
-						<Box component={'div'} className={'footer-box'}>
-							<span>nee live</span>
-							<p>+82 10 4867 2909</p>
-							<span>Support?</span>
-						</Box>
-						<Box component={'div'} className={'footer-box'}>
-							<p>follow us on social media</p>
-							<div className={'media-box'}>
-								<FacebookOutlinedIcon />
-								<TelegramIcon />
-								<InstagramIcon />
-								<TwitterIcon />
+const categories = [
+	{ label: 'Services', href: '/services' },
+	{ label: 'Grooming', href: '/grooming' },
+	{ label: 'Walking', href: '/walking' },
+	{ label: 'Boarding', href: '/boarding' },
+	{ label: 'Daycare', href: '/daycare' },
+];
+
+const resources = [
+	{ label: 'FAQ', href: '/cs?tab=faq' },
+	{ label: 'Blog', href: '/community' },
+	{ label: 'Community', href: '/community' },
+	{ label: 'Pet guides', href: '/about' },
+	{ label: 'Care tips', href: '/cs' },
+];
+
+const useful = [
+	{ label: 'Terms', href: '/cs' },
+	{ label: 'Contact', href: '/cs' },
+	{ label: 'Support', href: '/cs' },
+	{ label: 'Privacy', href: '/cs' },
+	{ label: 'Accessibility', href: '/about' },
+];
+
+const socialLinks = [
+	{ label: 'Instagram', href: 'https://instagram.com', Icon: InstagramIcon },
+	{ label: 'Facebook', href: 'https://facebook.com', Icon: FacebookOutlinedIcon },
+	{ label: 'X', href: 'https://twitter.com', Icon: TwitterIcon },
+	{ label: 'YouTube', href: 'https://youtube.com', Icon: YouTubeIcon },
+	{ label: 'Pinterest', href: 'https://pinterest.com', Icon: PinterestIcon },
+];
+
+const Footer = () => {
+	const year = moment().year();
+
+	return (
+		<Stack component="footer" id="footer" className="footer-pawpal">
+			<Box component="section" className="footer-pawpal__strip footer-pawpal__strip--contact" aria-label="Contact highlights">
+				<div className="footer-pawpal__container footer-pawpal__contact-row">
+					{contactStrip.map((item) => (
+						<div key={item.title} className="footer-pawpal__contact-item">
+							<div className="footer-pawpal__contact-icon" aria-hidden>
+								<img src={item.icon} alt="" />
 							</div>
-						</Box>
-					</Stack>
-					<Stack className={'right'}>
-						<Box component={'div'} className={'bottom'}>
-							<div>
-								<strong>Popular Search</strong>
-								<span>Property for Rent</span>
-								<span>Property Low to hide</span>
+							<div className="footer-pawpal__contact-copy">
+								<strong className="footer-pawpal__contact-title">{item.title}</strong>
+								<p className="footer-pawpal__contact-desc">{item.desc}</p>
 							</div>
-							<div>
-								<strong>Quick Links</strong>
-								<span>Terms of Use</span>
-								<span>Privacy Policy</span>
-								<span>Pricing Plans</span>
-								<span>Our Services</span>
-								<span>Contact Support</span>
-								<span>FAQs</span>
-							</div>
-							<div>
-								<strong>Discover</strong>
-								<span>Seoul</span>
-								<span>Gyeongido</span>
-								<span>Busan</span>
-								<span>Jejudo</span>
-							</div>
-						</Box>
-					</Stack>
-				</Stack>
-				<Stack className={'second'}>
-					<span>© pawpal - All rights reserved. pawpal {moment().year()}</span>
-				</Stack>
-			</Stack>
-		);
-	} else {
-		return (
-			<Stack className={'footer-container'}>
-				<Stack className={'main'}>
-					<Stack className={'left'}>
-						<Box component={'div'} className={'footer-box'}>
-							<img src="/img/logo/logoWhite.svg" alt="" className={'logo'} />
-						</Box>
-						<Box component={'div'} className={'footer-box'}>
-							<span>total free customer care</span>
-							<p>+82 10 4867 2909</p>
-						</Box>
-						<Box component={'div'} className={'footer-box'}>
-							<span>nee live</span>
-							<p>+82 10 4867 2909</p>
-							<span>Support?</span>
-						</Box>
-						<Box component={'div'} className={'footer-box'}>
-							<p>follow us on social media</p>
-							<div className={'media-box'}>
-								<FacebookOutlinedIcon />
-								<TelegramIcon />
-								<InstagramIcon />
-								<TwitterIcon />
-							</div>
-						</Box>
-					</Stack>
-					<Stack className={'right'}>
-						<Box component={'div'} className={'top'}>
-							<strong>keep yourself up to date</strong>
-							<div>
-								<input type="text" placeholder={'Your Email'} />
-								<span>Subscribe</span>
-							</div>
-						</Box>
-						<Box component={'div'} className={'bottom'}>
-							<div>
-								<strong>Popular Search</strong>
-								<span>Property for Rent</span>
-								<span>Property Low to hide</span>
-							</div>
-							<div>
-								<strong>Quick Links</strong>
-								<span>Terms of Use</span>
-								<span>Privacy Policy</span>
-								<span>Pricing Plans</span>
-								<span>Our Services</span>
-								<span>Contact Support</span>
-								<span>FAQs</span>
-							</div>
-							<div>
-								<strong>Discover</strong>
-								<span>Seoul</span>
-								<span>Gyeongido</span>
-								<span>Busan</span>
-								<span>Jejudo</span>
-							</div>
-						</Box>
-					</Stack>
-				</Stack>
-				<Stack className={'second'}>
-					<span>© pawpal - All rights reserved. pawpal {moment().year()}</span>
-					<span>Privacy · Terms · Sitemap</span>
-				</Stack>
-			</Stack>
-		);
-	}
+						</div>
+					))}
+				</div>
+			</Box>
+
+			<Box component="div" className="footer-pawpal__main">
+				<div className="footer-pawpal__container footer-pawpal__grid">
+					<div className="footer-pawpal__col footer-pawpal__col--address">
+						<h3 className="footer-pawpal__heading">Our address</h3>
+						<ul className="footer-pawpal__list footer-pawpal__list--icon">
+							<li>
+								<span className="footer-pawpal__list-icon" aria-hidden>
+									<img src="/icons/footer-location.svg" alt="" />
+								</span>
+								<span>123 PawPal Street, Pet Care District</span>
+							</li>
+							<li>
+								<span className="footer-pawpal__list-icon" aria-hidden>
+									<img src="/icons/footer-phone.svg" alt="" />
+								</span>
+								<a href="tel:+18005551234">+1 (800) 555-1234</a>
+							</li>
+							<li>
+								<span className="footer-pawpal__list-icon" aria-hidden>
+									<img src="/icons/footer-mail.svg" alt="" />
+								</span>
+								<a href="mailto:hello@pawpal.app">hello@pawpal.app</a>
+							</li>
+						</ul>
+					</div>
+
+					<div className="footer-pawpal__col">
+						<h3 className="footer-pawpal__heading">Categories</h3>
+						<ul className="footer-pawpal__list">
+							{categories.map((c) => (
+								<li key={c.href}>
+									<Link href={c.href}>{c.label}</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+
+					<div className="footer-pawpal__col footer-pawpal__col--brand">
+						<Link href="/" className="footer-pawpal__logo-link">
+							<img
+								src="/images/footer/pawpal-logo-light.png"
+								alt="PawPal"
+								className="footer-pawpal__logo"
+								width={160}
+								height={48}
+								onError={(e) => {
+									const el = e.currentTarget;
+									el.onerror = null;
+									el.src = '/images/footer/pawpal-logo-light.svg';
+								}}
+							/>
+						</Link>
+						<p className="footer-pawpal__tagline">
+							Thoughtful pet care, trusted specialists, and a calmer experience for you and your companions.
+						</p>
+					</div>
+
+					<div className="footer-pawpal__col">
+						<h3 className="footer-pawpal__heading">Resources</h3>
+						<ul className="footer-pawpal__list">
+							{resources.map((r) => (
+								<li key={r.label + r.href}>
+									<Link href={r.href}>{r.label}</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+
+					<div className="footer-pawpal__col">
+						<h3 className="footer-pawpal__heading">Useful links</h3>
+						<ul className="footer-pawpal__list">
+							{useful.map((u) => (
+								<li key={u.label + u.href}>
+									<Link href={u.href}>{u.label}</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				</div>
+			</Box>
+
+			<Box component="div" className="footer-pawpal__strip footer-pawpal__strip--bottom">
+				<div className="footer-pawpal__container footer-pawpal__bottom-row">
+					<p className="footer-pawpal__copyright">© {year} PawPal. All rights reserved.</p>
+					<div className="footer-pawpal__social" role="list">
+						{socialLinks.map(({ label, href, Icon }) => (
+							<a
+								key={label}
+								href={href}
+								className="footer-pawpal__social-btn"
+								aria-label={label}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Icon className="footer-pawpal__social-icon" />
+							</a>
+						))}
+					</div>
+					<div className="footer-pawpal__payments" aria-hidden>
+						<span className="footer-pawpal__payment-pill">Visa</span>
+						<span className="footer-pawpal__payment-pill">Mastercard</span>
+						<span className="footer-pawpal__payment-pill">Amex</span>
+						<span className="footer-pawpal__payment-pill">Apple Pay</span>
+						<span className="footer-pawpal__payment-pill">PayPal</span>
+					</div>
+				</div>
+			</Box>
+		</Stack>
+	);
 };
 
 export default Footer;

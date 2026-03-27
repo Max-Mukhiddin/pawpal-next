@@ -1,5 +1,6 @@
 /** IMPORTS **/
 @import 'variables.scss';
+@import 'theme.tokens';
 @import 'reset.scss';
 
 a {
@@ -58,4 +59,12 @@ hr {
 		margin: 0 auto;
 		display: flex;
 	}
+}
+
+/* Mobile layout shell (withLayout* mobile branch): fill viewport width — same baseline as #pc-wrap */
+#mobile-wrap {
+	width: 100%;
+	max-width: 100%;
+	min-height: 100%;
+	box-sizing: border-box;
 }

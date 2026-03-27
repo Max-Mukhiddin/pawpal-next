@@ -1,9 +1,15 @@
 import { Html, Head, Main, NextScript } from 'next/document';
+import { PAWPAL_THEME_MODE_KEY } from '../libs/theme/constants';
+
+/** Sets data-theme, MUI bootstrap global, optional critical body bg (avoids light flash before Emotion hydrates), mirrors theme to cookie for future SSR. */
+const THEME_BOOTSTRAP = `(function(){try{var k=${JSON.stringify(PAWPAL_THEME_MODE_KEY)};var m=localStorage.getItem(k)||'light';if(m!=='dark'&&m!=='light')m='light';var r=document.documentElement;r.setAttribute('data-theme',m);r.style.colorScheme=m;window.__PAWPAL_THEME_MODE__=m;document.cookie=k+'='+m+';path=/;max-age=31536000;SameSite=Lax';if(m==='dark'){var st=document.createElement('style');st.id='pawpal-theme-critical';st.textContent='html[data-theme=dark] body{background-color:#121218!important;background:#121218!important;}';document.head.appendChild(st);}}catch(e){}})();`;
 
 export default function Document() {
 	return (
-		<Html lang="en">
+		<Html lang="en" suppressHydrationWarning>
 			<Head>
+				<script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+				<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 				<meta name="robots" content="index,follow" />
 				<link rel="icon" type="image/png" href="/img/logo/favicon.svg" />
 

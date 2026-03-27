@@ -1,5 +1,10 @@
 {
 	"Home": "Главная",
+	"Services": "Услуги",
+	"Products": "Товары",
+	"Specialists": "Специалисты",
+	"Cart": "Корзина",
+	"Logout": "Выход",
 	"Properties": "Имущество",
 	"Agents": "Агенты",
 	"Community": "Сообщество",

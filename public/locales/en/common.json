@@ -1,5 +1,10 @@
 {
   "Home": "Home",
+  "Services": "Services",
+  "Products": "Products",
+  "Specialists": "Specialists",
+  "Cart": "Shopping cart",
+  "Logout": "Logout",
   "Properties": "Properties",
   "Agents": "Agents",
   "Community": "Community",
