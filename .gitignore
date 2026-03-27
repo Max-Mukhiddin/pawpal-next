@@ -4,7 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
-
+.cursor
 # testing
 /coverage
 
@@ -34,7 +34,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# pawpal specifiv
+# nestar specifiv
 .vscode/
 /build
 /.idea
