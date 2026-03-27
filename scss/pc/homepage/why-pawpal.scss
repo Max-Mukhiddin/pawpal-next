@@ -1,0 +1,212 @@
+/**
+ * Why PawPal — Babet-style headline + feature row + wide lifestyle image
+ * (libs/components/homepage/WhyPawPal.tsx)
+ */
+
+#pc-wrap .home-page,
+#mobile-wrap .home-page {
+	.why-pawpal {
+		$ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+		position: relative;
+		overflow: hidden;
+		background: var(--pp-why-pawpal-bg) !important;
+		border-bottom: none;
+
+		&.pawpal-home-section:nth-of-type(even) {
+			background: var(--pp-why-pawpal-bg) !important;
+		}
+
+		&__watermark {
+			position: absolute;
+			inset: -20% -10%;
+			z-index: 0;
+			pointer-events: none;
+			opacity: 0.55;
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none'%3E%3Cpath d='M210 40c-22 38-62 62-108 62-12 0-24-2-36-6 8 44 38 82 78 102-40 20-70 58-78 102 12-4 24-6 36-6 46 0 86 24 108 62 22-38 62-62 108-62 12 0 24 2 36 6-8-44-38-82-78-102 40-20 70-58 78-102-12 4-24 6-36 6-46 0-86-24-108-62z' stroke='%23b85c38' stroke-opacity='0.07' stroke-width='1.2'/%3E%3Ccircle cx='90' cy='320' r='28' stroke='%23b85c38' stroke-opacity='0.06' stroke-width='1'/%3E%3Ccircle cx='340' cy='100' r='20' stroke='%23b85c38' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+			background-size: 480px 480px;
+			background-position: 8% 20%;
+		}
+
+		&__inner {
+			position: relative;
+			z-index: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: clamp(22px, 3.2vw, 34px);
+			padding-bottom: clamp(6px, 1.2vw, 12px);
+		}
+
+		&__head {
+			text-align: center;
+			max-width: 38rem;
+			margin: 0 auto clamp(4px, 1vw, 8px);
+		}
+
+		&__eyebrow {
+			margin: 0 0 10px;
+			font-family: $font;
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: var(--pp-primary);
+		}
+
+		&__title {
+			margin: 0 0 12px;
+			font-family: $font;
+			font-size: clamp(1.7rem, 3.6vw, 2.35rem);
+			font-weight: 700;
+			letter-spacing: -0.03em;
+			line-height: 1.16;
+			color: var(--pp-text);
+		}
+
+		&__lead {
+			margin: 0;
+			font-family: $font;
+			font-size: clamp(14px, 1.45vw, 16px);
+			font-weight: 400;
+			line-height: 1.65;
+			color: var(--pp-why-pawpal-lead);
+		}
+
+		&__features {
+			list-style: none;
+			margin: 0 0 clamp(-20px, -3vw, -10px);
+			padding: 0;
+			width: 100%;
+			max-width: none;
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: clamp(12px, 2vw, 22px);
+		}
+
+		&__feature {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 10px;
+			padding: clamp(4px, 0.7vw, 8px) 6px;
+			border-radius: 0;
+			transition: transform 0.35s $ease;
+
+			&:hover {
+				transform: translateY(-3px);
+			}
+		}
+
+		&__icon-wrap {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 54px;
+			height: 54px;
+			border-radius: 50%;
+			background: var(--pp-why-pawpal-icon-bg);
+			color: var(--pp-why-pawpal-icon-color);
+			transition: transform 0.35s $ease;
+		}
+
+		&__feature:hover &__icon-wrap {
+			transform: scale(1.06);
+		}
+
+		&__icon-svg {
+			display: block;
+			width: 28px;
+			height: 28px;
+		}
+
+		&__feature-body {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			min-width: 0;
+		}
+
+		&__feature-title {
+			margin: 0;
+			font-family: $font;
+			font-size: 14px;
+			font-weight: 700;
+			line-height: 1.35;
+			color: var(--pp-text);
+		}
+
+		&__feature-desc {
+			margin: 0;
+			font-family: $font;
+			font-size: 12px;
+			font-weight: 400;
+			line-height: 1.5;
+			color: var(--pp-text-muted);
+			max-width: 15rem;
+		}
+
+		&__story {
+			width: 100%;
+			max-width: none;
+			margin: 0 auto;
+		}
+
+		&__story-frame {
+			position: relative;
+			width: 100%;
+			border-radius: clamp(28px, 4.5vw, 48px);
+			overflow: hidden;
+			background: var(--pp-why-pawpal-story-bg);
+			border: none;
+			box-shadow: 0 18px 42px rgba(42, 36, 30, 0.1);
+			aspect-ratio: 2.2 / 1;
+			min-height: clamp(220px, 36vw, 380px);
+		}
+
+		&__story-img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: 50% 38%;
+		}
+	}
+}
+
+@media (max-width: 900px) {
+	#pc-wrap .home-page,
+	#mobile-wrap .home-page {
+		.why-pawpal {
+			&__features {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: clamp(14px, 3vw, 22px);
+				margin-bottom: 0;
+			}
+
+			&__feature-desc {
+				max-width: none;
+			}
+
+			&__story-frame {
+				aspect-ratio: 16 / 10;
+			}
+		}
+	}
+}
+
+@media (max-width: 520px) {
+	#pc-wrap .home-page,
+	#mobile-wrap .home-page {
+		.why-pawpal {
+			&__features {
+				grid-template-columns: 1fr;
+				max-width: 22rem;
+				margin-left: auto;
+				margin-right: auto;
+				margin-bottom: 0;
+			}
+		}
+	}
+}

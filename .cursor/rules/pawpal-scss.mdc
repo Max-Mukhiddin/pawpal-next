@@ -1,0 +1,15 @@
+---
+description: PawPal SCSS structure for new homepage/UI sections
+globs: "**/*.scss"
+alwaysApply: false
+---
+
+# PawPal SCSS (new sections)
+
+1. **Nest** new component styles; avoid long flat selectors like `#pc-wrap .home-page .section .section__x`.
+2. **Anchor once**: `#pc-wrap .home-page, #mobile-wrap .home-page { ... }` then nest `.section { }` inside.
+3. **BEM**: use `&__element` and `&--modifier` under the block.
+4. **Do not** follow old Nestar SCSS patterns for new PawPal sections.
+5. Use **`var(--pp-*)`** theme tokens from `scss/_theme.tokens.scss` where appropriate.
+
+See `docs/pawpal-scss-conventions.md` for examples.
