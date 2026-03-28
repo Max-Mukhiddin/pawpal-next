@@ -3,8 +3,8 @@ import type { SpecialistsPageData } from '../../types/specialists/specialists.pa
 /** Replace with GET_SPECIALISTS_PAGE (or fragments) when backend is ready. */
 export const SPECIALISTS_PAGE_MOCK: SpecialistsPageData = {
 	hero: {
-		eyebrow: 'PawPal',
-		title: 'Specialists',
+		eyebrow: 'PawPal specialists',
+		title: 'Find the right specialist for your pet',
 		lead: 'Meet experienced pet professionals focused on safe, thoughtful care for every companion.',
 	},
 	listing: {

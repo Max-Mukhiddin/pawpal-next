@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
@@ -11,7 +11,7 @@ import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
-import { Property } from '../../libs/types/property/property';
+import type { Product } from '../../libs/types/products/product';
 import moment from 'moment';
 import { formatterStr } from '../../libs/utils';
 import { REACT_APP_API_URL } from '../../libs/config';
@@ -20,18 +20,22 @@ import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Pagination as MuiPagination } from '@mui/material';
-import Link from 'next/link';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { GET_COMMENTS, GET_PROPERTIES, GET_PROPERTY } from '../../apollo/user/query';
+import { GET_COMMENTS } from '../../apollo/user/query';
+import { GET_PRODUCT, GET_PRODUCTS } from '../../apollo/products/query';
 import { T } from '../../libs/types/common';
-import { Direction, Message } from '../../libs/enums/common.enum';
-import { CREATE_COMMENT, LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
+import { Message } from '../../libs/enums/common.enum';
+import { PropertyType } from '../../libs/enums/property.enum';
+import { relatedListingInquiryInput } from '../../libs/utils/catalogListingInquiry';
+import { CREATE_COMMENT } from '../../apollo/user/mutation';
+import { LIKE_TARGET_PRODUCT } from '../../apollo/products/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import RelatedProductCard from '../../libs/components/products/RelatedProductCard';
 import ProductReviewCard from '../../libs/components/products/ProductReviewCard';
+import ProductDetailInquirySidebar from '../../libs/components/products/ProductDetailInquirySidebar';
 
 SwiperCore.use([Autoplay, Navigation, Pagination]);
 
@@ -46,9 +50,9 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [productId, setProductId] = useState<string | null>(null);
-	const [product, setProduct] = useState<Property | null>(null);
+	const [product, setProduct] = useState<Product | null>(null);
 	const [slideImage, setSlideImage] = useState<string>('');
-	const [relatedProducts, setRelatedProducts] = useState<Property[]>([]);
+	const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
 	const [productComments, setProductComments] = useState<Comment[]>([]);
 	const [commentTotal, setCommentTotal] = useState<number>(0);
@@ -59,17 +63,21 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 	});
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetProduct] = useMutation(LIKE_TARGET_PRODUCT);
 	const [createComment] = useMutation(CREATE_COMMENT);
+
+	const relatedProductsInquiry = useMemo(
+		() => relatedListingInquiryInput(PropertyType.PRODUCT, product?.propertyLocation),
+		[product?.propertyLocation],
+	);
+
 	const {
-		loading: getPropertyLoading,
-		data: getPropertyData,
-		error: getPropertyError,
-		refetch: getPropertyRefetch,
-	} = useQuery(GET_PROPERTY, {
+		loading: productDetailLoading,
+		refetch: getProductRefetch,
+	} = useQuery(GET_PRODUCT, {
 		fetchPolicy: 'network-only',
 		variables: { input: productId },
-		skip: !productId,
+		skip: !router.isReady || !productId,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			if (data?.getProperty) setProduct(data.getProperty);
@@ -77,24 +85,9 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	const {
-		loading: getPropertiesLoading,
-		data: getPropertiesData,
-		error: getPropertiesError,
-		refetch: getPropertiesRefetch,
-	} = useQuery(GET_PROPERTIES, {
+	const { refetch: getProductsCatalogRefetch } = useQuery(GET_PRODUCTS, {
 		fetchPolicy: 'cache-and-network',
-		variables: {
-			input: {
-				page: 1,
-				limit: 4,
-				sort: 'createdAt',
-				direction: Direction.DESC,
-				search: {
-					locationList: product?.propertyLocation ? [product?.propertyLocation] : [],
-				},
-			},
-		},
+		variables: { input: relatedProductsInquiry },
 		skip: !productId && !product,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
@@ -102,12 +95,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	const {
-		loading: getCommentsLoading,
-		data: getCommentsData,
-		error: getCommentsError,
-		refetch: getCommentsRefetch,
-	} = useQuery(GET_COMMENTS, {
+	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: initialComment },
 		skip: !commentInquiry.search.commentRefId,
@@ -118,22 +106,20 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	/** LIFECYCLES **/
+	/** LIFECYCLES — sync route id once router is ready (avoids pre-hydration / stale query churn). */
 	useEffect(() => {
-		if (router.query.id) {
-			setProductId(router.query.id as string);
-			setCommentInquiry({
-				...commentInquiry,
-				search: {
-					commentRefId: router.query.id as string,
-				},
-			});
-			setInsertCommentData({
-				...insertCommentData,
-				commentRefId: router.query.id as string,
-			});
-		}
-	}, [router]);
+		if (!router.isReady) return;
+		const raw = router.query.id;
+		const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
+		if (!id) return;
+
+		setProductId(id);
+		setCommentInquiry((prev) => ({
+			...prev,
+			search: { ...prev.search, commentRefId: id },
+		}));
+		setInsertCommentData((prev) => ({ ...prev, commentRefId: id }));
+	}, [router.isReady, router.query.id]);
 
 	useEffect(() => {
 		if (commentInquiry.search.commentRefId) {
@@ -151,20 +137,12 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({
+			await likeTargetProduct({
 				variables: { input: id },
 			});
-			await getPropertyRefetch({ input: productId });
-			await getPropertiesRefetch({
-				input: {
-					page: 1,
-					limit: 4,
-					sort: 'createdAt',
-					direction: Direction.DESC,
-					search: {
-						locationList: [product?.propertyLocation],
-					},
-				},
+			await getProductRefetch({ input: productId });
+			await getProductsCatalogRefetch({
+				input: relatedListingInquiryInput(PropertyType.PRODUCT, product?.propertyLocation),
 			});
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
@@ -191,7 +169,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 		}
 	};
 
-	if (getPropertyLoading) {
+	if (productDetailLoading) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '1080px' }}>
 				<CircularProgress size={'4rem'} />
@@ -249,7 +227,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 												</clipPath>
 											</defs>
 										</svg>
-										<Typography className={'date'}>Listed {moment().diff(product?.createdAt, 'days')} days ago</Typography>
+										<Typography className={'date'}>Added to catalog {moment().diff(product?.createdAt, 'days')} days ago</Typography>
 									</Stack>
 									<Stack className={'bottom-box'}>
 										<Stack className="option">
@@ -344,7 +322,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											</svg>
 										</Stack>
 										<Stack className={'option-includes'}>
-											<Typography className={'title'}>Listed since</Typography>
+											<Typography className={'title'}>In catalog since</Typography>
 											<Typography className={'option-data'}>{moment(product?.createdAt).format('YYYY')}</Typography>
 										</Stack>
 									</Stack>
@@ -420,7 +398,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											</Stack>
 											<Stack className={'right'}>
 												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Listed since</Typography>
+													<Typography className={'title'}>In catalog since</Typography>
 													<Typography className={'data'}>{moment(product?.createdAt).format('YYYY')}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
@@ -457,10 +435,10 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 									</Stack>
 								</Stack>
 								<Stack className={'address-config'}>
-									<Typography className={'title'}>Delivery & pickup coverage</Typography>
+									<Typography className={'title'}>Shipping & delivery coverage</Typography>
 									<Typography className={'desc'} sx={{ mb: 2, color: '#717171', fontSize: 14 }}>
-										Partner hubs and same-day zones vary by postcode. The map below is a reference for the wider fulfillment
-										network—confirm exact options at checkout.
+										Shipping speeds and pickup partners depend on your postcode. This map shows our wider fulfillment
+										network—always confirm delivery options at checkout.
 									</Typography>
 									<Stack className={'map-box'}>
 										<iframe
@@ -471,7 +449,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											allowFullScreen={true}
 											loading="lazy"
 											referrerPolicy="no-referrer-when-downgrade"
-											title="Delivery coverage map"
+											title="Shipping and delivery coverage map"
 										></iframe>
 									</Stack>
 								</Stack>
@@ -492,7 +470,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 														</clipPath>
 													</defs>
 												</svg>
-												<Typography className={'reviews'}>{commentTotal} product reviews</Typography>
+												<Typography className={'reviews'}>{commentTotal} shopper reviews for this product</Typography>
 											</Stack>
 										</Stack>
 										<Stack className={'review-list'}>
@@ -512,8 +490,8 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 									</Stack>
 								)}
 								<Stack className={'leave-review-config'}>
-									<Typography className={'main-title'}>Rate this product</Typography>
-									<Typography className={'review-title'}>Your review</Typography>
+									<Typography className={'main-title'}>Write a product review</Typography>
+									<Typography className={'review-title'}>Your product review</Typography>
 									<textarea
 										onChange={({ target: { value } }: any) => {
 											setInsertCommentData({ ...insertCommentData, commentContent: value });
@@ -527,69 +505,19 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											disabled={insertCommentData.commentContent === '' || user?._id === ''}
 											onClick={createCommentHandler}
 										>
-											<Typography className={'title'}>Submit review</Typography>
+											<Typography className={'title'}>Submit product review</Typography>
 										</Button>
 									</Box>
 								</Stack>
 							</Stack>
-							<Stack className={'right-config'}>
-								<Stack className={'info-box'}>
-									<Typography className={'main-title'}>Product inquiry & support</Typography>
-									<Typography sx={{ fontSize: 13, color: '#717171', mb: 2 }}>
-										Ask about sizing, ingredients, compatibility with your pet, or bulk orders before you buy.
-									</Typography>
-									<Stack className={'image-info'}>
-										<img
-											className={'member-image'}
-											src={
-												product?.memberData?.memberImage
-													? `${REACT_APP_API_URL}/${product?.memberData?.memberImage}`
-													: '/img/profile/defaultUser.svg'
-											}
-											alt=""
-										/>
-										<Stack className={'name-phone-listings'}>
-											<Link href={`/member?memberId=${product?.memberData?._id}`}>
-												<Typography className={'name'}>{product?.memberData?.memberNick}</Typography>
-											</Link>
-											<Stack className={'phone-number'}>
-												<Typography className={'number'}>{product?.memberData?.memberPhone}</Typography>
-											</Stack>
-											<Typography className={'listings'}>Seller storefront</Typography>
-										</Stack>
-									</Stack>
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Name</Typography>
-									<input type={'text'} placeholder={'Your name'} />
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Phone</Typography>
-									<input type={'text'} placeholder={'Your phone'} />
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Email</Typography>
-									<input type={'text'} placeholder={'hello@pawpal.com'} />
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Message</Typography>
-									<textarea
-										placeholder={'Hello, I would like to confirm stock and shipping for this product.'}
-									></textarea>
-								</Stack>
-								<Stack className={'info-box'}>
-									<Button className={'send-message'}>
-										<Typography className={'title'}>Send product inquiry</Typography>
-									</Button>
-								</Stack>
-							</Stack>
+							<ProductDetailInquirySidebar product={product} />
 						</Stack>
 						{relatedProducts.length !== 0 && (
 							<Stack className={'similar-properties-config'}>
 								<Stack className={'title-pagination-box'}>
 									<Stack className={'title-box'}>
-										<Typography className={'main-title'}>You may also like</Typography>
-										<Typography className={'sub-title'}>Related products picked from the same catalog category.</Typography>
+										<Typography className={'main-title'}>Related products</Typography>
+										<Typography className={'sub-title'}>You may also like — from the same PawPal catalog category.</Typography>
 									</Stack>
 									<Stack className={'pagination-box'}>
 										<WestIcon className={'swiper-similar-prev'} />
@@ -611,7 +539,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											el: '.swiper-similar-pagination',
 										}}
 									>
-										{relatedProducts.map((item: Property) => {
+										{relatedProducts.map((item: Product) => {
 											return (
 												<SwiperSlide className={'similar-homes-slide'} key={item._id}>
 													<RelatedProductCard product={item} onLike={likeProductHandler} />

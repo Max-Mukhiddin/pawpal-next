@@ -1,17 +1,19 @@
-import React, { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import { useRouter } from 'next/router';
-import { PropertiesInquiry } from '../../libs/types/property/property.input';
-import { Property } from '../../libs/types/property/property';
+import { ServicesInquiry } from '../../libs/types/services/service.input';
+import type { Service } from '../../libs/types/services/service';
+import { PropertyType } from '../../libs/enums/property.enum';
+import { withServicesListingTypeFilter } from '../../libs/utils/catalogListingInquiry';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { useMutation, useQuery } from '@apollo/client';
-import { GET_PROPERTIES } from '../../apollo/user/query';
+import { GET_SERVICES } from '../../apollo/services/query';
 import { T } from '../../libs/types/common';
-import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
+import { LIKE_TARGET_SERVICE } from '../../apollo/services/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import ServicesHero from '../../libs/components/services/ServicesHero';
 import ServicesFilterBar from '../../libs/components/services/ServicesFilterBar';
@@ -26,10 +28,12 @@ export const getStaticProps = async ({ locale }: any) => ({
 const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
-	const [searchFilter, setSearchFilter] = useState<PropertiesInquiry>(
-		router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
+	const [searchFilter, setSearchFilter] = useState<ServicesInquiry>(() =>
+		withServicesListingTypeFilter(
+			router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
+		),
 	);
-	const [properties, setProperties] = useState<Property[]>([]);
+	const [services, setServices] = useState<Service[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -37,59 +41,63 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const [filterSortName, setFilterSortName] = useState('New');
 	const [searchText, setSearchText] = useState<string>('');
 
-	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const listingInquiryInput = useMemo(
+		() => withServicesListingTypeFilter(searchFilter),
+		[searchFilter],
+	);
+	const listingInquiryInputRef = useRef(listingInquiryInput);
+	listingInquiryInputRef.current = listingInquiryInput;
 
-	const {
-		loading: getPropertiesLoading,
-		data: getPropertiesData,
-		error: getPropertiesError,
-		refetch: getPropertiesRefetch,
-	} = useQuery(GET_PROPERTIES, {
+	/** APOLLO REQUESTS **/
+	const [likeTargetService] = useMutation(LIKE_TARGET_SERVICE);
+
+	const { refetch: getServicesRefetch } = useQuery(GET_SERVICES, {
 		fetchPolicy: 'network-only',
-		variables: { input: initialInput },
+		variables: { input: listingInquiryInput },
+		skip: !router.isReady,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setProperties(data?.getProperties?.list);
+			setServices(data?.getProperties?.list);
 			setTotal(data?.getProperties?.metaCounter[0]?.total);
 		},
 	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		if (router.query.input) {
-			const inputObj = JSON.parse(router?.query?.input as string);
-			setSearchFilter(inputObj);
+		if (!router.isReady) return;
+		if (!router.query.input) return;
+		try {
+			const inputObj = JSON.parse(router.query.input as string);
+			const normalized = withServicesListingTypeFilter(inputObj);
+			setSearchFilter(normalized);
+			setCurrentPage(normalized.page === undefined ? 1 : normalized.page);
+		} catch {
+			// ignore malformed ?input=
 		}
-
-		setCurrentPage(searchFilter.page === undefined ? 1 : searchFilter.page);
-	}, [router]);
+	}, [router.isReady, router.query.input]);
 
 	/** HANDLERS **/
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
-		searchFilter.page = value;
-		await router.push(
-			`/services?input=${JSON.stringify(searchFilter)}`,
-			`/services?input=${JSON.stringify(searchFilter)}`,
-			{
-				scroll: false,
-			},
-		);
+		const next = withServicesListingTypeFilter({ ...searchFilter, page: value });
+		setSearchFilter(next);
 		setCurrentPage(value);
+		await router.push(`/services?input=${JSON.stringify(next)}`, `/services?input=${JSON.stringify(next)}`, {
+			scroll: false,
+		});
 	};
 
-	const likePropertyHandler = async (user: T, id: string) => {
+	const likeServiceHandler = async (user: T, id: string) => {
 		try {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({
+			await likeTargetService({
 				variables: { input: id },
 			});
-			await getPropertiesRefetch({ input: initialInput });
+			await getServicesRefetch({ input: listingInquiryInputRef.current });
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR likePropertyHandler:', err.message);
+			console.log('ERROR likeServiceHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -107,15 +115,29 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const sortingHandler = (e: React.MouseEvent<HTMLLIElement>) => {
 		switch (e.currentTarget.id) {
 			case 'new':
-				setSearchFilter({ ...searchFilter, sort: 'createdAt', direction: Direction.ASC });
+				setSearchFilter(
+					withServicesListingTypeFilter({ ...searchFilter, sort: 'createdAt', direction: Direction.ASC }),
+				);
 				setFilterSortName('New');
 				break;
 			case 'lowest':
-				setSearchFilter({ ...searchFilter, sort: 'propertyPrice', direction: Direction.ASC });
+				setSearchFilter(
+					withServicesListingTypeFilter({
+						...searchFilter,
+						sort: 'propertyPrice',
+						direction: Direction.ASC,
+					}),
+				);
 				setFilterSortName('Lowest Price');
 				break;
 			case 'highest':
-				setSearchFilter({ ...searchFilter, sort: 'propertyPrice', direction: Direction.DESC });
+				setSearchFilter(
+					withServicesListingTypeFilter({
+						...searchFilter,
+						sort: 'propertyPrice',
+						direction: Direction.DESC,
+					}),
+				);
 				setFilterSortName('Highest Price');
 		}
 		setSortingOpen(false);
@@ -123,10 +145,12 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 	};
 
 	const handleSearchEnter = () => {
-		setSearchFilter({
-			...searchFilter,
-			search: { ...searchFilter.search, text: searchText },
-		});
+		setSearchFilter(
+			withServicesListingTypeFilter({
+				...searchFilter,
+				search: { ...searchFilter.search, text: searchText },
+			}),
+		);
 	};
 
 	if (device === 'mobile') {
@@ -150,10 +174,10 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 							onSortingSelect={sortingHandler}
 						/>
 						<Stack className="services-catalog-page__main" mb={'76px'}>
-							<ServicesList properties={properties} onLike={likePropertyHandler} />
+							<ServicesList properties={services} onLike={likeServiceHandler} />
 
 							<Stack className="pagination-config">
-								{properties.length !== 0 && (
+								{services.length !== 0 && (
 									<Stack className="pagination-box">
 										<Pagination
 											page={currentPage}
@@ -165,7 +189,7 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 									</Stack>
 								)}
 
-								{properties.length !== 0 && (
+								{services.length !== 0 && (
 									<Stack className="total-result">
 										<Typography>Total {total} service{total > 1 ? 's' : ''} available</Typography>
 									</Stack>
@@ -186,6 +210,7 @@ ServicesListPage.defaultProps = {
 		sort: 'createdAt',
 		direction: 'DESC',
 		search: {
+			typeList: [PropertyType.SERVICE],
 			squaresRange: {
 				start: 0,
 				end: 500,

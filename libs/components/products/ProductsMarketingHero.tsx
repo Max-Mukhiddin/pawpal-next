@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ProductsHeroContent } from '../../types/products/products.page';
 
-/** Landing / marketing hero with CTAs and media — for static `pages/products.tsx` only. */
+/** Marketing hero with CTAs and media — compose from any non-catalog route or CMS-driven page as needed. */
 export interface ProductsMarketingHeroProps {
 	data: ProductsHeroContent;
 }

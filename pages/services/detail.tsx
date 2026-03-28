@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
@@ -11,7 +11,7 @@ import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
-import { Property } from '../../libs/types/property/property';
+import type { Service } from '../../libs/types/services/service';
 import moment from 'moment';
 import { formatterStr } from '../../libs/utils';
 import { REACT_APP_API_URL } from '../../libs/config';
@@ -25,10 +25,14 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { GET_COMMENTS, GET_PROPERTIES, GET_PROPERTY } from '../../apollo/user/query';
+import { GET_COMMENTS } from '../../apollo/user/query';
+import { GET_SERVICE, GET_SERVICES } from '../../apollo/services/query';
 import { T } from '../../libs/types/common';
-import { Direction, Message } from '../../libs/enums/common.enum';
-import { CREATE_COMMENT, LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
+import { Message } from '../../libs/enums/common.enum';
+import { PropertyType } from '../../libs/enums/property.enum';
+import { relatedListingInquiryInput } from '../../libs/utils/catalogListingInquiry';
+import { CREATE_COMMENT } from '../../apollo/user/mutation';
+import { LIKE_TARGET_SERVICE } from '../../apollo/services/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import RelatedServiceCard from '../../libs/components/services/RelatedServiceCard';
 import ServiceReviewCard from '../../libs/components/services/ServiceReviewCard';
@@ -46,9 +50,9 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [serviceId, setServiceId] = useState<string | null>(null);
-	const [service, setService] = useState<Property | null>(null);
+	const [service, setService] = useState<Service | null>(null);
 	const [slideImage, setSlideImage] = useState<string>('');
-	const [relatedServices, setRelatedServices] = useState<Property[]>([]);
+	const [relatedServices, setRelatedServices] = useState<Service[]>([]);
 	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
 	const [serviceComments, setServiceComments] = useState<Comment[]>([]);
 	const [commentTotal, setCommentTotal] = useState<number>(0);
@@ -59,18 +63,21 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 	});
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetService] = useMutation(LIKE_TARGET_SERVICE);
 	const [createComment] = useMutation(CREATE_COMMENT);
 
+	const relatedServicesInquiry = useMemo(
+		() => relatedListingInquiryInput(PropertyType.SERVICE, service?.propertyLocation),
+		[service?.propertyLocation],
+	);
+
 	const {
-		loading: getPropertyLoading,
-		data: getPropertyData,
-		error: getPropertyError,
-		refetch: getPropertyRefetch,
-	} = useQuery(GET_PROPERTY, {
+		loading: serviceDetailLoading,
+		refetch: getServiceRefetch,
+	} = useQuery(GET_SERVICE, {
 		fetchPolicy: 'network-only',
 		variables: { input: serviceId },
-		skip: !serviceId,
+		skip: !router.isReady || !serviceId,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			if (data?.getProperty) setService(data.getProperty);
@@ -78,24 +85,9 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	const {
-		loading: getPropertiesLoading,
-		data: getPropertiesData,
-		error: getPropertiesError,
-		refetch: getPropertiesRefetch,
-	} = useQuery(GET_PROPERTIES, {
+	const { refetch: getServicesCatalogRefetch } = useQuery(GET_SERVICES, {
 		fetchPolicy: 'cache-and-network',
-		variables: {
-			input: {
-				page: 1,
-				limit: 4,
-				sort: 'createdAt',
-				direction: Direction.DESC,
-				search: {
-					locationList: service?.propertyLocation ? [service?.propertyLocation] : [],
-				},
-			},
-		},
+		variables: { input: relatedServicesInquiry },
 		skip: !serviceId && !service,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
@@ -103,12 +95,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	const {
-		loading: getCommentsLoading,
-		data: getCommentsData,
-		error: getCommentsError,
-		refetch: getCommentsRefetch,
-	} = useQuery(GET_COMMENTS, {
+	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: initialComment },
 		skip: !commentInquiry.search.commentRefId,
@@ -119,22 +106,20 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	/** LIFECYCLES **/
+	/** LIFECYCLES — sync route id once router is ready (avoids pre-hydration / stale query churn). */
 	useEffect(() => {
-		if (router.query.id) {
-			setServiceId(router.query.id as string);
-			setCommentInquiry({
-				...commentInquiry,
-				search: {
-					commentRefId: router.query.id as string,
-				},
-			});
-			setInsertCommentData({
-				...insertCommentData,
-				commentRefId: router.query.id as string,
-			});
-		}
-	}, [router]);
+		if (!router.isReady) return;
+		const raw = router.query.id;
+		const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
+		if (!id) return;
+
+		setServiceId(id);
+		setCommentInquiry((prev) => ({
+			...prev,
+			search: { ...prev.search, commentRefId: id },
+		}));
+		setInsertCommentData((prev) => ({ ...prev, commentRefId: id }));
+	}, [router.isReady, router.query.id]);
 
 	useEffect(() => {
 		if (commentInquiry.search.commentRefId) {
@@ -152,20 +137,12 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({
+			await likeTargetService({
 				variables: { input: id },
 			});
-			await getPropertyRefetch({ input: serviceId });
-			await getPropertiesRefetch({
-				input: {
-					page: 1,
-					limit: 4,
-					sort: 'createdAt',
-					direction: Direction.DESC,
-					search: {
-						locationList: [service?.propertyLocation],
-					},
-				},
+			await getServiceRefetch({ input: serviceId });
+			await getServicesCatalogRefetch({
+				input: relatedListingInquiryInput(PropertyType.SERVICE, service?.propertyLocation),
 			});
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
@@ -192,7 +169,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 		}
 	};
 
-	if (getPropertyLoading) {
+	if (serviceDetailLoading) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '1080px' }}>
 				<CircularProgress size={'4rem'} />
@@ -526,9 +503,9 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 											el: '.swiper-similar-pagination',
 										}}
 									>
-										{relatedServices.map((serviceItem: Property) => {
+										{relatedServices.map((serviceItem: Service) => {
 											return (
-												<SwiperSlide className={'related-services-slide'} key={serviceItem.propertyTitle}>
+												<SwiperSlide className={'related-services-slide'} key={serviceItem._id}>
 													<RelatedServiceCard service={serviceItem} onLike={likeServiceHandler} />
 												</SwiperSlide>
 											);

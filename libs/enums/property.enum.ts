@@ -2,6 +2,9 @@ export enum PropertyType {
 	APARTMENT = 'APARTMENT',
 	VILLA = 'VILLA',
 	HOUSE = 'HOUSE',
+	/** Shared listing backbone — PawPal catalog (getProperties inquiry `search.typeList`). */
+	PRODUCT = 'PRODUCT',
+	SERVICE = 'SERVICE',
 }
 
 export enum PropertyStatus {

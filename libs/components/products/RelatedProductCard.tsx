@@ -9,18 +9,24 @@ import { userVar } from '../../../apollo/store';
 import { REACT_APP_API_URL } from '../../config';
 import { Property } from '../../types/property/property';
 import { T } from '../../types/common';
+import { formatterStr } from '../../utils';
 
 export interface RelatedProductCardProps {
 	product: Property;
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
+/** Related product slide card; navigates to product detail. */
 const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, onLike }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const image = product?.propertyImages?.[0]
 		? `${REACT_APP_API_URL}/${product.propertyImages[0]}`
 		: '/img/icons/icoAlert.svg';
+
+	const raw = (product?.propertyDesc || product?.propertyAddress || '').trim();
+	const blurb =
+		raw.length > 72 ? `${raw.slice(0, 72)}…` : raw || 'Popular with PawPal shoppers.';
 
 	return (
 		<Stack className="related-product-card" onClick={() => router.push(`/products/detail?id=${product._id}`)}>
@@ -29,7 +35,10 @@ const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, onLike
 			</Box>
 			<Stack className="related-product-card__body">
 				<Typography className="related-product-card__title">{product.propertyTitle}</Typography>
-				<Typography className="related-product-card__meta">${product.propertyPrice}</Typography>
+				<Typography className="related-product-card__blurb" sx={{ fontSize: 12, color: '#717171', lineHeight: 1.45, mb: 0.5 }}>
+					{blurb}
+				</Typography>
+				<Typography className="related-product-card__meta">From ${formatterStr(product.propertyPrice)}</Typography>
 				<Stack direction={'row'} alignItems={'center'} className="related-product-card__stats">
 					<IconButton color={'default'}>
 						<RemoveRedEyeIcon />

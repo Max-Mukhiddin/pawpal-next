@@ -36,7 +36,8 @@ const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({ spe
 				</Typography>
 				<Stack direction="row" flexWrap="wrap" gap={2} sx={{ mt: 2 }}>
 					<Typography sx={{ fontSize: 13, color: '#181a20' }}>
-						<strong>{specialist.memberProperties}</strong> active {specialist.memberProperties === 1 ? 'listing' : 'listings'}
+						<strong>{specialist.memberProperties}</strong> active{' '}
+						{specialist.memberProperties === 1 ? 'PawPal care listing' : 'PawPal care listings'}
 					</Typography>
 					<Typography sx={{ fontSize: 13, color: '#181a20' }}>
 						<strong>{specialist.memberViews}</strong> profile views

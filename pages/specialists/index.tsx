@@ -13,7 +13,7 @@ import { T } from '../../libs/types/common';
 import { Messages } from '../../libs/config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { SPECIALISTS_PAGE_MOCK } from '../../libs/data/specialists/specialistsPage.mock';
-import type { SpecialistsPageData } from '../../libs/types/specialists/specialists.page';
+import type { SpecialistsHeroContent } from '../../libs/types/specialists/specialists.page';
 import SpecialistsHero from '../../libs/components/specialists/SpecialistsHero';
 import SpecialistsFilter from '../../libs/components/specialists/SpecialistsFilter';
 import SpecialistListCard from '../../libs/components/specialists/SpecialistListCard';
@@ -27,7 +27,7 @@ export const getStaticProps = async ({ locale }: any) => ({
 const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
-	const [pageData] = useState<SpecialistsPageData>(() => SPECIALISTS_PAGE_MOCK);
+	const [directoryHero] = useState<SpecialistsHeroContent>(() => SPECIALISTS_PAGE_MOCK.hero);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [filterSortName, setFilterSortName] = useState('Newest first');
 	const [sortingOpen, setSortingOpen] = useState(false);
@@ -141,7 +141,7 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 		return (
 			<Stack className={'pawpal-static-page pawpal-static-page--specialists'}>
 				<Stack className={'container'}>
-					<SpecialistsHero data={pageData.hero} />
+					<SpecialistsHero data={directoryHero} />
 
 					<Stack className={'agent-list-page'} sx={{ padding: '28px 0 75px', width: '100%', alignSelf: 'stretch' }}>
 						<Stack className={'container'}>

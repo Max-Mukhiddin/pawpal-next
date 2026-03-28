@@ -11,7 +11,7 @@ export interface ProductReviewCardProps {
 	comment: Comment;
 }
 
-/** Product-facing review row; markup matches `Review` / `.review-config` for property detail SCSS. */
+/** Product detail review row; keeps `.review-config` tree for property detail SCSS. */
 const ProductReviewCard: React.FC<ProductReviewCardProps> = ({ comment }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
@@ -25,7 +25,7 @@ const ProductReviewCard: React.FC<ProductReviewCardProps> = ({ comment }) => {
 	};
 
 	return (
-		<Stack className={'review-config'}>
+		<Stack className={'review-config'} role="article" aria-label="Product review">
 			<Stack className={'review-mb-info'}>
 				<Stack className={'img-name-box'}>
 					<img src={imagePath} alt="" className={'img-box'} />
@@ -35,6 +35,9 @@ const ProductReviewCard: React.FC<ProductReviewCardProps> = ({ comment }) => {
 						</Typography>
 						<Typography className={'date'}>
 							<Moment format={'DD MMMM, YYYY'}>{comment.createdAt}</Moment>
+						</Typography>
+						<Typography sx={{ fontSize: 11, color: '#717171', mt: 0.25, fontWeight: 400, lineHeight: 1.3 }}>
+							Shopper review for this product
 						</Typography>
 					</Stack>
 				</Stack>
