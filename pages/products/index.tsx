@@ -2,7 +2,7 @@ import React, { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
-import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
+import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import { useRouter } from 'next/router';
 import { PropertiesInquiry } from '../../libs/types/property/property.input';
 import { Property } from '../../libs/types/property/property';
@@ -13,11 +13,9 @@ import { GET_PROPERTIES } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import { PRODUCTS_PAGE_MOCK } from '../../libs/data/products/productsPage.mock';
-import type { ProductsPageData } from '../../libs/types/products/products.page';
 import ProductsHero from '../../libs/components/products/ProductsHero';
-import ProductsFilter from '../../libs/components/products/ProductsFilter';
-import ProductListCard from '../../libs/components/products/ProductListCard';
+import ProductsFilterBar from '../../libs/components/products/ProductsFilterBar';
+import ProductsList from '../../libs/components/products/ProductsList';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -28,7 +26,6 @@ export const getStaticProps = async ({ locale }: any) => ({
 const ProductsListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
-	const [pageData] = useState<ProductsPageData>(() => PRODUCTS_PAGE_MOCK);
 	const [searchFilter, setSearchFilter] = useState<PropertiesInquiry>(
 		router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
 	);
@@ -67,11 +64,6 @@ const ProductsListPage: NextPage = ({ initialInput, ...props }: any) => {
 
 		setCurrentPage(searchFilter.page === undefined ? 1 : searchFilter.page);
 	}, [router]);
-
-	useEffect(() => {
-		// getPropertiesRefetch({ input: searchFilter }).then();
-		console.log('searchFilter:', searchFilter);
-	}, [searchFilter]);
 
 	/** HANDLERS **/
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
@@ -143,10 +135,10 @@ const ProductsListPage: NextPage = ({ initialInput, ...props }: any) => {
 		return (
 			<Stack className="pawpal-static-page pawpal-static-page--products">
 				<Stack className="container">
-					<ProductsHero data={pageData.hero} />
+					<ProductsHero />
 
 					<Stack className={'products-catalog-page'}>
-						<ProductsFilter
+						<ProductsFilterBar
 							searchText={searchText}
 							onSearchTextChange={setSearchText}
 							onSearchEnter={handleSearchEnter}
@@ -159,18 +151,8 @@ const ProductsListPage: NextPage = ({ initialInput, ...props }: any) => {
 						/>
 
 						<Stack className="products-catalog-page__main" mb={'76px'}>
-							<Stack className={'products-catalog-page__grid'}>
-								{properties?.length === 0 ? (
-									<div className={'products-catalog-page__no-data'}>
-										<img src="/img/icons/icoAlert.svg" alt="" />
-										<p>No Products found!</p>
-									</div>
-								) : (
-									properties.map((property: Property) => {
-										return <ProductListCard item={property} onLike={likePropertyHandler} key={property?._id} />;
-									})
-								)}
-							</Stack>
+							<ProductsList properties={properties} onLike={likePropertyHandler} />
+
 							<Stack className="pagination-config">
 								{properties.length !== 0 && (
 									<Stack className="pagination-box">
@@ -217,4 +199,4 @@ ProductsListPage.defaultProps = {
 	},
 };
 
-export default withLayoutBasic(ProductsListPage);
+export default withLayoutFull(ProductsListPage);

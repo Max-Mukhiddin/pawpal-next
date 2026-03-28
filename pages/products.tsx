@@ -5,7 +5,7 @@ import withLayoutFull from '../libs/components/layout/LayoutFull';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { PRODUCTS_PAGE_MOCK } from '../libs/data/products/productsPage.mock';
 import type { ProductCardItem, ProductCategoryChipItem, ProductsPageData } from '../libs/types/products/products.page';
-import ProductsHero from '../libs/components/products/ProductsHero';
+import ProductsMarketingHero from '../libs/components/products/ProductsMarketingHero';
 import ProductCategoryChips from '../libs/components/products/ProductCategoryChips';
 import ProductGridSection from '../libs/components/products/ProductGridSection';
 import ProductPromoRow from '../libs/components/products/ProductPromoRow';
@@ -51,7 +51,7 @@ const ProductsPage: NextPage = () => {
 	return (
 		<Stack className="pawpal-static-page pawpal-static-page--products">
 			<Stack className="container">
-				<ProductsHero data={pageData.hero} />
+				<ProductsMarketingHero data={pageData.hero} />
 				<ProductCategoryChips
 					block={pageData.petCategories.block}
 					items={pageData.petCategories.items}

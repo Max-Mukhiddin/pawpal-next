@@ -2,7 +2,7 @@ import React, { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
-import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
+import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import { useRouter } from 'next/router';
 import { PropertiesInquiry } from '../../libs/types/property/property.input';
 import { Property } from '../../libs/types/property/property';
@@ -13,11 +13,9 @@ import { GET_PROPERTIES } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import { SERVICES_PAGE_MOCK } from '../../libs/data/services/servicesPage.mock';
-import type { ServicesPageData } from '../../libs/types/services/services.page';
 import ServicesHero from '../../libs/components/services/ServicesHero';
-import ServicesFilter from '../../libs/components/services/ServicesFilter';
-import ServiceListCard from '../../libs/components/services/ServiceListCard';
+import ServicesFilterBar from '../../libs/components/services/ServicesFilterBar';
+import ServicesList from '../../libs/components/services/ServicesList';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -31,7 +29,6 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const [searchFilter, setSearchFilter] = useState<PropertiesInquiry>(
 		router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
 	);
-	const [pageData] = useState<ServicesPageData>(() => SERVICES_PAGE_MOCK);
 	const [properties, setProperties] = useState<Property[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [currentPage, setCurrentPage] = useState<number>(1);
@@ -67,11 +64,6 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 
 		setCurrentPage(searchFilter.page === undefined ? 1 : searchFilter.page);
 	}, [router]);
-
-	useEffect(() => {
-		// getPropertiesRefetch({ input: searchFilter }).then();
-		console.log('searchFilter:', searchFilter);
-	}, [searchFilter]);
 
 	/** HANDLERS **/
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
@@ -130,14 +122,6 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 		setAnchorEl(null);
 	};
 
-	const handleHeroPrimaryClick = async () => {
-		await router.push('/services');
-	};
-
-	const handleHeroSecondaryClick = async () => {
-		await router.push('/cs');
-	};
-
 	const handleSearchEnter = () => {
 		setSearchFilter({
 			...searchFilter,
@@ -151,10 +135,10 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 		return (
 			<Stack className="pawpal-static-page pawpal-static-page--services">
 				<Stack className="container">
-					<ServicesHero data={pageData.hero} onPrimaryClick={handleHeroPrimaryClick} onSecondaryClick={handleHeroSecondaryClick} />
+					<ServicesHero />
 
 					<Stack className={'services-catalog-page'}>
-						<ServicesFilter
+						<ServicesFilterBar
 							searchText={searchText}
 							onSearchTextChange={setSearchText}
 							onSearchEnter={handleSearchEnter}
@@ -166,18 +150,7 @@ const ServicesListPage: NextPage = ({ initialInput, ...props }: any) => {
 							onSortingSelect={sortingHandler}
 						/>
 						<Stack className="services-catalog-page__main" mb={'76px'}>
-							<Stack className={'services-catalog-page__grid'}>
-								{properties?.length === 0 ? (
-									<div className={'services-catalog-page__no-data'}>
-										<img src="/img/icons/icoAlert.svg" alt="" />
-										<p>No Services found!</p>
-									</div>
-								) : (
-									properties.map((property: Property) => {
-										return <ServiceListCard item={property} onLike={likePropertyHandler} key={property?._id} />;
-									})
-								)}
-							</Stack>
+							<ServicesList properties={properties} onLike={likePropertyHandler} />
 
 							<Stack className="pagination-config">
 								{properties.length !== 0 && (
@@ -225,4 +198,4 @@ ServicesListPage.defaultProps = {
 	},
 };
 
-export default withLayoutBasic(ServicesListPage);
+export default withLayoutFull(ServicesListPage);

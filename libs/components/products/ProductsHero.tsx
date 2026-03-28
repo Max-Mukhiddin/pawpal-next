@@ -1,27 +1,14 @@
 import React from 'react';
-import type { ProductsHeroContent } from '../../types/products/products.page';
 
-export interface ProductsHeroProps {
-	data: ProductsHeroContent;
-}
-
-const ProductsHero: React.FC<ProductsHeroProps> = ({ data }) => (
-	<section className="pawpal-static-page__hero">
+/** Catalog intro for `/products` listing — text-first PawPal tone, no marketing composition. */
+const ProductsHero: React.FC = () => (
+	<section className="pawpal-static-page__hero products-hero products-hero--catalog">
 		<div className="pawpal-static-page__hero-content">
-			<p className="pawpal-static-page__eyebrow">{data.eyebrow}</p>
-			<h1 className="pawpal-static-page__title">{data.title}</h1>
-			<p className="pawpal-static-page__lead">{data.lead}</p>
-			<div className="pawpal-static-page__hero-actions">
-				<button type="button" className="pawpal-static-page__hero-btn pawpal-static-page__hero-btn--primary">
-					{data.primaryCta}
-				</button>
-				<button type="button" className="pawpal-static-page__hero-btn pawpal-static-page__hero-btn--secondary">
-					{data.secondaryCta}
-				</button>
-			</div>
-		</div>
-		<div className="pawpal-static-page__hero-media" aria-hidden>
-			<img src={data.mediaImageSrc} alt={data.mediaImageAlt} />
+			<p className="pawpal-static-page__eyebrow">PawPal shop</p>
+			<h1 className="pawpal-static-page__title">Everyday essentials for happier pets</h1>
+			<p className="pawpal-static-page__lead">
+				Quality food, gear, and care picks curated for real homes with dogs and cats.
+			</p>
 		</div>
 	</section>
 );
