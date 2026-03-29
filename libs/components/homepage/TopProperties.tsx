@@ -6,52 +6,53 @@ import EastIcon from '@mui/icons-material/East';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Navigation, Pagination } from 'swiper';
 import TopPropertyCard from './TopPropertyCard';
-import { PropertiesInquiry } from '../../types/property/property.input';
-import { Property } from '../../types/property/property';
+import type { ListingsInquiry } from '../../types/listing/listing.input';
+import type { Listing } from '../../types/listing/listing';
 import { useMutation, useQuery } from '@apollo/client';
-import { GET_PROPERTIES } from '../../../apollo/user/query';
+import { GET_LISTINGS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
-import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
+import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Message } from '../../enums/common.enum';
 
 interface TopPropertiesProps {
-	initialInput: PropertiesInquiry;
+	initialInput: ListingsInquiry;
 }
 
 const TopProperties = (props: TopPropertiesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
-	const [topProperties, setTopProperties] = useState<Property[]>([]);
+	const [topListings, setTopListings] = useState<Listing[]>([]);
 
 	/** APOLLO REQUESTS **/
-const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
 	const {
-			loading: getPropertiesLoading,
-			data: getPropertiesData,
-			error: getPropertiesError,
-			refetch: getPropertiesRefetch,
-		} = useQuery(GET_PROPERTIES, {fetchPolicy: 'cache-and-network',
-			variables: {input: initialInput},
-			notifyOnNetworkStatusChange: true,
-			onCompleted: (data: T) => {
-				setTopProperties(data?.getProperties?.list);
-			}
-		});
+		loading: getListingsLoading,
+		data: getListingsData,
+		error: getListingsError,
+		refetch: getListingsRefetch,
+	} = useQuery(GET_LISTINGS, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: initialInput },
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setTopListings(data?.getListings?.list);
+		},
+	});
 	/** HANDLERS **/
-const likePropertyHandler = async (user: T, id: string) => {
+	const likeListingHandler = async (user: T, id: string) => {
 		try {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({
+			await likeTargetListing({
 				variables: { input: id },
 			});
-			await getPropertiesRefetch({input: initialInput})
+			await getListingsRefetch({ input: initialInput });
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR likePropertyHandler:', err.message);
+			console.log('ERROR likeListingHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -71,10 +72,10 @@ const likePropertyHandler = async (user: T, id: string) => {
 							spaceBetween={15}
 							modules={[Autoplay]}
 						>
-							{topProperties.map((property: Property) => {
+							{topListings.map((listing: Listing) => {
 								return (
-									<SwiperSlide className={'top-property-slide'} key={property?._id}>
-										<TopPropertyCard property={property} likePropertyHandler={likePropertyHandler}/>
+									<SwiperSlide className={'top-property-slide'} key={listing?._id}>
+										<TopPropertyCard listing={listing} likeListingHandler={likeListingHandler} />
 									</SwiperSlide>
 								);
 							})}
@@ -114,10 +115,10 @@ const likePropertyHandler = async (user: T, id: string) => {
 								el: '.swiper-top-pagination',
 							}}
 						>
-							{topProperties.map((property: Property) => {
+							{topListings.map((listing: Listing) => {
 								return (
-									<SwiperSlide className={'top-property-slide'} key={property?._id}>
-										<TopPropertyCard property={property} likePropertyHandler={likePropertyHandler}/>
+									<SwiperSlide className={'top-property-slide'} key={listing?._id}>
+										<TopPropertyCard listing={listing} likeListingHandler={likeListingHandler} />
 									</SwiperSlide>
 								);
 							})}
@@ -133,7 +134,7 @@ TopProperties.defaultProps = {
 	initialInput: {
 		page: 1,
 		limit: 8,
-		sort: 'propertyRank',
+		sort: 'listingRank',
 		direction: 'DESC',
 		search: {},
 	},

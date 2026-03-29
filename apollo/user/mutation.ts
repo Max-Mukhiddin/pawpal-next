@@ -119,28 +119,28 @@ export const LIKE_TARGET_MEMBER = gql`
 `;
 
 /**************************
- *        PROPERTY        *
+ *        LISTING         *
  *************************/
 
-export const CREATE_PROPERTY = gql`
-	mutation CreateProperty($input: PropertyInput!) {
-		createProperty(input: $input) {
+export const CREATE_LISTING = gql`
+	mutation CreateListing($input: ListingInput!) {
+		createListing(input: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
+			listingType
+			listingStatus
+			listingLocation
+			listingAddress
+			listingTitle
+			listingPrice
+			listingSquare
+			listingBeds
+			listingRooms
+			listingViews
+			listingLikes
+			listingImages
+			listingDesc
+			listingBarter
+			listingRent
 			memberId
 			soldAt
 			deletedAt
@@ -151,25 +151,25 @@ export const CREATE_PROPERTY = gql`
 	}
 `;
 
-export const UPDATE_PROPERTY = gql`
-	mutation UpdateProperty($input: PropertyUpdate!) {
-		updateProperty(input: $input) {
+export const UPDATE_LISTING = gql`
+	mutation UpdateListing($input: ListingUpdate!) {
+		updateListing(input: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
+			listingType
+			listingStatus
+			listingLocation
+			listingAddress
+			listingTitle
+			listingPrice
+			listingSquare
+			listingBeds
+			listingRooms
+			listingViews
+			listingLikes
+			listingImages
+			listingDesc
+			listingBarter
+			listingRent
 			memberId
 			soldAt
 			deletedAt
@@ -180,29 +180,128 @@ export const UPDATE_PROPERTY = gql`
 	}
 `;
 
-export const LIKE_TARGET_PROPERTY = gql`
-	mutation LikeTargetProperty($input: String!) {
-		likeTargetProperty(propertyId: $input) {
+export const LIKE_TARGET_LISTING = gql`
+	mutation LikeTargetListing($input: String!) {
+		likeTargetListing(listingId: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
+			listingType
+			listingStatus
+			listingLocation
+			listingAddress
+			listingTitle
+			listingPrice
+			listingSquare
+			listingBeds
+			listingRooms
+			listingViews
+			listingLikes
+			listingImages
+			listingDesc
+			listingBarter
+			listingRent
 			memberId
 			soldAt
 			deletedAt
 			constructedAt
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/** @deprecated Use CREATE_LISTING — same document */
+export const CREATE_PROPERTY = CREATE_LISTING;
+/** @deprecated Use UPDATE_LISTING — same document */
+export const UPDATE_PROPERTY = UPDATE_LISTING;
+/** @deprecated Use LIKE_TARGET_LISTING — same document */
+export const LIKE_TARGET_PROPERTY = LIKE_TARGET_LISTING;
+
+/**************************
+ *         INQUIRY        *
+ *************************/
+
+export const CREATE_INQUIRY = gql`
+	mutation CreateInquiry($input: InquiryInput!) {
+		createInquiry(input: $input) {
+			_id
+			listingId
+			agentId
+			customerId
+			name
+			phone
+			email
+			message
+			inquiryStatus
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const UPDATE_INQUIRY_STATUS = gql`
+	mutation UpdateInquiryStatus($input: InquiryUpdateStatus!) {
+		updateInquiryStatus(input: $input) {
+			_id
+			listingId
+			agentId
+			customerId
+			name
+			phone
+			email
+			message
+			inquiryStatus
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/**************************
+ *         BOOKING        *
+ *************************/
+
+export const CREATE_BOOKING = gql`
+	mutation CreateBooking($input: BookingInput!) {
+		createBooking(input: $input) {
+			_id
+			listingId
+			agentId
+			customerId
+			dateTime
+			note
+			bookingStatus
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const UPDATE_BOOKING_STATUS_BY_AGENT = gql`
+	mutation UpdateBookingStatusByAgent($input: BookingUpdateStatus!) {
+		updateBookingStatusByAgent(input: $input) {
+			_id
+			listingId
+			agentId
+			customerId
+			dateTime
+			note
+			bookingStatus
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const CANCEL_MY_BOOKING = gql`
+	mutation CancelMyBooking($bookingId: String!) {
+		cancelMyBooking(bookingId: $bookingId) {
+			_id
+			listingId
+			agentId
+			customerId
+			dateTime
+			note
+			bookingStatus
 			createdAt
 			updatedAt
 		}

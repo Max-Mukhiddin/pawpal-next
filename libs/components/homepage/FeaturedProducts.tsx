@@ -1,65 +1,26 @@
 import Link from 'next/link';
-import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import { useMemo } from 'react';
+import { useQuery } from '@apollo/client';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
+import { GET_LISTINGS } from '../../../apollo/user/query';
+import { ListingType } from '../../enums/listing.enum';
+import { homeFeaturedListingsInquiry } from '../../utils/catalogListingInquiry';
+import type { Listing } from '../../types/listing/listing';
+import HomeFeaturedListingCard from './HomeFeaturedListingCard';
 
-const PRODUCTS = [
-	{
-		id: '1',
-		title: 'Premium Dog Food',
-		category: 'Nutrition',
-		price: '$32.00',
-		oldPrice: '$38.00',
-		rating: '4.9',
-		image: '/images/services/service-grooming.jpg',
-	},
-	{
-		id: '2',
-		title: 'Organic Cat Food',
-		category: 'Nutrition',
-		price: '$28.00',
-		oldPrice: '$34.00',
-		rating: '4.8',
-		image: '/images/services/service-walking.jpg',
-	},
-	{
-		id: '3',
-		title: 'Pet Shampoo',
-		category: 'Grooming',
-		price: '$14.00',
-		oldPrice: '$18.00',
-		rating: '4.7',
-		image: '/images/services/service-vet.jpg',
-	},
-	{
-		id: '4',
-		title: 'Training Toy Set',
-		category: 'Training',
-		price: '$22.00',
-		oldPrice: '$27.00',
-		rating: '4.8',
-		image: '/images/services/service-training.jpg',
-	},
-	{
-		id: '5',
-		title: 'Adjustable Leash',
-		category: 'Walking',
-		price: '$16.00',
-		oldPrice: '$20.00',
-		rating: '4.6',
-		image: '/images/services/service-boarding.jpg',
-	},
-	{
-		id: '6',
-		title: 'Cozy Pet Bed',
-		category: 'Comfort',
-		price: '$46.00',
-		oldPrice: '$56.00',
-		rating: '4.9',
-		image: '/images/services/service-shop.jpg',
-	},
-] as const;
+const PRODUCT_HOME_INPUT = homeFeaturedListingsInquiry(ListingType.PRODUCT);
 
 export default function FeaturedProducts() {
+	const variables = useMemo(() => ({ input: PRODUCT_HOME_INPUT }), []);
+
+	const { data, loading, error } = useQuery(GET_LISTINGS, {
+		variables,
+		fetchPolicy: 'cache-and-network',
+	});
+
+	const listings: Listing[] = data?.getListings?.list ?? [];
+	const showEmpty = !loading && (error || listings.length === 0);
+
 	return (
 		<section className="pawpal-home-section featured-products-pawpal" aria-labelledby="pawpal-home-products-title">
 			<div className="pawpal-home-section__inner featured-products-pawpal__inner">
@@ -79,30 +40,30 @@ export default function FeaturedProducts() {
 					</Link>
 				</header>
 
-				<div className="featured-products-pawpal__grid">
-					{PRODUCTS.map((product) => (
-						<article key={product.id} className="featured-products-pawpal__card">
-							<div className="featured-products-pawpal__media">
-								<img src={product.image} alt={product.title} className="featured-products-pawpal__img" />
-								<span className="featured-products-pawpal__chip">{product.category}</span>
-							</div>
-							<div className="featured-products-pawpal__body">
-								<h3 className="featured-products-pawpal__name">{product.title}</h3>
-								<div className="featured-products-pawpal__meta">
-									<span className="featured-products-pawpal__price">{product.price}</span>
-									<span className="featured-products-pawpal__old-price">{product.oldPrice}</span>
-								</div>
-								<div className="featured-products-pawpal__footer">
-									<span className="featured-products-pawpal__rating">{"★"} {product.rating}</span>
-									<button type="button" className="featured-products-pawpal__cta">
-										<ShoppingBagOutlinedIcon className="featured-products-pawpal__cta-icon" />
-										Add to cart
-									</button>
-								</div>
-							</div>
-						</article>
-					))}
-				</div>
+				{loading && (
+					<p className="pawpal-home-section__lead" style={{ marginTop: 0 }}>
+						Loading featured products…
+					</p>
+				)}
+
+				{showEmpty && (
+					<p className="pawpal-home-section__lead" style={{ marginTop: 0 }}>
+						Product listings will appear here as sellers publish on PawPal.
+					</p>
+				)}
+
+				{listings.length > 0 && (
+					<div className="featured-products-pawpal__grid">
+						{listings.map((listing) => (
+							<HomeFeaturedListingCard
+								key={listing._id}
+								listing={listing}
+								detailBasePath="/products/detail"
+								viewLabel="View product"
+							/>
+						))}
+					</div>
+				)}
 			</div>
 		</section>
 	);

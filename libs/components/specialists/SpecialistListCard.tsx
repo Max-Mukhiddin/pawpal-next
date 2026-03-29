@@ -1,5 +1,4 @@
 import React from 'react';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Stack, Box, Typography } from '@mui/material';
 import Link from 'next/link';
 import { REACT_APP_API_URL } from '../../config';
@@ -19,15 +18,10 @@ export interface SpecialistListCardProps {
 
 /** Specialist directory card; reuses `.agent-general-card` styling; opens PawPal specialist detail. */
 const SpecialistListCard: React.FC<SpecialistListCardProps> = ({ specialist, onLike }) => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const imagePath: string = specialist?.memberImage
 		? `${REACT_APP_API_URL}/${specialist.memberImage}`
 		: '/img/profile/defaultUser.svg';
-
-	if (device === 'mobile') {
-		return <div>SPECIALIST CARD</div>;
-	}
 
 	return (
 		<Stack className="agent-general-card">

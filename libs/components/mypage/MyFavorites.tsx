@@ -3,22 +3,22 @@ import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
 import PropertyCard from '../property/PropertyCard';
-import { Property } from '../../types/property/property';
+import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
 import { GET_FAVORITES } from '../../../apollo/user/query';
 import { useMutation, useQuery } from '@apollo/client';
-import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
+import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 
 const MyFavorites: NextPage = () => {
 	const device = useDeviceDetect();
-	const [myFavorites, setMyFavorites] = useState<Property[]>([]);
+	const [myFavorites, setMyFavorites] = useState<Listing[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [searchFavorites, setSearchFavorites] = useState<T>({ page: 1, limit: 6 });
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
 	const {
 		loading: getFavoritesLoading,
@@ -42,12 +42,12 @@ const MyFavorites: NextPage = () => {
 		setSearchFavorites({ ...searchFavorites, page: value });
 	};
 
-	const likePropertyHandler = async (user: any, id: string) => {
+	const likeListingHandler = async (user: any, id: string) => {
 		try {
 			if (!id) return;
 			if (!user._id) throw new Error(Messages.error2);
 
-			await likeTargetProperty({
+			await likeTargetListing({
 				variables: {
 					input: id,
 				},
@@ -55,7 +55,7 @@ const MyFavorites: NextPage = () => {
 
 			await getFavoritesRefetch({ input: searchFavorites });
 		} catch (err: any) {
-			console.log('ERROR, likePropertyHandler:', err.message);
+			console.log('ERROR, likeListingHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -73,8 +73,15 @@ const MyFavorites: NextPage = () => {
 				</Stack>
 				<Stack className="favorites-list-box">
 					{myFavorites?.length ? (
-						myFavorites?.map((property: Property) => {
-							return <PropertyCard property={property} myFavorites={true} likePropertyHandler={likePropertyHandler} />;
+						myFavorites?.map((listing: Listing) => {
+							return (
+								<PropertyCard
+									listing={listing}
+									myFavorites={true}
+									likeListingHandler={likeListingHandler}
+									key={listing._id}
+								/>
+							);
 						})
 					) : (
 						<div className={'no-data'}>

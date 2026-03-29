@@ -3,7 +3,7 @@ import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Head from 'next/head';
 import Top from '../Top';
 import Footer from '../Footer';
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { getJwtToken, updateUserInfo } from '../../auth';
 import Chat from '../Chat';
 import 'swiper/css';
@@ -36,9 +36,9 @@ const withLayoutMain = (Component: any) => {
 						<Component {...props} />
 					</Stack>
 
-					<Box sx={{ display: isMobileLayout ? 'none' : 'block' }}>
+					<div style={{ display: isMobileLayout ? 'none' : 'block' }}>
 						<Chat />
-					</Box>
+					</div>
 
 					<Stack id={'footer'}>
 						<Footer />

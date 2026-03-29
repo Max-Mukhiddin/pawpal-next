@@ -4,39 +4,39 @@ import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { PropertyCard } from './PropertyCard';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import { Property } from '../../types/property/property';
-import { AgentPropertiesInquiry } from '../../types/property/property.input';
+import type { Listing } from '../../types/listing/listing';
+import type { AgentListingsInquiry } from '../../types/listing/listing.input';
 import { T } from '../../types/common';
-import { PropertyStatus } from '../../enums/property.enum';
+import { ListingStatus } from '../../enums/listing.enum';
 import { userVar } from '../../../apollo/store';
 import { useRouter } from 'next/router';
-import { GET_AGENT_PROPERTIES } from '../../../apollo/user/query';
+import { GET_AGENT_LISTINGS } from '../../../apollo/user/query';
 import { sweetConfirmAlert, sweetErrorHandling } from '../../sweetAlert';
-import { UPDATE_PROPERTY } from '../../../apollo/user/mutation';
+import { UPDATE_LISTING } from '../../../apollo/user/mutation';
 
 const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
-	const [searchFilter, setSearchFilter] = useState<AgentPropertiesInquiry>(initialInput);
-	const [agentProperties, setAgentProperties] = useState<Property[]>([]);
+	const [searchFilter, setSearchFilter] = useState<AgentListingsInquiry>(initialInput);
+	const [agentListings, setAgentListings] = useState<Listing[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
 	/** APOLLO REQUESTS **/
-	const [updateProperty] = useMutation(UPDATE_PROPERTY);
+	const [updateListing] = useMutation(UPDATE_LISTING);
 
 	const {
-		loading: getAgentPropertiesLoading,
-		data: getAgentPropertiesData,
-		error: getAgentPropertiesError,
-		refetch: getAgentPropertiesRefetch,
-	} = useQuery(GET_AGENT_PROPERTIES, {
+		loading: getAgentListingsLoading,
+		data: getAgentListingsData,
+		error: getAgentListingsError,
+		refetch: getAgentListingsRefetch,
+	} = useQuery(GET_AGENT_LISTINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: any) {
-			setAgentProperties(data?.getAgentProperties?.list);
-			setTotal(data?.getAgentProperties?.metaCounter[0]?.total ?? 0);
+			setAgentListings(data?.getAgentListings?.list);
+			setTotal(data?.getAgentListings?.metaCounter[0]?.total ?? 0);
 		},
 	});
 
@@ -45,43 +45,43 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 		setSearchFilter({ ...searchFilter, page: value });
 	};
 
-	const changeStatusHandler = (value: PropertyStatus) => {
-		setSearchFilter({ ...searchFilter, search: { propertyStatus: value } });
+	const changeStatusHandler = (value: ListingStatus) => {
+		setSearchFilter({ ...searchFilter, search: { listingStatus: value } });
 	};
 
-	const deletePropertyHandler = async (id: string) => {
+	const deleteListingHandler = async (id: string) => {
 		try {
 			if (await sweetConfirmAlert('Are you sure to delete this property?')) {
-				await updateProperty({
+				await updateListing({
 					variables: {
 						input: {
 							_id: id,
-							propertyStatus: 'DELETE',
+							listingStatus: ListingStatus.DELETE,
 						},
 					},
 				});
 			}
 
-			await getAgentPropertiesRefetch({ input: searchFilter });
+			await getAgentListingsRefetch({ input: searchFilter });
 		} catch (err: any) {
 			await sweetErrorHandling(err);
 		}
 	};
 
-	const updatePropertyHandler = async (status: string, id: string) => {
+	const updateListingHandler = async (status: string, id: string) => {
 		try {
 			if (await sweetConfirmAlert(`Are you sure change to ${status} status?`)) {
-				await updateProperty({
+				await updateListing({
 					variables: {
 						input: {
 							_id: id,
-							propertyStatus: status,
+							listingStatus: status as ListingStatus,
 						},
 					},
 				});
 			}
 
-			await getAgentPropertiesRefetch({ input: searchFilter });
+			await getAgentListingsRefetch({ input: searchFilter });
 		} catch (err: any) {
 			await sweetErrorHandling(err);
 		}
@@ -105,14 +105,14 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 				<Stack className="property-list-box">
 					<Stack className="tab-name-box">
 						<Typography
-							onClick={() => changeStatusHandler(PropertyStatus.ACTIVE)}
-							className={searchFilter.search.propertyStatus === 'ACTIVE' ? 'active-tab-name' : 'tab-name'}
+							onClick={() => changeStatusHandler(ListingStatus.ACTIVE)}
+							className={searchFilter.search.listingStatus === 'ACTIVE' ? 'active-tab-name' : 'tab-name'}
 						>
 							On Sale
 						</Typography>
 						<Typography
-							onClick={() => changeStatusHandler(PropertyStatus.SOLD)}
-							className={searchFilter.search.propertyStatus === 'SOLD' ? 'active-tab-name' : 'tab-name'}
+							onClick={() => changeStatusHandler(ListingStatus.SOLD)}
+							className={searchFilter.search.listingStatus === 'SOLD' ? 'active-tab-name' : 'tab-name'}
 						>
 							On Sold
 						</Typography>
@@ -123,29 +123,30 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 							<Typography className="title-text">Date Published</Typography>
 							<Typography className="title-text">Status</Typography>
 							<Typography className="title-text">View</Typography>
-							{searchFilter.search.propertyStatus === 'ACTIVE' && (
+							{searchFilter.search.listingStatus === 'ACTIVE' && (
 								<Typography className="title-text">Action</Typography>
 							)}
 						</Stack>
 
-						{agentProperties?.length === 0 ? (
+						{agentListings?.length === 0 ? (
 							<div className={'no-data'}>
 								<img src="/img/icons/icoAlert.svg" alt="" />
 								<p>No Property found!</p>
 							</div>
 						) : (
-							agentProperties.map((property: Property) => {
+							agentListings.map((listing: Listing) => {
 								return (
 									<PropertyCard
-										property={property}
-										deletePropertyHandler={deletePropertyHandler}
-										updatePropertyHandler={updatePropertyHandler}
+										listing={listing}
+										deleteListingHandler={deleteListingHandler}
+										updateListingHandler={updateListingHandler}
+										key={listing._id}
 									/>
 								);
 							})
 						)}
 
-						{agentProperties.length !== 0 && (
+						{agentListings.length !== 0 && (
 							<Stack className="pagination-config">
 								<Stack className="pagination-box">
 									<Pagination
@@ -174,7 +175,7 @@ MyProperties.defaultProps = {
 		limit: 5,
 		sort: 'createdAt',
 		search: {
-			propertyStatus: 'ACTIVE',
+			listingStatus: 'ACTIVE',
 		},
 	},
 };

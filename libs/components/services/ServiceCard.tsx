@@ -7,59 +7,57 @@ import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { userVar } from '../../../apollo/store';
 import { REACT_APP_API_URL } from '../../config';
-import { Property } from '../../types/property/property';
+import type { Service } from '../../types/services/service';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
 
 export interface ServiceCardProps {
-	property: Property;
+	service: Service;
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
 /** Single service row in the catalog; reuses `services-list-card` classes for grid styling. */
-const ServiceCard: React.FC<ServiceCardProps> = ({ property, onLike }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const image = property?.propertyImages?.[0]
-		? `${REACT_APP_API_URL}/${property.propertyImages[0]}`
+	const image = service?.listingImages?.[0]
+		? `${REACT_APP_API_URL}/${service.listingImages[0]}`
 		: '/img/icons/icoAlert.svg';
 
 	const shortDesc =
-		property?.propertyDesc?.trim() ||
-		property?.propertyAddress ||
-		'Thoughtful care tailored to your companion.';
+		service?.listingDesc?.trim() || service?.listingAddress || 'Thoughtful care tailored to your companion.';
 
 	const goDetail = async () => {
-		await router.push(`/services/detail?id=${property._id}`);
+		await router.push(`/services/detail?id=${service._id}`);
 	};
 
 	return (
 		<Stack className="services-list-card" onClick={goDetail}>
 			<Box className="services-list-card__media" component={'div'}>
-				<img src={image} alt={property.propertyTitle} />
+				<img src={image} alt={service.listingTitle} />
 			</Box>
 			<Stack className="services-list-card__body">
-				<Typography className="services-list-card__title">{property.propertyTitle}</Typography>
+				<Typography className="services-list-card__title">{service.listingTitle}</Typography>
 				<Typography className="services-list-card__desc">{shortDesc}</Typography>
 				<Stack className="services-list-card__meta" direction={'row'} alignItems={'center'} justifyContent={'space-between'}>
-					<Typography className="services-list-card__price">From ${formatterStr(property.propertyPrice)}</Typography>
-					<Typography className="services-list-card__duration">{property.propertyRooms} step care</Typography>
+					<Typography className="services-list-card__price">From ${formatterStr(service.listingPrice)}</Typography>
+					<Typography className="services-list-card__duration">{service.listingRooms} step care</Typography>
 				</Stack>
 				<Stack className="services-list-card__actions" direction={'row'} alignItems={'center'}>
 					<IconButton color={'default'}>
 						<RemoveRedEyeIcon />
 					</IconButton>
-					<Typography className="view-cnt">{property.propertyViews}</Typography>
+					<Typography className="view-cnt">{service.listingViews}</Typography>
 					<IconButton
 						color={'default'}
 						onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 							e.stopPropagation();
-							onLike(user, property._id);
+							onLike(user, service._id);
 						}}
 					>
-						{property?.meLiked && property?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
+						{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
 					</IconButton>
-					<Typography className="view-cnt">{property.propertyLikes}</Typography>
+					<Typography className="view-cnt">{service.listingLikes}</Typography>
 				</Stack>
 			</Stack>
 		</Stack>

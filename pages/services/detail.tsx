@@ -20,22 +20,21 @@ import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Pagination as MuiPagination } from '@mui/material';
-import Link from 'next/link';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { GET_COMMENTS } from '../../apollo/user/query';
-import { GET_SERVICE, GET_SERVICES } from '../../apollo/services/query';
+import { GET_COMMENTS, GET_LISTING, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { Message } from '../../libs/enums/common.enum';
-import { PropertyType } from '../../libs/enums/property.enum';
+import { ListingType } from '../../libs/enums/listing.enum';
 import { relatedListingInquiryInput } from '../../libs/utils/catalogListingInquiry';
-import { CREATE_COMMENT } from '../../apollo/user/mutation';
-import { LIKE_TARGET_SERVICE } from '../../apollo/services/mutation';
+import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import RelatedServiceCard from '../../libs/components/services/RelatedServiceCard';
 import ServiceReviewCard from '../../libs/components/services/ServiceReviewCard';
+import ServiceDetailMobile from '../../libs/components/services/ServiceDetailMobile';
+import ServiceDetailInquirySidebar from '../../libs/components/inquiry/ServiceDetailInquirySidebar';
 
 SwiperCore.use([Autoplay, Navigation, Pagination]);
 
@@ -45,7 +44,7 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
-const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
+const ServiceDetail: NextPage = ({ initialComment }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
@@ -63,35 +62,35 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 	});
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetService] = useMutation(LIKE_TARGET_SERVICE);
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 	const [createComment] = useMutation(CREATE_COMMENT);
 
-	const relatedServicesInquiry = useMemo(
-		() => relatedListingInquiryInput(PropertyType.SERVICE, service?.propertyLocation),
-		[service?.propertyLocation],
+	const relatedServiceCatalogInquiry = useMemo(
+		() => relatedListingInquiryInput(ListingType.SERVICE, service?.listingLocation),
+		[service?.listingLocation],
 	);
 
 	const {
 		loading: serviceDetailLoading,
 		refetch: getServiceRefetch,
-	} = useQuery(GET_SERVICE, {
+	} = useQuery(GET_LISTING, {
 		fetchPolicy: 'network-only',
 		variables: { input: serviceId },
 		skip: !router.isReady || !serviceId,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			if (data?.getProperty) setService(data.getProperty);
-			if (data?.getProperty?.propertyImages?.length) setSlideImage(data.getProperty.propertyImages[0]);
+			if (data?.getListing) setService(data.getListing);
+			if (data?.getListing?.listingImages?.length) setSlideImage(data.getListing.listingImages[0]);
 		},
 	});
 
-	const { refetch: getServicesCatalogRefetch } = useQuery(GET_SERVICES, {
+	const { refetch: getServicesCatalogRefetch } = useQuery(GET_LISTINGS, {
 		fetchPolicy: 'cache-and-network',
-		variables: { input: relatedServicesInquiry },
+		variables: { input: relatedServiceCatalogInquiry },
 		skip: !serviceId && !service,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			if (data?.getProperties?.list) setRelatedServices(data?.getProperties?.list);
+			if (data?.getListings?.list) setRelatedServices(data?.getListings?.list);
 		},
 	});
 
@@ -137,12 +136,12 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetService({
+			await likeTargetListing({
 				variables: { input: id },
 			});
 			await getServiceRefetch({ input: serviceId });
 			await getServicesCatalogRefetch({
-				input: relatedListingInquiryInput(PropertyType.SERVICE, service?.propertyLocation),
+				input: relatedServiceCatalogInquiry,
 			});
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
@@ -178,21 +177,38 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 	}
 
 	if (device === 'mobile') {
-		return <div>SERVICE DETAIL PAGE</div>;
-	} else {
 		return (
+			<ServiceDetailMobile
+				service={service}
+				user={user}
+				slideImage={slideImage}
+				onSlideImageChange={changeImageHandler}
+				onLike={likeServiceHandler}
+				relatedServices={relatedServices}
+				serviceComments={serviceComments}
+				commentTotal={commentTotal}
+				commentInquiry={commentInquiry}
+				onCommentPageChange={commentPaginationChangeHandler}
+				insertCommentData={insertCommentData}
+				onCommentTextChange={(value) => setInsertCommentData((prev) => ({ ...prev, commentContent: value }))}
+				onSubmitComment={createCommentHandler}
+			/>
+		);
+	}
+
+	return (
 			<div id={'service-detail-page'}>
 				<div className={'container'}>
 					<Stack className={'service-detail-page'}>
 						<Stack className={'service-info-config'}>
 							<Stack className={'info'}>
 								<Stack className={'left-box'}>
-									<Typography className={'title-main'}>{service?.propertyTitle}</Typography>
+									<Typography className={'title-main'}>{service?.listingTitle}</Typography>
 									<Stack className={'top-box'}>
-										<Typography className={'city'}>{service?.propertyLocation}</Typography>
+										<Typography className={'city'}>{service?.listingLocation}</Typography>
 										<Stack className={'divider'}></Stack>
 										<Stack className={'buy-rent-box'}>
-											{service?.propertyBarter && (
+											{service?.listingBarter && (
 												<>
 													<Stack className={'circle'}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
@@ -202,7 +218,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 													<Typography className={'buy-rent'}>Package</Typography>
 												</>
 											)}
-											{service?.propertyRent && (
+											{service?.listingRent && (
 												<>
 													<Stack className={'circle'}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
@@ -231,13 +247,13 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 									</Stack>
 									<Stack className={'bottom-box'}>
 										<Stack className="option">
-											<img src="/img/icons/bed.svg" alt="" /> <Typography>{service?.propertyBeds} care step</Typography>
+											<img src="/img/icons/bed.svg" alt="" /> <Typography>{service?.listingBeds} care step</Typography>
 										</Stack>
 										<Stack className="option">
-											<img src="/img/icons/room.svg" alt="" /> <Typography>{service?.propertyRooms} session</Typography>
+											<img src="/img/icons/room.svg" alt="" /> <Typography>{service?.listingRooms} session</Typography>
 										</Stack>
 										<Stack className="option">
-											<img src="/img/icons/expand.svg" alt="" /> <Typography>{service?.propertySquare} service score</Typography>
+											<img src="/img/icons/expand.svg" alt="" /> <Typography>{service?.listingSquare} service score</Typography>
 										</Stack>
 									</Stack>
 								</Stack>
@@ -245,7 +261,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 									<Stack className="buttons">
 										<Stack className="button-box">
 											<RemoveRedEyeIcon fontSize="medium" />
-											<Typography>{service?.propertyViews}</Typography>
+											<Typography>{service?.listingViews}</Typography>
 										</Stack>
 										<Stack className="button-box">
 											{service?.meLiked && service?.meLiked[0]?.myFavorite ? (
@@ -253,10 +269,10 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 											) : (
 												<FavoriteBorderIcon fontSize={'medium'} onClick={() => likeServiceHandler(user, service?._id as string)} />
 											)}
-											<Typography>{service?.propertyLikes}</Typography>
+											<Typography>{service?.listingLikes}</Typography>
 										</Stack>
 									</Stack>
-									<Typography>From ${formatterStr(service?.propertyPrice)}</Typography>
+									<Typography>From ${formatterStr(service?.listingPrice)}</Typography>
 								</Stack>
 							</Stack>
 							<Stack className={'images'}>
@@ -267,7 +283,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 									/>
 								</Stack>
 								<Stack className={'sub-images'}>
-									{service?.propertyImages.map((subImg: string) => {
+									{service?.listingImages?.map((subImg: string) => {
 										const imagePath: string = `${REACT_APP_API_URL}/${subImg}`;
 										return (
 											<Stack className={'sub-img-box'} onClick={() => changeImageHandler(subImg)} key={subImg}>
@@ -284,13 +300,13 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 									<Stack className={'option'}>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Care Steps</Typography>
-											<Typography className={'option-data'}>{service?.propertyBeds}</Typography>
+											<Typography className={'option-data'}>{service?.listingBeds}</Typography>
 										</Stack>
 									</Stack>
 									<Stack className={'option'}>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Sessions</Typography>
-											<Typography className={'option-data'}>{service?.propertyRooms}</Typography>
+											<Typography className={'option-data'}>{service?.listingRooms}</Typography>
 										</Stack>
 									</Stack>
 									<Stack className={'option'}>
@@ -302,20 +318,20 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 									<Stack className={'option'}>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Service Value</Typography>
-											<Typography className={'option-data'}>{service?.propertySquare}</Typography>
+											<Typography className={'option-data'}>{service?.listingSquare}</Typography>
 										</Stack>
 									</Stack>
 									<Stack className={'option'}>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Service Type</Typography>
-											<Typography className={'option-data'}>{service?.propertyType}</Typography>
+											<Typography className={'option-data'}>{service?.listingType}</Typography>
 										</Stack>
 									</Stack>
 								</Stack>
 								<Stack className={'prop-desc-config'}>
 									<Stack className={'top'}>
 										<Typography className={'title'}>About This Service</Typography>
-										<Typography className={'desc'}>{service?.propertyDesc ?? 'No service description yet.'}</Typography>
+										<Typography className={'desc'}>{service?.listingDesc ?? 'No service description yet.'}</Typography>
 									</Stack>
 									<Stack className={'bottom'}>
 										<Typography className={'title'}>Service Details</Typography>
@@ -323,19 +339,19 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 											<Stack className={'left'}>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Starting Price</Typography>
-													<Typography className={'data'}>${formatterStr(service?.propertyPrice)}</Typography>
+													<Typography className={'data'}>${formatterStr(service?.listingPrice)}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Service Value</Typography>
-													<Typography className={'data'}>{service?.propertySquare}</Typography>
+													<Typography className={'data'}>{service?.listingSquare}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Sessions</Typography>
-													<Typography className={'data'}>{service?.propertyRooms}</Typography>
+													<Typography className={'data'}>{service?.listingRooms}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Care Steps</Typography>
-													<Typography className={'data'}>{service?.propertyBeds}</Typography>
+													<Typography className={'data'}>{service?.listingBeds}</Typography>
 												</Box>
 											</Stack>
 											<Stack className={'right'}>
@@ -345,13 +361,13 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Service Type</Typography>
-													<Typography className={'data'}>{service?.propertyType}</Typography>
+													<Typography className={'data'}>{service?.listingType}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Service Options</Typography>
 													<Typography className={'data'}>
-														{service?.propertyBarter ? 'Package ' : ''}
-														{service?.propertyRent ? 'On-demand' : ''}
+														{service?.listingBarter ? 'Package ' : ''}
+														{service?.listingRent ? 'On-demand' : ''}
 													</Typography>
 												</Box>
 											</Stack>
@@ -430,51 +446,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 									</Box>
 								</Stack>
 							</Stack>
-							<Stack className={'right-config'}>
-								<Stack className={'info-box'}>
-									<Typography className={'main-title'}>Get Service Consultation</Typography>
-									<Stack className={'image-info'}>
-										<img
-											className={'member-image'}
-											src={
-												service?.memberData?.memberImage
-													? `${REACT_APP_API_URL}/${service?.memberData?.memberImage}`
-													: '/img/profile/defaultUser.svg'
-											}
-										/>
-										<Stack className={'name-phone-listings'}>
-											<Link href={`/member?memberId=${service?.memberData?._id}`}>
-												<Typography className={'name'}>{service?.memberData?.memberNick}</Typography>
-											</Link>
-											<Stack className={'phone-number'}>
-												<Typography className={'number'}>{service?.memberData?.memberPhone}</Typography>
-											</Stack>
-											<Typography className={'listings'}>View Specialist Profile</Typography>
-										</Stack>
-									</Stack>
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Name</Typography>
-									<input type={'text'} placeholder={'Enter your name'} />
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Phone</Typography>
-									<input type={'text'} placeholder={'Enter your phone'} />
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Email</Typography>
-									<input type={'text'} placeholder={'hello@pawpal.com'} />
-								</Stack>
-								<Stack className={'info-box'}>
-									<Typography className={'sub-title'}>Message</Typography>
-									<textarea placeholder={'Hello, I am interested in this service.'}></textarea>
-								</Stack>
-								<Stack className={'info-box'}>
-									<Button className={'send-message'}>
-										<Typography className={'title'}>Send Inquiry</Typography>
-									</Button>
-								</Stack>
-							</Stack>
+							<ServiceDetailInquirySidebar service={service} user={user} />
 						</Stack>
 						{relatedServices.length !== 0 && (
 							<Stack className={'related-services-config'}>
@@ -503,10 +475,10 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 											el: '.swiper-similar-pagination',
 										}}
 									>
-										{relatedServices.map((serviceItem: Service) => {
+										{relatedServices.map((relatedService: Service) => {
 											return (
-												<SwiperSlide className={'related-services-slide'} key={serviceItem._id}>
-													<RelatedServiceCard service={serviceItem} onLike={likeServiceHandler} />
+												<SwiperSlide className={'related-services-slide'} key={relatedService._id}>
+													<RelatedServiceCard service={relatedService} onLike={likeServiceHandler} />
 												</SwiperSlide>
 											);
 										})}
@@ -517,8 +489,7 @@ const ServiceDetail: NextPage = ({ initialComment, ...props }: any) => {
 					</Stack>
 				</div>
 			</div>
-		);
-	}
+	);
 };
 
 ServiceDetail.defaultProps = {

@@ -1,5 +1,14 @@
 #pc-wrap .home-page,
 #mobile-wrap .home-page {
+	/* Nested inside another home section: reuse card/grid styles without double background */
+	.featured-products-pawpal.featured-products-pawpal--embedded {
+		background: transparent !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		box-shadow: none !important;
+		border: none !important;
+	}
+
 	.featured-products-pawpal {
 		background: var(--pp-bg-paper) !important;
 

@@ -1,10 +1,9 @@
 import React from 'react';
-import { Stack, Box, Divider, Typography } from '@mui/material';
+import { Stack, Box, Divider, Typography, Button } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { Property } from '../../types/property/property';
-import { REACT_APP_API_URL, topPropertyRank } from '../../config';
+import type { Listing } from '../../types/listing/listing';
+import { REACT_APP_API_URL, topListingRank } from '../../config';
 import { formatterStr } from '../../utils';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
@@ -13,68 +12,98 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { T } from '../../types/common';
 
 export interface RelatedSpecialistListingCardProps {
-	listing: Property;
+	listing: Listing;
 	onLike: (user: T, id: string) => Promise<void>;
+	selectedListingId?: string | null;
+	onSelectForInquiry?: (listing: Listing) => void;
 }
 
-/** Temporary property-backed offering card with specialist-facing copy; opens PawPal service detail. */
-const RelatedSpecialistListingCard: React.FC<RelatedSpecialistListingCardProps> = ({ listing, onLike }) => {
-	const device = useDeviceDetect();
+/** Care offering card; listing-backed; opens PawPal service detail. */
+const RelatedSpecialistListingCard: React.FC<RelatedSpecialistListingCardProps> = ({
+	listing,
+	onLike,
+	selectedListingId,
+	onSelectForInquiry,
+}) => {
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
-	const goOfferingDetail = (propertyId: string) => {
-		router.push(`/services/detail?id=${propertyId}`);
+	const goOfferingDetail = (listingId: string) => {
+		router.push(`/services/detail?id=${listingId}`);
 	};
 
-	if (device === 'mobile') {
-		return <div>OFFERING CARD</div>;
-	}
+	const coverUrl = listing?.listingImages?.[0]
+		? `${REACT_APP_API_URL}/${listing.listingImages[0]}`
+		: '/img/icons/icoAlert.svg';
+
+	const isSelected = Boolean(selectedListingId && listing?._id === selectedListingId);
 
 	return (
-		<Stack className="property-big-card-box" onClick={() => goOfferingDetail(listing?._id)}>
-			<Box
-				component={'div'}
-				className={'card-img'}
-				style={{ backgroundImage: `url(${REACT_APP_API_URL}/${listing?.propertyImages?.[0]})` }}
-			>
-				{listing && listing?.propertyRank >= topPropertyRank && (
+		<Stack
+			className="property-big-card-box"
+			onClick={() => goOfferingDetail(listing?._id)}
+			sx={
+				isSelected
+					? {
+							outline: '2px solid #eb6753',
+							outlineOffset: 2,
+							borderRadius: 1,
+					  }
+					: undefined
+			}
+		>
+			<Box component={'div'} className={'card-img'} style={{ backgroundImage: `url(${coverUrl})` }}>
+				{listing && listing?.listingRank >= topListingRank && (
 					<div className={'status'}>
 						<img src="/img/icons/electricity.svg" alt="" />
 						<span>featured</span>
 					</div>
 				)}
 
-				<div className={'price'}>From ${formatterStr(listing?.propertyPrice)}</div>
+				<div className={'price'}>From ${formatterStr(listing?.listingPrice)}</div>
 			</Box>
 			<Box component={'div'} className={'info'}>
-				<strong className={'title'}>{listing?.propertyTitle}</strong>
-				<p className={'desc'}>{listing?.propertyDesc || listing?.propertyAddress || 'Care offering'}</p>
+				<strong className={'title'}>{listing?.listingTitle}</strong>
+				<p className={'desc'}>{listing?.listingDesc || listing?.listingAddress || 'Care offering'}</p>
 				<div className={'options'}>
 					<div>
 						<img src="/img/icons/bed.svg" alt="" />
-						<span>{listing?.propertyBeds} care steps</span>
+						<span>{listing?.listingBeds} care steps</span>
 					</div>
 					<div>
 						<img src="/img/icons/room.svg" alt="" />
-						<span>{listing?.propertyRooms} sessions</span>
+						<span>{listing?.listingRooms} sessions</span>
 					</div>
 					<div>
 						<img src="/img/icons/expand.svg" alt="" />
-						<span>{listing?.propertySquare} score</span>
+						<span>{listing?.listingSquare} score</span>
 					</div>
 				</div>
 				<Divider sx={{ mt: '15px', mb: '17px' }} />
+				{onSelectForInquiry && (
+					<Button
+						fullWidth
+						variant="outlined"
+						size="small"
+						sx={{ mb: 1.5, textTransform: 'none', fontWeight: 600 }}
+						onClick={(e: React.MouseEvent) => {
+							e.stopPropagation();
+							onSelectForInquiry(listing);
+						}}
+					>
+						Select for inquiry
+					</Button>
+				)}
 				<div className={'bott'}>
 					<div>
-						{listing?.propertyRent ? <p>On-demand</p> : <span>On-demand</span>}
-						{listing?.propertyBarter ? <p>Package</p> : <span>Package</span>}
+						{listing?.listingRent ? <p>On-demand</p> : <span>On-demand</span>}
+						{listing?.listingBarter ? <p>Package</p> : <span>Package</span>}
 					</div>
 					<div className="buttons-box">
 						<IconButton color={'default'}>
 							<RemoveRedEyeIcon />
 						</IconButton>
-						<Typography className="view-cnt">{listing?.propertyViews}</Typography>
+						<Typography className="view-cnt">{listing?.listingViews}</Typography>
 						<IconButton
 							color={'default'}
 							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -88,7 +117,7 @@ const RelatedSpecialistListingCard: React.FC<RelatedSpecialistListingCardProps> 
 								<FavoriteIcon />
 							)}
 						</IconButton>
-						<Typography className="view-cnt">{listing?.propertyLikes}</Typography>
+						<Typography className="view-cnt">{listing?.listingLikes}</Typography>
 					</div>
 				</div>
 			</Box>

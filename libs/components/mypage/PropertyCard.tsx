@@ -4,21 +4,21 @@ import useDeviceDetect from '../../hooks/useDeviceDetect';
 import IconButton from '@mui/material/IconButton';
 import ModeIcon from '@mui/icons-material/Mode';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Property } from '../../types/property/property';
+import type { Listing } from '../../types/listing/listing';
 import { formatterStr } from '../../utils';
 import Moment from 'react-moment';
 import { useRouter } from 'next/router';
-import { PropertyStatus } from '../../enums/property.enum';
+import { ListingStatus } from '../../enums/listing.enum';
 
 interface PropertyCardProps {
-	property: Property;
-	deletePropertyHandler?: any;
+	listing: Listing;
+	deleteListingHandler?: any;
 	memberPage?: boolean;
-	updatePropertyHandler?: any;
+	updateListingHandler?: any;
 }
 
 export const PropertyCard = (props: PropertyCardProps) => {
-	const { property, deletePropertyHandler, memberPage, updatePropertyHandler } = props;
+	const { listing, deleteListingHandler, memberPage, updateListingHandler } = props;
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -55,29 +55,29 @@ export const PropertyCard = (props: PropertyCardProps) => {
 	} else
 		return (
 			<Stack className="property-card-box">
-				<Stack className="image-box" onClick={() => pushPropertyDetail(property?._id)}>
-					<img src={`${process.env.REACT_APP_API_URL}/${property.propertyImages[0]}`} alt="" />
+				<Stack className="image-box" onClick={() => pushPropertyDetail(listing?._id)}>
+					<img src={`${process.env.REACT_APP_API_URL}/${listing.listingImages[0]}`} alt="" />
 				</Stack>
-				<Stack className="information-box" onClick={() => pushPropertyDetail(property?._id)}>
-					<Typography className="name">{property.propertyTitle}</Typography>
-					<Typography className="address">{property.propertyAddress}</Typography>
+				<Stack className="information-box" onClick={() => pushPropertyDetail(listing?._id)}>
+					<Typography className="name">{listing.listingTitle}</Typography>
+					<Typography className="address">{listing.listingAddress}</Typography>
 					<Typography className="price">
-						<strong>${formatterStr(property?.propertyPrice)}</strong>
+						<strong>${formatterStr(listing?.listingPrice)}</strong>
 					</Typography>
 				</Stack>
 				<Stack className="date-box">
 					<Typography className="date">
-						<Moment format="DD MMMM, YYYY">{property.createdAt}</Moment>
+						<Moment format="DD MMMM, YYYY">{listing.createdAt}</Moment>
 					</Typography>
 				</Stack>
 				<Stack className="status-box">
 					<Stack className="coloured-box" sx={{ background: '#E5F0FD' }} onClick={handleClick}>
 						<Typography className="status" sx={{ color: '#3554d1' }}>
-							{property.propertyStatus}
+							{listing.listingStatus}
 						</Typography>
 					</Stack>
 				</Stack>
-				{!memberPage && property.propertyStatus !== 'SOLD' && (
+				{!memberPage && listing.listingStatus !== 'SOLD' && (
 					<Menu
 						anchorEl={anchorEl}
 						open={open}
@@ -98,13 +98,13 @@ export const PropertyCard = (props: PropertyCardProps) => {
 							},
 						}}
 					>
-						{property.propertyStatus === 'ACTIVE' && (
+						{listing.listingStatus === 'ACTIVE' && (
 							<>
 								<MenuItem
 									disableRipple
 									onClick={() => {
 										handleClose();
-										updatePropertyHandler(PropertyStatus.SOLD, property?._id);
+										updateListingHandler(ListingStatus.SOLD, listing?._id);
 									}}
 								>
 									Sold
@@ -115,14 +115,14 @@ export const PropertyCard = (props: PropertyCardProps) => {
 				)}
 
 				<Stack className="views-box">
-					<Typography className="views">{property.propertyViews.toLocaleString()}</Typography>
+					<Typography className="views">{listing.listingViews.toLocaleString()}</Typography>
 				</Stack>
-				{!memberPage && property.propertyStatus === PropertyStatus.ACTIVE  && (
+				{!memberPage && listing.listingStatus === ListingStatus.ACTIVE && (
 					<Stack className="action-box">
-						<IconButton className="icon-button" onClick={() => pushEditProperty(property._id)}>
+						<IconButton className="icon-button" onClick={() => pushEditProperty(listing._id)}>
 							<ModeIcon className="buttons" />
 						</IconButton>
-						<IconButton className="icon-button" onClick={() => deletePropertyHandler(property._id)}>
+						<IconButton className="icon-button" onClick={() => deleteListingHandler(listing._id)}>
 							<DeleteIcon className="buttons" />
 						</IconButton>
 					</Stack>

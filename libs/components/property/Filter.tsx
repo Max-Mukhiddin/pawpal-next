@@ -13,11 +13,11 @@ import {
 	IconButton,
 } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
-import { PropertyLocation, PropertyType } from '../../enums/property.enum';
-import { PropertiesInquiry } from '../../types/property/property.input';
+import { ListingLocation, ListingType } from '../../enums/listing.enum';
+import type { ListingsInquiry } from '../../types/listing/listing.input';
 import { useRouter } from 'next/router';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
-import { propertySquare } from '../../config';
+import { listingSquareOptions, listingBarter, listingRent } from '../../config';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const MenuProps = {
@@ -29,103 +29,103 @@ const MenuProps = {
 };
 
 interface FilterType {
-	searchFilter: PropertiesInquiry;
-	setSearchFilter: any;
-	initialInput: PropertiesInquiry;
+	listingInquiry: ListingsInquiry;
+	setListingInquiry: any;
+	initialInput: ListingsInquiry;
 }
 
 const Filter = (props: FilterType) => {
-	const { searchFilter, setSearchFilter, initialInput } = props;
+	const { listingInquiry, setListingInquiry, initialInput } = props;
 	const device = useDeviceDetect();
 	const router = useRouter();
-	const [propertyLocation, setPropertyLocation] = useState<PropertyLocation[]>(Object.values(PropertyLocation));
-	const [propertyType, setPropertyType] = useState<PropertyType[]>(Object.values(PropertyType));
+	const locationOptions = Object.values(ListingLocation);
+	const listingTypeOptions = Object.values(ListingType);
 	const [searchText, setSearchText] = useState<string>('');
 	const [showMore, setShowMore] = useState<boolean>(false);
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		if (searchFilter?.search?.locationList?.length == 0) {
-			delete searchFilter.search.locationList;
+		if (listingInquiry?.search?.locationList?.length == 0) {
+			delete listingInquiry.search.locationList;
 			setShowMore(false);
 			router.push(`/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, `/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, { scroll: false }).then();
 		}
 
-		if (searchFilter?.search?.typeList?.length == 0) {
-			delete searchFilter.search.typeList;
+		if (listingInquiry?.search?.typeList?.length == 0) {
+			delete listingInquiry.search.typeList;
 			router.push(`/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, `/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, { scroll: false }).then();
 		}
 
-		if (searchFilter?.search?.roomsList?.length == 0) {
-			delete searchFilter.search.roomsList;
+		if (listingInquiry?.search?.roomsList?.length == 0) {
+			delete listingInquiry.search.roomsList;
 			router.push(`/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, `/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, { scroll: false }).then();
 		}
 
-		if (searchFilter?.search?.options?.length == 0) {
-			delete searchFilter.search.options;
+		if (listingInquiry?.search?.options?.length == 0) {
+			delete listingInquiry.search.options;
 			router.push(`/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, `/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, { scroll: false }).then();
 		}
 
-		if (searchFilter?.search?.bedsList?.length == 0) {
-			delete searchFilter.search.bedsList;
+		if (listingInquiry?.search?.bedsList?.length == 0) {
+			delete listingInquiry.search.bedsList;
 			router.push(`/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, `/property?input=${JSON.stringify({
-			...searchFilter,
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 			},
 		})}`, { scroll: false }).then();
 		}
 
-		if (searchFilter?.search?.locationList) setShowMore(true);
-	}, [searchFilter]);
+		if (listingInquiry?.search?.locationList) setShowMore(true);
+	}, [listingInquiry]);
 
 	/** HANDLERS **/
-	const propertyLocationSelectHandler = useCallback(
+	const listingLocationSelectHandler = useCallback(
 		async (e: any) => {
 			try {
 				const isChecked = e.target.checked;
@@ -133,48 +133,48 @@ const Filter = (props: FilterType) => {
 				if (isChecked) {
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
-							search: { ...searchFilter.search, locationList: [...(searchFilter?.search?.locationList || []), value] },
+							...listingInquiry,
+							search: { ...listingInquiry.search, locationList: [...(listingInquiry?.search?.locationList || []), value] },
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
-							search: { ...searchFilter.search, locationList: [...(searchFilter?.search?.locationList || []), value] },
+							...listingInquiry,
+							search: { ...listingInquiry.search, locationList: [...(listingInquiry?.search?.locationList || []), value] },
 						})}`,
 						{ scroll: false },
 					);
-				} else if (searchFilter?.search?.locationList?.includes(value)) {
+				} else if (listingInquiry?.search?.locationList?.includes(value)) {
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								locationList: searchFilter?.search?.locationList?.filter((item: string) => item !== value),
+								...listingInquiry.search,
+								locationList: listingInquiry?.search?.locationList?.filter((item: string) => item !== value),
 							},
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								locationList: searchFilter?.search?.locationList?.filter((item: string) => item !== value),
+								...listingInquiry.search,
+								locationList: listingInquiry?.search?.locationList?.filter((item: string) => item !== value),
 							},
 						})}`,
 						{ scroll: false },
 					);
 				}
 
-				if (searchFilter?.search?.typeList?.length == 0) {
+				if (listingInquiry?.search?.typeList?.length == 0) {
 					alert('error');
 				}
 
-				console.log('propertyLocationSelectHandler:', e.target.value);
+				console.log('listingLocationSelectHandler:', e.target.value);
 			} catch (err: any) {
-				console.log('ERROR, propertyLocationSelectHandler:', err);
+				console.log('ERROR, listingLocationSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyTypeSelectHandler = useCallback(
+	const listingTypeSelectHandler = useCallback(
 		async (e: any) => {
 			try {
 				const isChecked = e.target.checked;
@@ -182,65 +182,65 @@ const Filter = (props: FilterType) => {
 				if (isChecked) {
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
-							search: { ...searchFilter.search, typeList: [...(searchFilter?.search?.typeList || []), value] },
+							...listingInquiry,
+							search: { ...listingInquiry.search, typeList: [...(listingInquiry?.search?.typeList || []), value] },
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
-							search: { ...searchFilter.search, typeList: [...(searchFilter?.search?.typeList || []), value] },
+							...listingInquiry,
+							search: { ...listingInquiry.search, typeList: [...(listingInquiry?.search?.typeList || []), value] },
 						})}`,
 						{ scroll: false },
 					);
-				} else if (searchFilter?.search?.typeList?.includes(value)) {
+				} else if (listingInquiry?.search?.typeList?.includes(value)) {
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								typeList: searchFilter?.search?.typeList?.filter((item: string) => item !== value),
+								...listingInquiry.search,
+								typeList: listingInquiry?.search?.typeList?.filter((item: string) => item !== value),
 							},
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								typeList: searchFilter?.search?.typeList?.filter((item: string) => item !== value),
+								...listingInquiry.search,
+								typeList: listingInquiry?.search?.typeList?.filter((item: string) => item !== value),
 							},
 						})}`,
 						{ scroll: false },
 					);
 				}
 
-				if (searchFilter?.search?.typeList?.length == 0) {
+				if (listingInquiry?.search?.typeList?.length == 0) {
 					alert('error');
 				}
 
-				console.log('propertyTypeSelectHandler:', e.target.value);
+				console.log('listingTypeSelectHandler:', e.target.value);
 			} catch (err: any) {
-				console.log('ERROR, propertyTypeSelectHandler:', err);
+				console.log('ERROR, listingTypeSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyRoomSelectHandler = useCallback(
+	const listingRoomSelectHandler = useCallback(
 		async (number: Number) => {
 			try {
 				if (number != 0) {
-					if (searchFilter?.search?.roomsList?.includes(number)) {
+					if (listingInquiry?.search?.roomsList?.includes(number)) {
 						await router.push(
 							`/property?input=${JSON.stringify({
-								...searchFilter,
+								...listingInquiry,
 								search: {
-									...searchFilter.search,
-									roomsList: searchFilter?.search?.roomsList?.filter((item: Number) => item !== number),
+									...listingInquiry.search,
+									roomsList: listingInquiry?.search?.roomsList?.filter((item: Number) => item !== number),
 								},
 							})}`,
 							`/property?input=${JSON.stringify({
-								...searchFilter,
+								...listingInquiry,
 								search: {
-									...searchFilter.search,
-									roomsList: searchFilter?.search?.roomsList?.filter((item: Number) => item !== number),
+									...listingInquiry.search,
+									roomsList: listingInquiry?.search?.roomsList?.filter((item: Number) => item !== number),
 								},
 							})}`,
 							{ scroll: false },
@@ -248,45 +248,45 @@ const Filter = (props: FilterType) => {
 					} else {
 						await router.push(
 							`/property?input=${JSON.stringify({
-								...searchFilter,
-								search: { ...searchFilter.search, roomsList: [...(searchFilter?.search?.roomsList || []), number] },
+								...listingInquiry,
+								search: { ...listingInquiry.search, roomsList: [...(listingInquiry?.search?.roomsList || []), number] },
 							})}`,
 							`/property?input=${JSON.stringify({
-								...searchFilter,
-								search: { ...searchFilter.search, roomsList: [...(searchFilter?.search?.roomsList || []), number] },
+								...listingInquiry,
+								search: { ...listingInquiry.search, roomsList: [...(listingInquiry?.search?.roomsList || []), number] },
 							})}`,
 							{ scroll: false },
 						);
 					}
 				} else {
-					delete searchFilter?.search.roomsList;
-					setSearchFilter({ ...searchFilter });
+					delete listingInquiry?.search.roomsList;
+					setListingInquiry({ ...listingInquiry });
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
+								...listingInquiry.search,
 							},
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
+								...listingInquiry.search,
 							},
 						})}`,
 						{ scroll: false },
 					);
 				}
 
-				console.log('propertyRoomSelectHandler:', number);
+				console.log('listingRoomSelectHandler:', number);
 			} catch (err: any) {
-				console.log('ERROR, propertyRoomSelectHandler:', err);
+				console.log('ERROR, listingRoomSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyOptionSelectHandler = useCallback(
+	const listingOptionSelectHandler = useCallback(
 		async (e: any) => {
 			try {
 				const isChecked = e.target.checked;
@@ -294,61 +294,61 @@ const Filter = (props: FilterType) => {
 				if (isChecked) {
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
-							search: { ...searchFilter.search, options: [...(searchFilter?.search?.options || []), value] },
+							...listingInquiry,
+							search: { ...listingInquiry.search, options: [...(listingInquiry?.search?.options || []), value] },
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
-							search: { ...searchFilter.search, options: [...(searchFilter?.search?.options || []), value] },
+							...listingInquiry,
+							search: { ...listingInquiry.search, options: [...(listingInquiry?.search?.options || []), value] },
 						})}`,
 						{ scroll: false },
 					);
-				} else if (searchFilter?.search?.options?.includes(value)) {
+				} else if (listingInquiry?.search?.options?.includes(value)) {
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								options: searchFilter?.search?.options?.filter((item: string) => item !== value),
+								...listingInquiry.search,
+								options: listingInquiry?.search?.options?.filter((item: string) => item !== value),
 							},
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								options: searchFilter?.search?.options?.filter((item: string) => item !== value),
+								...listingInquiry.search,
+								options: listingInquiry?.search?.options?.filter((item: string) => item !== value),
 							},
 						})}`,
 						{ scroll: false },
 					);
 				}
 
-				console.log('propertyOptionSelectHandler:', e.target.value);
+				console.log('listingOptionSelectHandler:', e.target.value);
 			} catch (err: any) {
-				console.log('ERROR, propertyOptionSelectHandler:', err);
+				console.log('ERROR, listingOptionSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyBedSelectHandler = useCallback(
+	const listingBedSelectHandler = useCallback(
 		async (number: Number) => {
 			try {
 				if (number != 0) {
-					if (searchFilter?.search?.bedsList?.includes(number)) {
+					if (listingInquiry?.search?.bedsList?.includes(number)) {
 						await router.push(
 							`/property?input=${JSON.stringify({
-								...searchFilter,
+								...listingInquiry,
 								search: {
-									...searchFilter.search,
-									bedsList: searchFilter?.search?.bedsList?.filter((item: Number) => item !== number),
+									...listingInquiry.search,
+									bedsList: listingInquiry?.search?.bedsList?.filter((item: Number) => item !== number),
 								},
 							})}`,
 							`/property?input=${JSON.stringify({
-								...searchFilter,
+								...listingInquiry,
 								search: {
-									...searchFilter.search,
-									bedsList: searchFilter?.search?.bedsList?.filter((item: Number) => item !== number),
+									...listingInquiry.search,
+									bedsList: listingInquiry?.search?.bedsList?.filter((item: Number) => item !== number),
 								},
 							})}`,
 							{ scroll: false },
@@ -356,62 +356,62 @@ const Filter = (props: FilterType) => {
 					} else {
 						await router.push(
 							`/property?input=${JSON.stringify({
-								...searchFilter,
-								search: { ...searchFilter.search, bedsList: [...(searchFilter?.search?.bedsList || []), number] },
+								...listingInquiry,
+								search: { ...listingInquiry.search, bedsList: [...(listingInquiry?.search?.bedsList || []), number] },
 							})}`,
 							`/property?input=${JSON.stringify({
-								...searchFilter,
-								search: { ...searchFilter.search, bedsList: [...(searchFilter?.search?.bedsList || []), number] },
+								...listingInquiry,
+								search: { ...listingInquiry.search, bedsList: [...(listingInquiry?.search?.bedsList || []), number] },
 							})}`,
 							{ scroll: false },
 						);
 					}
 				} else {
-					delete searchFilter?.search.bedsList;
-					setSearchFilter({ ...searchFilter });
+					delete listingInquiry?.search.bedsList;
+					setListingInquiry({ ...listingInquiry });
 					await router.push(
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
+								...listingInquiry.search,
 							},
 						})}`,
 						`/property?input=${JSON.stringify({
-							...searchFilter,
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
+								...listingInquiry.search,
 							},
 						})}`,
 						{ scroll: false },
 					);
 				}
 
-				console.log('propertyBedSelectHandler:', number);
+				console.log('listingBedSelectHandler:', number);
 			} catch (err: any) {
-				console.log('ERROR, propertyBedSelectHandler:', err);
+				console.log('ERROR, listingBedSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertySquareHandler = useCallback(
+	const listingSquareRangeHandler = useCallback(
 		async (e: any, type: string) => {
 			const value = e.target.value;
 
 			if (type == 'start') {
 				await router.push(
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							squaresRange: { ...searchFilter.search.squaresRange, start: value },
+							...listingInquiry.search,
+							squaresRange: { ...listingInquiry.search.squaresRange, start: value },
 						},
 					})}`,
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							squaresRange: { ...searchFilter.search.squaresRange, start: value },
+							...listingInquiry.search,
+							squaresRange: { ...listingInquiry.search.squaresRange, start: value },
 						},
 					})}`,
 					{ scroll: false },
@@ -419,42 +419,42 @@ const Filter = (props: FilterType) => {
 			} else {
 				await router.push(
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							squaresRange: { ...searchFilter.search.squaresRange, end: value },
+							...listingInquiry.search,
+							squaresRange: { ...listingInquiry.search.squaresRange, end: value },
 						},
 					})}`,
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							squaresRange: { ...searchFilter.search.squaresRange, end: value },
+							...listingInquiry.search,
+							squaresRange: { ...listingInquiry.search.squaresRange, end: value },
 						},
 					})}`,
 					{ scroll: false },
 				);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyPriceHandler = useCallback(
+	const listingPriceRangeHandler = useCallback(
 		async (value: number, type: string) => {
 			if (type == 'start') {
 				await router.push(
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							pricesRange: { ...searchFilter.search.pricesRange, start: value * 1 },
+							...listingInquiry.search,
+							pricesRange: { ...listingInquiry.search.pricesRange, start: value * 1 },
 						},
 					})}`,
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							pricesRange: { ...searchFilter.search.pricesRange, start: value * 1 },
+							...listingInquiry.search,
+							pricesRange: { ...listingInquiry.search.pricesRange, start: value * 1 },
 						},
 					})}`,
 					{ scroll: false },
@@ -462,24 +462,24 @@ const Filter = (props: FilterType) => {
 			} else {
 				await router.push(
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							pricesRange: { ...searchFilter.search.pricesRange, end: value * 1 },
+							...listingInquiry.search,
+							pricesRange: { ...listingInquiry.search.pricesRange, end: value * 1 },
 						},
 					})}`,
 					`/property?input=${JSON.stringify({
-						...searchFilter,
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
-							pricesRange: { ...searchFilter.search.pricesRange, end: value * 1 },
+							...listingInquiry.search,
+							pricesRange: { ...listingInquiry.search.pricesRange, end: value * 1 },
 						},
 					})}`,
 					{ scroll: false },
 				);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
 	const refreshHandler = async () => {
@@ -511,9 +511,9 @@ const Filter = (props: FilterType) => {
 							onChange={(e: any) => setSearchText(e.target.value)}
 							onKeyDown={(event: any) => {
 								if (event.key == 'Enter') {
-									setSearchFilter({
-										...searchFilter,
-										search: { ...searchFilter.search, text: searchText },
+									setListingInquiry({
+										...listingInquiry,
+										search: { ...listingInquiry.search, text: searchText },
 									});
 								}
 							}}
@@ -522,9 +522,9 @@ const Filter = (props: FilterType) => {
 									<CancelRoundedIcon
 										onClick={() => {
 											setSearchText('');
-											setSearchFilter({
-												...searchFilter,
-												search: { ...searchFilter.search, text: '' },
+											setListingInquiry({
+												...listingInquiry,
+												search: { ...listingInquiry.search, text: '' },
 											});
 										}}
 									/>
@@ -548,12 +548,12 @@ const Filter = (props: FilterType) => {
 						style={{ height: showMore ? '253px' : '115px' }}
 						onMouseEnter={() => setShowMore(true)}
 						onMouseLeave={() => {
-							if (!searchFilter?.search?.locationList) {
+							if (!listingInquiry?.search?.locationList) {
 								setShowMore(false);
 							}
 						}}
 					>
-						{propertyLocation.map((location: string) => {
+						{locationOptions.map((location: string) => {
 							return (
 								<Stack className={'input-box'} key={location}>
 									<Checkbox
@@ -562,8 +562,8 @@ const Filter = (props: FilterType) => {
 										color="default"
 										size="small"
 										value={location}
-										checked={(searchFilter?.search?.locationList || []).includes(location as PropertyLocation)}
-										onChange={propertyLocationSelectHandler}
+										checked={(listingInquiry?.search?.locationList || []).includes(location as ListingLocation)}
+										onChange={listingLocationSelectHandler}
 									/>
 									<label htmlFor={location} style={{ cursor: 'pointer' }}>
 										<Typography className="property-type">{location}</Typography>
@@ -575,7 +575,7 @@ const Filter = (props: FilterType) => {
 				</Stack>
 				<Stack className={'find-your-home'} mb={'30px'}>
 					<Typography className={'title'}>Property Type</Typography>
-					{propertyType.map((type: string) => (
+					{listingTypeOptions.map((type: string) => (
 						<Stack className={'input-box'} key={type}>
 							<Checkbox
 								id={type}
@@ -583,8 +583,8 @@ const Filter = (props: FilterType) => {
 								color="default"
 								size="small"
 								value={type}
-								onChange={propertyTypeSelectHandler}
-								checked={(searchFilter?.search?.typeList || []).includes(type as PropertyType)}
+								onChange={listingTypeSelectHandler}
+								checked={(listingInquiry?.search?.typeList || []).includes(type as ListingType)}
 							/>
 							<label style={{ cursor: 'pointer' }}>
 								<Typography className="property_type">{type}</Typography>
@@ -598,59 +598,59 @@ const Filter = (props: FilterType) => {
 						<Button
 							sx={{
 								borderRadius: '12px 0 0 12px',
-								border: !searchFilter?.search?.roomsList ? '2px solid #181A20' : '1px solid #b9b9b9',
+								border: !listingInquiry?.search?.roomsList ? '2px solid #181A20' : '1px solid #b9b9b9',
 							}}
-							onClick={() => propertyRoomSelectHandler(0)}
+							onClick={() => listingRoomSelectHandler(0)}
 						>
 							Any
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.roomsList?.includes(1) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.roomsList?.includes(1) ? undefined : 'none',
+								border: listingInquiry?.search?.roomsList?.includes(1) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.roomsList?.includes(1) ? undefined : 'none',
 							}}
-							onClick={() => propertyRoomSelectHandler(1)}
+							onClick={() => listingRoomSelectHandler(1)}
 						>
 							1
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.roomsList?.includes(2) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.roomsList?.includes(2) ? undefined : 'none',
+								border: listingInquiry?.search?.roomsList?.includes(2) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.roomsList?.includes(2) ? undefined : 'none',
 							}}
-							onClick={() => propertyRoomSelectHandler(2)}
+							onClick={() => listingRoomSelectHandler(2)}
 						>
 							2
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.roomsList?.includes(3) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.roomsList?.includes(3) ? undefined : 'none',
+								border: listingInquiry?.search?.roomsList?.includes(3) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.roomsList?.includes(3) ? undefined : 'none',
 							}}
-							onClick={() => propertyRoomSelectHandler(3)}
+							onClick={() => listingRoomSelectHandler(3)}
 						>
 							3
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.roomsList?.includes(4) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.roomsList?.includes(4) ? undefined : 'none',
-								borderRight: searchFilter?.search?.roomsList?.includes(4) ? undefined : 'none',
+								border: listingInquiry?.search?.roomsList?.includes(4) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.roomsList?.includes(4) ? undefined : 'none',
+								borderRight: listingInquiry?.search?.roomsList?.includes(4) ? undefined : 'none',
 							}}
-							onClick={() => propertyRoomSelectHandler(4)}
+							onClick={() => listingRoomSelectHandler(4)}
 						>
 							4
 						</Button>
 						<Button
 							sx={{
 								borderRadius: '0 12px 12px 0',
-								border: searchFilter?.search?.roomsList?.includes(5) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								border: listingInquiry?.search?.roomsList?.includes(5) ? '2px solid #181A20' : '1px solid #b9b9b9',
 							}}
-							onClick={() => propertyRoomSelectHandler(5)}
+							onClick={() => listingRoomSelectHandler(5)}
 						>
 							5+
 						</Button>
@@ -662,60 +662,60 @@ const Filter = (props: FilterType) => {
 						<Button
 							sx={{
 								borderRadius: '12px 0 0 12px',
-								border: !searchFilter?.search?.bedsList ? '2px solid #181A20' : '1px solid #b9b9b9',
+								border: !listingInquiry?.search?.bedsList ? '2px solid #181A20' : '1px solid #b9b9b9',
 							}}
-							onClick={() => propertyBedSelectHandler(0)}
+							onClick={() => listingBedSelectHandler(0)}
 						>
 							Any
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.bedsList?.includes(1) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.bedsList?.includes(1) ? undefined : 'none',
+								border: listingInquiry?.search?.bedsList?.includes(1) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.bedsList?.includes(1) ? undefined : 'none',
 							}}
-							onClick={() => propertyBedSelectHandler(1)}
+							onClick={() => listingBedSelectHandler(1)}
 						>
 							1
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.bedsList?.includes(2) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.bedsList?.includes(2) ? undefined : 'none',
+								border: listingInquiry?.search?.bedsList?.includes(2) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.bedsList?.includes(2) ? undefined : 'none',
 							}}
-							onClick={() => propertyBedSelectHandler(2)}
+							onClick={() => listingBedSelectHandler(2)}
 						>
 							2
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.bedsList?.includes(3) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.bedsList?.includes(3) ? undefined : 'none',
+								border: listingInquiry?.search?.bedsList?.includes(3) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.bedsList?.includes(3) ? undefined : 'none',
 							}}
-							onClick={() => propertyBedSelectHandler(3)}
+							onClick={() => listingBedSelectHandler(3)}
 						>
 							3
 						</Button>
 						<Button
 							sx={{
 								borderRadius: 0,
-								border: searchFilter?.search?.bedsList?.includes(4) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.bedsList?.includes(4) ? undefined : 'none',
+								border: listingInquiry?.search?.bedsList?.includes(4) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.bedsList?.includes(4) ? undefined : 'none',
 								// borderRight: false ? undefined : 'none',
 							}}
-							onClick={() => propertyBedSelectHandler(4)}
+							onClick={() => listingBedSelectHandler(4)}
 						>
 							4
 						</Button>
 						<Button
 							sx={{
 								borderRadius: '0 12px 12px 0',
-								border: searchFilter?.search?.bedsList?.includes(5) ? '2px solid #181A20' : '1px solid #b9b9b9',
-								borderLeft: searchFilter?.search?.bedsList?.includes(5) ? undefined : 'none',
+								border: listingInquiry?.search?.bedsList?.includes(5) ? '2px solid #181A20' : '1px solid #b9b9b9',
+								borderLeft: listingInquiry?.search?.bedsList?.includes(5) ? undefined : 'none',
 							}}
-							onClick={() => propertyBedSelectHandler(5)}
+							onClick={() => listingBedSelectHandler(5)}
 						>
 							5+
 						</Button>
@@ -729,9 +729,9 @@ const Filter = (props: FilterType) => {
 							className="property-checkbox"
 							color="default"
 							size="small"
-							value={'propertyBarter'}
-							checked={(searchFilter?.search?.options || []).includes('propertyBarter')}
-							onChange={propertyOptionSelectHandler}
+							value={listingBarter}
+							checked={(listingInquiry?.search?.options || []).includes(listingBarter)}
+							onChange={listingOptionSelectHandler}
 						/>
 						<label htmlFor={'Barter'} style={{ cursor: 'pointer' }}>
 							<Typography className="propert-type">Barter</Typography>
@@ -743,9 +743,9 @@ const Filter = (props: FilterType) => {
 							className="property-checkbox"
 							color="default"
 							size="small"
-							value={'propertyRent'}
-							checked={(searchFilter?.search?.options || []).includes('propertyRent')}
-							onChange={propertyOptionSelectHandler}
+							value={listingRent}
+							checked={(listingInquiry?.search?.options || []).includes(listingRent)}
+							onChange={listingOptionSelectHandler}
 						/>
 						<label htmlFor={'Rent'} style={{ cursor: 'pointer' }}>
 							<Typography className="propert-type">Rent</Typography>
@@ -760,15 +760,15 @@ const Filter = (props: FilterType) => {
 							<Select
 								labelId="demo-simple-select-label"
 								id="demo-simple-select"
-								value={searchFilter?.search?.squaresRange?.start ?? 0}
+								value={listingInquiry?.search?.squaresRange?.start ?? 0}
 								label="Min"
-								onChange={(e: any) => propertySquareHandler(e, 'start')}
+								onChange={(e: any) => listingSquareRangeHandler(e, 'start')}
 								MenuProps={MenuProps}
 							>
-								{propertySquare.map((square: number) => (
+								{listingSquareOptions.map((square: number) => (
 									<MenuItem
 										value={square}
-										disabled={(searchFilter?.search?.squaresRange?.end || 0) < square}
+										disabled={(listingInquiry?.search?.squaresRange?.end || 0) < square}
 										key={square}
 									>
 										{square}
@@ -782,15 +782,15 @@ const Filter = (props: FilterType) => {
 							<Select
 								labelId="demo-simple-select-label"
 								id="demo-simple-select"
-								value={searchFilter?.search?.squaresRange?.end ?? 500}
+								value={listingInquiry?.search?.squaresRange?.end ?? 500}
 								label="Max"
-								onChange={(e: any) => propertySquareHandler(e, 'end')}
+								onChange={(e: any) => listingSquareRangeHandler(e, 'end')}
 								MenuProps={MenuProps}
 							>
-								{propertySquare.map((square: number) => (
+								{listingSquareOptions.map((square: number) => (
 									<MenuItem
 										value={square}
-										disabled={(searchFilter?.search?.squaresRange?.start || 0) > square}
+										disabled={(listingInquiry?.search?.squaresRange?.start || 0) > square}
 										key={square}
 									>
 										{square}
@@ -807,10 +807,10 @@ const Filter = (props: FilterType) => {
 							type="number"
 							placeholder="$ min"
 							min={0}
-							value={searchFilter?.search?.pricesRange?.start ?? 0}
+							value={listingInquiry?.search?.pricesRange?.start ?? 0}
 							onChange={(e: any) => {
 								if (e.target.value >= 0) {
-									propertyPriceHandler(e.target.value, 'start');
+									listingPriceRangeHandler(e.target.value, 'start');
 								}
 							}}
 						/>
@@ -818,10 +818,10 @@ const Filter = (props: FilterType) => {
 						<input
 							type="number"
 							placeholder="$ max"
-							value={searchFilter?.search?.pricesRange?.end ?? 0}
+							value={listingInquiry?.search?.pricesRange?.end ?? 0}
 							onChange={(e: any) => {
 								if (e.target.value >= 0) {
-									propertyPriceHandler(e.target.value, 'end');
+									listingPriceRangeHandler(e.target.value, 'end');
 								}
 							}}
 						/>

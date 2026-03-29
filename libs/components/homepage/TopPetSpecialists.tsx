@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -75,7 +73,7 @@ export default function TopPetSpecialists() {
 							Meet the people behind PawPal’s trusted care experience.
 						</p>
 					</div>
-					<Link href="/services" className="team-pawpal__explore">
+					<Link href="/specialists" className="team-pawpal__explore">
 						Explore all specialists
 					</Link>
 				</header>

@@ -1,23 +1,22 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { NextPage } from 'next';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import { Box, Button, CircularProgress, Pagination, Stack, Typography } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
-import { Property } from '../../libs/types/property/property';
+import type { Listing } from '../../libs/types/listing/listing';
+import { ListingsInquiry } from '../../libs/types/listing/listing.input';
 import { Member } from '../../libs/types/member/member';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { userVar } from '../../apollo/store';
-import { PropertiesInquiry } from '../../libs/types/property/property.input';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Messages } from '../../libs/config';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { CREATE_COMMENT, LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
-import { GET_COMMENTS, GET_MEMBER, GET_PROPERTIES } from '../../apollo/user/query';
+import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
+import { GET_COMMENTS, GET_MEMBER, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import SpecialistProfileSummary from '../../libs/components/specialists/SpecialistProfileSummary';
 import SpecialistInquiryPanel from '../../libs/components/specialists/SpecialistInquiryPanel';
@@ -30,15 +29,15 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
-const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: any) => {
-	const device = useDeviceDetect();
+const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [specialistId, setSpecialistId] = useState<string | null>(null);
 	const [specialist, setSpecialist] = useState<Member | null>(null);
-	const [searchFilter, setSearchFilter] = useState<PropertiesInquiry>(initialInput);
-	const [specialistListings, setSpecialistListings] = useState<Property[]>([]);
+	const [specialistListingsInquiry, setSpecialistListingsInquiry] = useState<ListingsInquiry>(initialInput);
+	const [specialistListings, setSpecialistListings] = useState<Listing[]>([]);
 	const [listingTotal, setListingTotal] = useState<number>(0);
+	const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
 	const [specialistReviews, setSpecialistReviews] = useState<Comment[]>([]);
 	const [commentTotal, setCommentTotal] = useState<number>(0);
@@ -48,64 +47,54 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 		commentRefId: '',
 	});
 
+	const specialistListingsInquiryRef = useRef(specialistListingsInquiry);
+	specialistListingsInquiryRef.current = specialistListingsInquiry;
+
 	/** APOLLO REQUESTS **/
 	const [createComment] = useMutation(CREATE_COMMENT);
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
-	const {
-		loading: getMemberLoading,
-		data: getMemberData,
-		error: getMemberError,
-		refetch: getMemberRefetch,
-	} = useQuery(GET_MEMBER, {
+	const { loading: getMemberLoading } = useQuery(GET_MEMBER, {
 		fetchPolicy: 'network-only',
 		variables: { input: specialistId },
 		skip: !specialistId,
 		onCompleted: (data: T) => {
 			setSpecialist(data?.getMember);
-			setSearchFilter({
-				...searchFilter,
+			setSelectedListing(null);
+			const memberId = data?.getMember?._id as string | undefined;
+			setSpecialistListingsInquiry((prev) => ({
+				...prev,
 				search: {
-					memberId: data?.getMember?._id,
+					memberId,
 				},
-			});
+			}));
 
-			setCommentInquiry({
-				...commentInquiry,
+			setCommentInquiry((prev) => ({
+				...prev,
 				search: {
-					commentRefId: data?.getMember?._id,
+					commentRefId: memberId ?? '',
 				},
-			});
+			}));
 
-			setInsertCommentData({
-				...insertCommentData,
-				commentRefId: data?.getMember?._id,
-			});
+			setInsertCommentData((prev) => ({
+				...prev,
+				commentRefId: memberId ?? '',
+			}));
 		},
 	});
 
-	const {
-		loading: getPropertiesLoading,
-		data: getPropertiesData,
-		error: getPropertiesError,
-		refetch: getPropertiesRefetch,
-	} = useQuery(GET_PROPERTIES, {
+	const { refetch: getSpecialistListingsRefetch } = useQuery(GET_LISTINGS, {
 		fetchPolicy: 'network-only',
-		variables: { input: searchFilter },
-		skip: !searchFilter.search.memberId,
+		variables: { input: specialistListingsInquiry },
+		skip: !specialistListingsInquiry.search.memberId,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setSpecialistListings(data?.getProperties?.list);
-			setListingTotal(data?.getProperties?.metaCounter[0]?.total ?? 0);
+			setSpecialistListings(data?.getListings?.list);
+			setListingTotal(data?.getListings?.metaCounter[0]?.total ?? 0);
 		},
 	});
 
-	const {
-		loading: getCommentsLoading,
-		data: getCommentsData,
-		error: getCommentsError,
-		refetch: getCommentsRefetch,
-	} = useQuery(GET_COMMENTS, {
+	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
 		fetchPolicy: 'network-only',
 		variables: { input: commentInquiry },
 		skip: !commentInquiry.search.commentRefId,
@@ -132,13 +121,12 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 	};
 
 	const listingPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		searchFilter.page = value;
-		setSearchFilter({ ...searchFilter });
+		setSelectedListing(null);
+		setSpecialistListingsInquiry((prev) => ({ ...prev, page: value }));
 	};
 
 	const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		commentInquiry.page = value;
-		setCommentInquiry({ ...commentInquiry });
+		setCommentInquiry((prev) => ({ ...prev, page: value }));
 	};
 
 	const createCommentHandler = async () => {
@@ -152,7 +140,7 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 				},
 			});
 
-			setInsertCommentData({ ...insertCommentData, commentContent: '' });
+			setInsertCommentData((prev) => ({ ...prev, commentContent: '' }));
 			await getCommentsRefetch({ input: commentInquiry });
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
@@ -164,23 +152,19 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 			if (!id) return;
 			if (!user._id) throw new Error(Messages.error2);
 
-			await likeTargetProperty({
+			await likeTargetListing({
 				variables: {
 					input: id,
 				},
 			});
 
-			await getPropertiesRefetch({ input: searchFilter });
+			await getSpecialistListingsRefetch({ input: specialistListingsInquiryRef.current });
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
 			console.log('ERROR likeListingHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
-
-	if (device === 'mobile') {
-		return <div>SPECIALIST DETAIL PAGE MOBILE</div>;
-	}
 
 	if (!router.isReady) {
 		return (
@@ -207,7 +191,7 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 	}
 
 	return (
-		<Stack className={'agent-detail-page'}>
+		<Stack className={'agent-detail-page'} sx={{ px: { xs: 1, sm: 0 } }}>
 			<Stack className={'container'}>
 				<SpecialistProfileSummary specialist={specialist} onOpenMemberProfile={redirectToMemberPageHandler} />
 
@@ -222,15 +206,21 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 							Care listings & offerings
 						</Typography>
 						<Typography sx={{ fontSize: 14, color: '#717171', mb: 2, maxWidth: 720 }}>
-							Services and packages this specialist hosts on PawPal. Open any card for full details and booking context.
+							Services and packages this specialist hosts on PawPal. Use &quot;Select for inquiry&quot; on a card to message about
+							that listing, or open the card for full details and the same flows on the listing page.
 						</Typography>
 
 						<Stack className={'agent-home-list'}>
 							<Stack className={'card-wrap'}>
-								{specialistListings.map((listing: Property) => {
+								{specialistListings.map((listing: Listing) => {
 									return (
 										<div className={'wrap-main'} key={listing?._id}>
-											<RelatedSpecialistListingCard listing={listing} onLike={likeListingHandler} />
+											<RelatedSpecialistListingCard
+												listing={listing}
+												onLike={likeListingHandler}
+												selectedListingId={selectedListing?._id ?? null}
+												onSelectForInquiry={setSelectedListing}
+											/>
 										</div>
 									);
 								})}
@@ -240,8 +230,8 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 									<>
 										<Stack className="pagination-box">
 											<Pagination
-												page={searchFilter.page}
-												count={Math.ceil(listingTotal / searchFilter.limit) || 1}
+												page={specialistListingsInquiry.page}
+												count={Math.ceil(listingTotal / specialistListingsInquiry.limit) || 1}
 												onChange={listingPaginationChangeHandler}
 												shape="circular"
 												color="primary"
@@ -293,7 +283,7 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 								<Typography className={'review-title'}>Your review</Typography>
 								<textarea
 									onChange={({ target: { value } }: any) => {
-										setInsertCommentData({ ...insertCommentData, commentContent: value });
+										setInsertCommentData((prev) => ({ ...prev, commentContent: value }));
 									}}
 									value={insertCommentData.commentContent}
 									placeholder={'How did this specialist help you and your pet?'}
@@ -324,7 +314,11 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment, ...props }: 
 						</Stack>
 					</Stack>
 
-					<SpecialistInquiryPanel />
+					<SpecialistInquiryPanel
+						user={user}
+						selectedListing={selectedListing}
+						onClearSelectedListing={() => setSelectedListing(null)}
+					/>
 				</Stack>
 			</Stack>
 		</Stack>

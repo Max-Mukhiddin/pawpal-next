@@ -2,61 +2,109 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Button, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
-import { PropertyLocation, PropertyType } from '../../enums/property.enum';
-import { REACT_APP_API_URL, propertySquare } from '../../config';
-import { PropertyInput } from '../../types/property/property.input';
+import { ListingLocation, ListingType } from '../../enums/listing.enum';
+import { REACT_APP_API_URL, listingSquareOptions } from '../../config';
+import type { ListingInput } from '../../types/listing/listing.input';
 import axios from 'axios';
 import { getJwtToken } from '../../auth';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { CREATE_PROPERTY, UPDATE_PROPERTY } from '../../../apollo/user/mutation';
-import { GET_PROPERTY } from '../../../apollo/user/query';
+import { CREATE_LISTING, UPDATE_LISTING } from '../../../apollo/user/mutation';
+import { GET_LISTING } from '../../../apollo/user/query';
+import {
+	isProductListingType,
+	isRealEstateListingType,
+	isServiceListingType,
+	listingFormDescriptionHeading,
+	listingFormDescriptionLabel,
+	listingFormIntro,
+	listingFormPageTitle,
+	listingFormPriceLabel,
+	listingFormPricePlaceholder,
+	listingFormTitleLabel,
+	listingFormTitlePlaceholder,
+	listingFormUploadHeading,
+} from './addNewListingFormCopy';
+
+/** Normalize hidden legacy numeric fields for PRODUCT/SERVICE so the API payload stays valid. */
+function normalizeListingPayload(data: ListingInput): ListingInput {
+	const t = data.listingType;
+	if (isProductListingType(t)) {
+		return {
+			...data,
+			listingRooms: 1,
+			listingBeds: 1,
+			listingSquare: 1,
+			listingBarter: false,
+			listingRent: false,
+		};
+	}
+	if (isServiceListingType(t)) {
+		// `listingRooms` is used as session duration (minutes) for SERVICE only. The current frontend
+		// GraphQL contract (apollo/user query + mutation documents) and ListingInput type do not include
+		// `durationMinutes`; migrate this branch when the schema and TS types add that field.
+		return {
+			...data,
+			listingBeds: data.listingBeds > 0 ? data.listingBeds : 1,
+			listingSquare: data.listingSquare > 0 ? data.listingSquare : 1,
+			listingBarter: false,
+			listingRent: false,
+		};
+	}
+	return data;
+}
 
 const AddProperty = ({ initialValues, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const inputRef = useRef<any>(null);
-	const [insertPropertyData, setInsertPropertyData] = useState<PropertyInput>(initialValues);
-	const [propertyType, setPropertyType] = useState<PropertyType[]>(Object.values(PropertyType));
-	const [propertyLocation, setPropertyLocation] = useState<PropertyLocation[]>(Object.values(PropertyLocation));
+	const [insertListingData, setInsertListingData] = useState<ListingInput>(initialValues);
+	const listingTypeEnumValues = Object.values(ListingType);
+	const listingLocationEnumValues = Object.values(ListingLocation);
 	const token = getJwtToken();
 	const user = useReactiveVar(userVar);
+	const isEdit = Boolean(router.query.propertyId);
+	const lt = insertListingData.listingType;
 
 	/** APOLLO REQUESTS **/
-	const [createProperty] = useMutation(CREATE_PROPERTY);
-	const [updateProperty] = useMutation(UPDATE_PROPERTY);
+	const [createListing] = useMutation(CREATE_LISTING);
+	const [updateListing] = useMutation(UPDATE_LISTING);
 
 	const {
-		loading: getPropertyLoading,
-		data: getPropertyData,
-		error: getPropertyError,
-		refetch: getPropertyRefetch,
-	} = useQuery(GET_PROPERTY, {
+		loading: getListingLoading,
+		data: getListingData,
+		error: getListingError,
+		refetch: getListingRefetch,
+	} = useQuery(GET_LISTING, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: router.query.propertyId,
 		},
+		skip: !router.query.propertyId,
 	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		setInsertPropertyData({
-			...insertPropertyData,
-			propertyTitle: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyTitle : '',
-			propertyPrice: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyPrice : 0,
-			propertyType: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyType : '',
-			propertyLocation: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyLocation : '',
-			propertyAddress: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyAddress : '',
-			propertyBarter: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyBarter : false,
-			propertyRent: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyRent : false,
-			propertyRooms: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyRooms : 0,
-			propertyBeds: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyBeds : 0,
-			propertySquare: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertySquare : 0,
-			propertyDesc: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyDesc : '',
-			propertyImages: getPropertyData?.getProperty ? getPropertyData?.getProperty?.propertyImages : [],
-		});
-	}, [getPropertyLoading, getPropertyData]);
+		const listing = getListingData?.getListing;
+		if (!listing) return;
+
+		setInsertListingData((prev) => ({
+			...prev,
+			listingTitle: listing.listingTitle ?? '',
+			listingPrice: listing.listingPrice ?? 0,
+			listingType: (listing.listingType as ListingType) ?? ('' as ListingType),
+			listingLocation: (listing.listingLocation as ListingLocation) ?? ('' as ListingLocation),
+			listingAddress: listing.listingAddress ?? '',
+			listingBarter: listing.listingBarter ?? false,
+			listingRent: listing.listingRent ?? false,
+			listingRooms: listing.listingRooms ?? 0,
+			listingBeds: listing.listingBeds ?? 0,
+			listingSquare: listing.listingSquare ?? 0,
+			listingDesc: listing.listingDesc ?? '',
+			listingImages: listing.listingImages ?? [],
+		}));
+	}, [getListingLoading, getListingData]);
 
 	/** HANDLERS **/
 	async function uploadImages() {
@@ -103,8 +151,7 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 
 			const responseImages = response.data.data.imagesUploader;
 
-			console.log('+responseImages: ', responseImages);
-			setInsertPropertyData({ ...insertPropertyData, propertyImages: responseImages });
+			setInsertListingData((prev) => ({ ...prev, listingImages: responseImages }));
 		} catch (err: any) {
 			console.log('err: ', err.message);
 			await sweetMixinErrorAlert(err.message);
@@ -112,33 +159,48 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 	}
 
 	const doDisabledCheck = () => {
-		if (
-			insertPropertyData.propertyTitle === '' ||
-			insertPropertyData.propertyPrice === 0 || // @ts-ignore
-			insertPropertyData.propertyType === '' || // @ts-ignore
-			insertPropertyData.propertyLocation === '' || // @ts-ignore
-			insertPropertyData.propertyAddress === '' || // @ts-ignore
-			insertPropertyData.propertyBarter === '' || // @ts-ignore
-			insertPropertyData.propertyRent === '' ||
-			insertPropertyData.propertyRooms === 0 ||
-			insertPropertyData.propertyBeds === 0 ||
-			insertPropertyData.propertySquare === 0 ||
-			insertPropertyData.propertyDesc === '' ||
-			insertPropertyData.propertyImages.length === 0
-		) {
-			return true;
+		const d = insertListingData;
+
+		const baseInvalid =
+			d.listingTitle === '' ||
+			d.listingPrice === 0 ||
+			d.listingType === ('' as ListingType) ||
+			d.listingLocation === ('' as ListingLocation) ||
+			d.listingAddress === '' ||
+			d.listingDesc === '' ||
+			d.listingImages.length === 0;
+
+		if (baseInvalid) return true;
+
+		if (isRealEstateListingType(d.listingType)) {
+			if (d.listingRooms === 0 || d.listingBeds === 0 || d.listingSquare === 0) {
+				return true;
+			}
 		}
+
+		if (isServiceListingType(d.listingType)) {
+			if (!d.listingRooms || d.listingRooms <= 0) {
+				return true;
+			}
+		}
+
+		return false;
 	};
 
-	const insertPropertyHandler = useCallback(async () => {
+	const insertListingHandler = useCallback(async () => {
+		const payload = normalizeListingPayload(insertListingData);
+		if (isServiceListingType(payload.listingType) && (!payload.listingRooms || payload.listingRooms <= 0)) {
+			await sweetMixinErrorAlert('Please enter a session duration in minutes (at least 1).');
+			return;
+		}
 		try {
-			const result = await createProperty({
+			await createListing({
 				variables: {
-					input: insertPropertyData,
+					input: payload,
 				},
 			});
 
-			await sweetMixinSuccessAlert('This property has been created successfully.');
+			await sweetMixinSuccessAlert('Your listing was created successfully.');
 			await router.push({
 				pathname: '/mypage',
 				query: {
@@ -148,19 +210,25 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
-	}, [insertPropertyData]);
+	}, [insertListingData, createListing, router]);
 
-	const updatePropertyHandler = useCallback(async () => {
+	const updateListingHandler = useCallback(async () => {
+		const payload = normalizeListingPayload(insertListingData);
+		if (isServiceListingType(payload.listingType) && (!payload.listingRooms || payload.listingRooms <= 0)) {
+			await sweetMixinErrorAlert('Please enter a session duration in minutes (at least 1).');
+			return;
+		}
 		try {
-			// @ts-ignore
-			insertPropertyData._id = getPropertyData?.getProperty?._id;
-			const result = await updateProperty({
+			await updateListing({
 				variables: {
-					input: insertPropertyData,
+					input: {
+						_id: getListingData?.getListing?._id as string,
+						...payload,
+					},
 				},
 			});
 
-			await sweetMixinSuccessAlert('This property has been updated successfully.');
+			await sweetMixinSuccessAlert('Your listing was updated successfully.');
 			await router.push({
 				pathname: '/mypage',
 				query: {
@@ -170,69 +238,82 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
-	}, [insertPropertyData]);
+	}, [insertListingData, getListingData, updateListing, router]);
 
 	if (user?.memberType !== 'AGENT') {
 		router.back();
 	}
 
-	console.log('+insertPropertyData', insertPropertyData);
-
 	if (device === 'mobile') {
 		return <div>ADD NEW PROPERTY MOBILE PAGE</div>;
 	} else {
+		const showRealEstateExtras = isRealEstateListingType(lt);
+		const showServiceDuration = isServiceListingType(lt);
+		const showProductServiceNote = isProductListingType(lt) || isServiceListingType(lt);
+
 		return (
 			<div id="add-property-page">
 				<Stack className="main-title-box">
-					<Typography className="main-title">Add New Property</Typography>
-					<Typography className="sub-title">We are glad to see you again!</Typography>
+					<Typography className="main-title">{listingFormPageTitle(isEdit, lt)}</Typography>
+					<Typography className="sub-title">{listingFormIntro(lt)}</Typography>
 				</Stack>
 
 				<div>
 					<Stack className="config">
+						{showProductServiceNote && (
+							<Typography sx={{ fontSize: 13, color: '#717171', mb: 1, lineHeight: 1.5 }}>
+								{isProductListingType(lt) &&
+									'This listing is for a catalog or physical product — not a live booking session.'}
+								{isServiceListingType(lt) &&
+									'This listing is a bookable service. Duration helps parents and the platform show accurate expectations.'}
+							</Typography>
+						)}
+
 						<Stack className="description-box">
 							<Stack className="config-column">
-								<Typography className="title">Title</Typography>
+								<Typography className="title">{listingFormTitleLabel(lt)}</Typography>
 								<input
 									type="text"
 									className="description-input"
-									placeholder={'Title'}
-									value={insertPropertyData.propertyTitle}
+									placeholder={listingFormTitlePlaceholder(lt)}
+									value={insertListingData.listingTitle}
 									onChange={({ target: { value } }) =>
-										setInsertPropertyData({ ...insertPropertyData, propertyTitle: value })
+										setInsertListingData({ ...insertListingData, listingTitle: value })
 									}
 								/>
 							</Stack>
 
 							<Stack className="config-row">
 								<Stack className="price-year-after-price">
-									<Typography className="title">Price</Typography>
+									<Typography className="title">{listingFormPriceLabel(lt)}</Typography>
 									<input
 										type="text"
 										className="description-input"
-										placeholder={'Price'}
-										value={insertPropertyData.propertyPrice}
+										placeholder={listingFormPricePlaceholder(lt)}
+										value={insertListingData.listingPrice || ''}
 										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertyPrice: parseInt(value) })
+											setInsertListingData({
+												...insertListingData,
+												listingPrice: parseInt(value, 10) || 0,
+											})
 										}
 									/>
 								</Stack>
 								<Stack className="price-year-after-price">
-									<Typography className="title">Select Type</Typography>
+									<Typography className="title">Listing type</Typography>
 									<select
 										className={'select-description'}
-										defaultValue={insertPropertyData.propertyType || 'select'}
-										value={insertPropertyData.propertyType || 'select'}
+										defaultValue={insertListingData.listingType || 'select'}
+										value={insertListingData.listingType || 'select'}
 										onChange={({ target: { value } }) =>
-											// @ts-ignore
-											setInsertPropertyData({ ...insertPropertyData, propertyType: value })
+											setInsertListingData({ ...insertListingData, listingType: value as ListingType })
 										}
 									>
 										<>
 											<option selected={true} disabled={true} value={'select'}>
 												Select
 											</option>
-											{propertyType.map((type: any) => (
+											{listingTypeEnumValues.map((type: any) => (
 												<option value={`${type}`} key={type}>
 													{type}
 												</option>
@@ -249,18 +330,20 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 									<Typography className="title">Select Location</Typography>
 									<select
 										className={'select-description'}
-										defaultValue={insertPropertyData.propertyLocation || 'select'}
-										value={insertPropertyData.propertyLocation || 'select'}
+										defaultValue={insertListingData.listingLocation || 'select'}
+										value={insertListingData.listingLocation || 'select'}
 										onChange={({ target: { value } }) =>
-											// @ts-ignore
-											setInsertPropertyData({ ...insertPropertyData, propertyLocation: value })
+											setInsertListingData({
+												...insertListingData,
+												listingLocation: value as ListingLocation,
+											})
 										}
 									>
 										<>
 											<option selected={true} disabled={true} value={'select'}>
 												Select
 											</option>
-											{propertyLocation.map((location: any) => (
+											{listingLocationEnumValues.map((location: any) => (
 												<option value={`${location}`} key={location}>
 													{location}
 												</option>
@@ -271,141 +354,202 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 									<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
 								</Stack>
 								<Stack className="price-year-after-price">
-									<Typography className="title">Address</Typography>
+									<Typography className="title">Address / pickup</Typography>
 									<input
 										type="text"
 										className="description-input"
-										placeholder={'Address'}
-										value={insertPropertyData.propertyAddress}
+										placeholder={
+											isProductListingType(lt)
+												? 'Shipping origin, pickup area, or warehouse city'
+												: isServiceListingType(lt)
+													? 'Where the service happens or your business address'
+													: 'Address'
+										}
+										value={insertListingData.listingAddress}
 										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertyAddress: value })
+											setInsertListingData({ ...insertListingData, listingAddress: value })
 										}
 									/>
 								</Stack>
 							</Stack>
 
-							<Stack className="config-row">
-								<Stack className="price-year-after-price">
-									<Typography className="title">Barter</Typography>
-									<select
-										className={'select-description'}
-										value={insertPropertyData.propertyBarter ? 'yes' : 'no'}
-										defaultValue={insertPropertyData.propertyBarter ? 'yes' : 'no'}
-										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertyBarter: value === 'yes' })
-										}
-									>
-										<option disabled={true} selected={true}>
-											Select
-										</option>
-										<option value={'yes'}>Yes</option>
-										<option value={'no'}>No</option>
-									</select>
-									<div className={'divider'}></div>
-									<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
-								</Stack>
-								<Stack className="price-year-after-price">
-									<Typography className="title">Rent</Typography>
-									<select
-										className={'select-description'}
-										value={insertPropertyData.propertyRent ? 'yes' : 'no'}
-										defaultValue={insertPropertyData.propertyRent ? 'yes' : 'no'}
-										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertyRent: value === 'yes' })
-										}
-									>
-										<option disabled={true} selected={true}>
-											Select
-										</option>
-										<option value={'yes'}>Yes</option>
-										<option value={'no'}>No</option>
-									</select>
-									<div className={'divider'}></div>
-									<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
-								</Stack>
-							</Stack>
+							{showRealEstateExtras && (
+								<>
+									<Stack className="config-row">
+										<Stack className="price-year-after-price">
+											<Typography className="title">Barter</Typography>
+											<select
+												className={'select-description'}
+												value={insertListingData.listingBarter ? 'yes' : 'no'}
+												defaultValue={insertListingData.listingBarter ? 'yes' : 'no'}
+												onChange={({ target: { value } }) =>
+													setInsertListingData({ ...insertListingData, listingBarter: value === 'yes' })
+												}
+											>
+												<option disabled={true} selected={true}>
+													Select
+												</option>
+												<option value={'yes'}>Yes</option>
+												<option value={'no'}>No</option>
+											</select>
+											<div className={'divider'}></div>
+											<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
+										</Stack>
+										<Stack className="price-year-after-price">
+											<Typography className="title">Rent</Typography>
+											<select
+												className={'select-description'}
+												value={insertListingData.listingRent ? 'yes' : 'no'}
+												defaultValue={insertListingData.listingRent ? 'yes' : 'no'}
+												onChange={({ target: { value } }) =>
+													setInsertListingData({ ...insertListingData, listingRent: value === 'yes' })
+												}
+											>
+												<option disabled={true} selected={true}>
+													Select
+												</option>
+												<option value={'yes'}>Yes</option>
+												<option value={'no'}>No</option>
+											</select>
+											<div className={'divider'}></div>
+											<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
+										</Stack>
+									</Stack>
 
-							<Stack className="config-row">
-								<Stack className="price-year-after-price">
-									<Typography className="title">Rooms</Typography>
-									<select
-										className={'select-description'}
-										value={insertPropertyData.propertyRooms || 'select'}
-										defaultValue={insertPropertyData.propertyRooms || 'select'}
-										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertyRooms: parseInt(value) })
-										}
-									>
-										<option disabled={true} selected={true} value={'select'}>
-											Select
-										</option>
-										{[1, 2, 3, 4, 5].map((room: number) => (
-											<option value={`${room}`}>{room}</option>
-										))}
-									</select>
-									<div className={'divider'}></div>
-									<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
-								</Stack>
-								<Stack className="price-year-after-price">
-									<Typography className="title">Bed</Typography>
-									<select
-										className={'select-description'}
-										value={insertPropertyData.propertyBeds || 'select'}
-										defaultValue={insertPropertyData.propertyBeds || 'select'}
-										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertyBeds: parseInt(value) })
-										}
-									>
-										<option disabled={true} selected={true} value={'select'}>
-											Select
-										</option>
-										{[1, 2, 3, 4, 5].map((bed: number) => (
-											<option value={`${bed}`}>{bed}</option>
-										))}
-									</select>
-									<div className={'divider'}></div>
-									<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
-								</Stack>
-								<Stack className="price-year-after-price">
-									<Typography className="title">Square</Typography>
-									<select
-										className={'select-description'}
-										value={insertPropertyData.propertySquare || 'select'}
-										defaultValue={insertPropertyData.propertySquare || 'select'}
-										onChange={({ target: { value } }) =>
-											setInsertPropertyData({ ...insertPropertyData, propertySquare: parseInt(value) })
-										}
-									>
-										<option disabled={true} selected={true} value={'select'}>
-											Select
-										</option>
-										{propertySquare.map((square: number) => {
-											if (square !== 0) {
-												return <option value={`${square}`}>{square}</option>;
-											}
-										})}
-									</select>
-									<div className={'divider'}></div>
-									<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
-								</Stack>
-							</Stack>
+									<Stack className="config-row">
+										<Stack className="price-year-after-price">
+											<Typography className="title">Rooms</Typography>
+											<select
+												className={'select-description'}
+												value={insertListingData.listingRooms || 'select'}
+												defaultValue={insertListingData.listingRooms || 'select'}
+												onChange={({ target: { value } }) =>
+													setInsertListingData({ ...insertListingData, listingRooms: parseInt(value) })
+												}
+											>
+												<option disabled={true} selected={true} value={'select'}>
+													Select
+												</option>
+												{[1, 2, 3, 4, 5].map((room: number) => (
+													<option value={`${room}`} key={room}>
+														{room}
+													</option>
+												))}
+											</select>
+											<div className={'divider'}></div>
+											<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
+										</Stack>
+										<Stack className="price-year-after-price">
+											<Typography className="title">Bed</Typography>
+											<select
+												className={'select-description'}
+												value={insertListingData.listingBeds || 'select'}
+												defaultValue={insertListingData.listingBeds || 'select'}
+												onChange={({ target: { value } }) =>
+													setInsertListingData({ ...insertListingData, listingBeds: parseInt(value) })
+												}
+											>
+												<option disabled={true} selected={true} value={'select'}>
+													Select
+												</option>
+												{[1, 2, 3, 4, 5].map((bed: number) => (
+													<option value={`${bed}`} key={bed}>
+														{bed}
+													</option>
+												))}
+											</select>
+											<div className={'divider'}></div>
+											<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
+										</Stack>
+										<Stack className="price-year-after-price">
+											<Typography className="title">Square</Typography>
+											<select
+												className={'select-description'}
+												value={insertListingData.listingSquare || 'select'}
+												defaultValue={insertListingData.listingSquare || 'select'}
+												onChange={({ target: { value } }) =>
+													setInsertListingData({ ...insertListingData, listingSquare: parseInt(value) })
+												}
+											>
+												<option disabled={true} selected={true} value={'select'}>
+													Select
+												</option>
+												{listingSquareOptions.map((square: number) => {
+													if (square !== 0) {
+														return (
+															<option value={`${square}`} key={square}>
+																{square}
+															</option>
+														);
+													}
+													return null;
+												})}
+											</select>
+											<div className={'divider'}></div>
+											<img src={'/img/icons/Vector.svg'} className={'arrow-down'} />
+										</Stack>
+									</Stack>
+								</>
+							)}
 
-							<Typography className="property-title">Property Description</Typography>
+							{/* Service duration UI writes minutes into `listingRooms` — see normalizeListingPayload (SERVICE). */}
+							{showServiceDuration && (
+								<Stack className="config-column" sx={{ mt: 1 }}>
+									<Typography className="title">Session duration (minutes)</Typography>
+									<Typography sx={{ fontSize: 12, color: '#717171', mb: 0.75, lineHeight: 1.45 }}>
+										Required for services. Use a typical session length (e.g. 45, 60, 90).
+									</Typography>
+									<input
+										type="number"
+										min={1}
+										className="description-input"
+										placeholder="e.g. 60"
+										value={insertListingData.listingRooms || ''}
+										onChange={({ target: { value } }) =>
+											setInsertListingData({
+												...insertListingData,
+												listingRooms: Math.max(0, parseInt(value, 10) || 0),
+											})
+										}
+									/>
+									{isServiceListingType(lt) && insertListingData.listingRooms <= 0 && (
+										<Typography sx={{ fontSize: 12, color: '#d32f2f', mt: 0.5 }} role="alert">
+											Enter at least 1 minute so customers know how long a session runs.
+										</Typography>
+									)}
+								</Stack>
+							)}
+
+							<Typography className="property-title" sx={{ mt: showServiceDuration ? 1 : 0 }}>
+								{listingFormDescriptionHeading(lt)}
+							</Typography>
 							<Stack className="config-column">
-								<Typography className="title">Description</Typography>
+								<Typography className="title">{listingFormDescriptionLabel(lt)}</Typography>
 								<textarea
 									name=""
 									id=""
 									className="description-text"
-									value={insertPropertyData.propertyDesc}
+									placeholder={
+										isProductListingType(lt)
+											? 'Ingredients, sizes, shipping notes, or what is included…'
+											: isServiceListingType(lt)
+												? 'What you offer, pet sizes, what owners should bring…'
+												: ''
+									}
+									value={insertListingData.listingDesc}
 									onChange={({ target: { value } }) =>
-										setInsertPropertyData({ ...insertPropertyData, propertyDesc: value })
+										setInsertListingData({ ...insertListingData, listingDesc: value })
 									}
 								></textarea>
 							</Stack>
 						</Stack>
 
-						<Typography className="upload-title">Upload photos of your property</Typography>
+						<Typography className="upload-title">{listingFormUploadHeading(lt)}</Typography>
+						<Typography sx={{ fontSize: 12, color: '#717171', mb: 1 }}>
+							{isProductListingType(lt) && 'Clear product shots build trust — show packaging and labels if helpful.'}
+							{isServiceListingType(lt) && 'Show your space, tools, or happy pets (with permission) so clients know what to expect.'}
+							{!isProductListingType(lt) && !isServiceListingType(lt) && 'Photos must be JPEG or PNG format and least 2048x768'}
+						</Typography>
 						<Stack className="images-box">
 							<Stack className="upload-box">
 								<svg xmlns="http://www.w3.org/2000/svg" width="121" height="120" viewBox="0 0 121 120" fill="none">
@@ -484,10 +628,10 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 								</Button>
 							</Stack>
 							<Stack className="gallery-box">
-								{insertPropertyData?.propertyImages.map((image: string) => {
+								{insertListingData?.listingImages.map((image: string) => {
 									const imagePath: string = `${REACT_APP_API_URL}/${image}`;
 									return (
-										<Stack className="image-box">
+										<Stack className="image-box" key={image}>
 											<img src={imagePath} alt="" />
 										</Stack>
 									);
@@ -495,13 +639,46 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 							</Stack>
 						</Stack>
 
+						<Stack
+							sx={{
+								mt: 2,
+								mb: 1,
+								p: 2,
+								borderRadius: 1,
+								border: '1px solid #ebebeb',
+								background: '#fafafa',
+							}}
+						>
+							<Typography sx={{ fontSize: 12, fontWeight: 700, color: '#717171', textTransform: 'uppercase', mb: 1 }}>
+								Summary
+							</Typography>
+							<Typography sx={{ fontSize: 14, color: '#181a20' }}>
+								<strong>Type:</strong> {lt || '—'}
+							</Typography>
+							<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
+								<strong>Title:</strong> {insertListingData.listingTitle || '—'}
+							</Typography>
+							<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
+								<strong>Price:</strong>{' '}
+								{insertListingData.listingPrice ? insertListingData.listingPrice.toLocaleString() : '—'}
+							</Typography>
+							{isServiceListingType(lt) && (
+								<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
+									<strong>Duration:</strong>{' '}
+									{insertListingData.listingRooms > 0
+										? `${insertListingData.listingRooms} min`
+										: '—'}
+								</Typography>
+							)}
+						</Stack>
+
 						<Stack className="buttons-row">
 							{router.query.propertyId ? (
-								<Button className="next-button" disabled={doDisabledCheck()} onClick={updatePropertyHandler}>
+								<Button className="next-button" disabled={doDisabledCheck()} onClick={updateListingHandler}>
 									<Typography className="next-button-text">Edit</Typography>
 								</Button>
 							) : (
-								<Button className="next-button" disabled={doDisabledCheck()} onClick={insertPropertyHandler}>
+								<Button className="next-button" disabled={doDisabledCheck()} onClick={insertListingHandler}>
 									<Typography className="next-button-text">Create</Typography>
 								</Button>
 							)}
@@ -515,19 +692,19 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 
 AddProperty.defaultProps = {
 	initialValues: {
-		propertyTitle: '',
-		propertyPrice: 0,
-		propertyType: '',
-		propertyLocation: '',
-		propertyAddress: '',
-		propertyBarter: false,
-		propertyRent: false,
-		propertyRooms: 0,
-		propertyBeds: 0,
-		propertySquare: 0,
-		propertyDesc: '',
-		propertyImages: [],
-	},
+		listingTitle: '',
+		listingPrice: 0,
+		listingType: '' as ListingType,
+		listingLocation: '' as ListingLocation,
+		listingAddress: '',
+		listingBarter: false,
+		listingRent: false,
+		listingRooms: 0,
+		listingBeds: 0,
+		listingSquare: 0,
+		listingDesc: '',
+		listingImages: [],
+	} as ListingInput,
 };
 
 export default AddProperty;

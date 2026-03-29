@@ -1,11 +1,11 @@
 import { Direction } from '../enums/common.enum';
-import { PropertyLocation, PropertyType } from '../enums/property.enum';
-import type { PropertiesInquiry } from '../types/property/property.input';
+import { ListingLocation, ListingType } from '../enums/listing.enum';
+import type { ListingsInquiry } from '../types/listing/listing.input';
 
-/** Shared shape for “related items” on service/product detail (enum-locked + optional location). */
+/** Related carousel / strip on product & service detail (`getListings` + `search.typeList` + optional location). */
 export function relatedListingInquiryInput(
-	listingKind: PropertyType.SERVICE | PropertyType.PRODUCT,
-	location?: PropertyLocation | null,
+	listingKind: ListingType.SERVICE | ListingType.PRODUCT,
+	location?: ListingLocation | null,
 ) {
 	return {
 		page: 1,
@@ -19,24 +19,37 @@ export function relatedListingInquiryInput(
 	};
 }
 
-/** Force catalog queries to only return service listings (shared `getProperties` + `search.typeList`). */
-export function withServicesListingTypeFilter(input: PropertiesInquiry): PropertiesInquiry {
+/** Lock catalog inquiry to `ListingType.SERVICE`. */
+export function withServicesListingTypeFilter(input: ListingsInquiry): ListingsInquiry {
 	return {
 		...input,
 		search: {
 			...input.search,
-			typeList: [PropertyType.SERVICE],
+			typeList: [ListingType.SERVICE],
 		},
 	};
 }
 
-/** Force catalog queries to only return product listings (shared `getProperties` + `search.typeList`). */
-export function withProductsListingTypeFilter(input: PropertiesInquiry): PropertiesInquiry {
+/** Lock catalog inquiry to `ListingType.PRODUCT`. */
+export function withProductsListingTypeFilter(input: ListingsInquiry): ListingsInquiry {
 	return {
 		...input,
 		search: {
 			...input.search,
-			typeList: [PropertyType.PRODUCT],
+			typeList: [ListingType.PRODUCT],
+		},
+	};
+}
+
+/** Homepage featured strip: single type slice, ranked for discovery. */
+export function homeFeaturedListingsInquiry(listingKind: ListingType.PRODUCT | ListingType.SERVICE): ListingsInquiry {
+	return {
+		page: 1,
+		limit: 6,
+		sort: 'listingRank',
+		direction: Direction.DESC,
+		search: {
+			typeList: [listingKind],
 		},
 	};
 }

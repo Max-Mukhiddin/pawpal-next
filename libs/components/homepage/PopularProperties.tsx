@@ -6,43 +6,40 @@ import { Autoplay, Navigation, Pagination } from 'swiper';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import PopularPropertyCard from './PopularPropertyCard';
-import { Property } from '../../types/property/property';
+import type { Listing } from '../../types/listing/listing';
 import Link from 'next/link';
-import { PropertiesInquiry } from '../../types/property/property.input';
+import type { ListingsInquiry } from '../../types/listing/listing.input';
 import { useQuery } from '@apollo/client';
-import { GET_PROPERTIES } from '../../../apollo/user/query';
+import { GET_LISTINGS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 
 interface PopularPropertiesProps {
-	initialInput: PropertiesInquiry;
+	initialInput: ListingsInquiry;
 }
 
 const PopularProperties = (props: PopularPropertiesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
-	const [popularProperties, setPopularProperties] = useState<Property[]>([]);
+	const [popularListings, setPopularListings] = useState<Listing[]>([]);
 
 	/** APOLLO REQUESTS **/
 
 	const {
-		loading: getPropertiesLoading,
-		data: getPropertiesData,
-		error: getPropertiesError,
-		refetch: getPropertiesRefetch,
-	} = useQuery(GET_PROPERTIES, {
+		loading: getListingsLoading,
+		data: getListingsData,
+		error: getListingsError,
+		refetch: getListingsRefetch,
+	} = useQuery(GET_LISTINGS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setPopularProperties(data?.getProperties?.list);
+			setPopularListings(data?.getListings?.list);
 		},
 	});
 	/** HANDLERS **/
 
-
-	
-
-	if (!popularProperties) return null;
+	if (!popularListings) return null;
 
 	if (device === 'mobile') {
 		return (
@@ -59,10 +56,10 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 							spaceBetween={25}
 							modules={[Autoplay]}
 						>
-							{popularProperties.map((property: Property) => {
+							{popularListings.map((listing: Listing) => {
 								return (
-									<SwiperSlide key={property._id} className={'popular-property-slide'}>
-										<PopularPropertyCard property={property} />
+									<SwiperSlide key={listing._id} className={'popular-property-slide'}>
+										<PopularPropertyCard listing={listing} />
 									</SwiperSlide>
 								);
 							})}
@@ -103,10 +100,10 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 								el: '.swiper-popular-pagination',
 							}}
 						>
-							{popularProperties.map((property: Property) => {
+							{popularListings.map((listing: Listing) => {
 								return (
-									<SwiperSlide key={property._id} className={'popular-property-slide'}>
-										<PopularPropertyCard property={property} />
+									<SwiperSlide key={listing._id} className={'popular-property-slide'}>
+										<PopularPropertyCard listing={listing} />
 									</SwiperSlide>
 								);
 							})}
@@ -127,7 +124,7 @@ PopularProperties.defaultProps = {
 	initialInput: {
 		page: 1,
 		limit: 7,
-		sort: 'propertyViews',
+		sort: 'listingViews',
 		direction: 'DESC',
 		search: {},
 	},

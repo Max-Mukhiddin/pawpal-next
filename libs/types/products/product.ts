@@ -1,14 +1,5 @@
-import type { MeLiked, Properties, Property, TotalCounter } from '../property/property';
+import type { Listing } from '../listing/listing';
 
-/**
- * PawPal catalog “product” row.
- * Today the API still returns property-shaped documents; this alias keeps a stable frontend name for migration.
- */
-export type Product = Property;
+export type Product = Listing;
 
-/**
- * Paginated products list + counters (legacy `getProperties` / future `getProducts` list shape).
- */
-export type ProductsListPayload = Properties;
-
-export type { MeLiked, TotalCounter };
+export type { MeLiked, TotalCounter, Listings as ProductsListPayload } from '../listing/listing';

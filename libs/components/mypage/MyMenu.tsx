@@ -55,7 +55,7 @@ const MyMenu = () => {
 					</Stack>
 				</Stack>
 				<Stack className={'sections'}>
-					<Stack className={'section'} style={{ height: user.memberType === 'AGENT' ? '228px' : '153px' }}>
+					<Stack className={'section'} style={{ height: user.memberType === 'AGENT' ? '400px' : '266px' }}>
 						<Typography className="title" variant={'h5'}>
 							MANAGE LISTINGS
 						</Typography>
@@ -108,6 +108,46 @@ const MyMenu = () => {
 											</div>
 										</Link>
 									</ListItem>
+									<ListItem className={pathname === 'agentInquiries' ? 'focus' : ''}>
+										<Link
+											href={{
+												pathname: '/mypage',
+												query: { category: 'agentInquiries' },
+											}}
+											scroll={false}
+										>
+											<div className={'flex-box'}>
+												{category === 'agentInquiries' ? (
+													<img className={'com-icon'} src={'/img/icons/reviewWhite.svg'} alt={'com-icon'} />
+												) : (
+													<img className={'com-icon'} src={'/img/icons/review.svg'} alt={'com-icon'} />
+												)}
+												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
+													Listing inquiries
+												</Typography>
+											</div>
+										</Link>
+									</ListItem>
+									<ListItem className={pathname === 'agentBookings' ? 'focus' : ''}>
+										<Link
+											href={{
+												pathname: '/mypage',
+												query: { category: 'agentBookings' },
+											}}
+											scroll={false}
+										>
+											<div className={'flex-box'}>
+												{category === 'agentBookings' ? (
+													<img className={'com-icon'} src={'/img/icons/discoveryWhite.svg'} alt={'com-icon'} />
+												) : (
+													<img className={'com-icon'} src={'/img/icons/discovery.svg'} alt={'com-icon'} />
+												)}
+												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
+													Service bookings
+												</Typography>
+											</div>
+										</Link>
+									</ListItem>
 								</>
 							)}
 							<ListItem className={pathname === 'myFavorites' ? 'focus' : ''}>
@@ -127,6 +167,42 @@ const MyMenu = () => {
 
 										<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
 											My Favorites
+										</Typography>
+									</div>
+								</Link>
+							</ListItem>
+							<ListItem className={pathname === 'myInquiries' ? 'focus' : ''}>
+								<Link
+									href={{
+										pathname: '/mypage',
+										query: { category: 'myInquiries' },
+									}}
+									scroll={false}
+								>
+									<div className={'flex-box'}>
+										{category === 'myInquiries' ? (
+											<img className={'com-icon'} src={'/img/icons/chatWhite.svg'} alt={'com-icon'} />
+										) : (
+											<img className={'com-icon'} src={'/img/icons/chat.svg'} alt={'com-icon'} />
+										)}
+										<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
+											My inquiries
+										</Typography>
+									</div>
+								</Link>
+							</ListItem>
+							<ListItem className={pathname === 'myBookings' ? 'focus' : ''}>
+								<Link
+									href={{
+										pathname: '/mypage',
+										query: { category: 'myBookings' },
+									}}
+									scroll={false}
+								>
+									<div className={'flex-box'}>
+										<img className={'com-icon'} src={'/img/icons/shower.svg'} alt={'com-icon'} />
+										<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
+											My bookings
 										</Typography>
 									</div>
 								</Link>

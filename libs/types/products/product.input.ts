@@ -1,7 +1,7 @@
-import type { PropertiesInquiry } from '../property/property.input';
+import type { ListingsInquiry } from '../listing/listing.input';
 
 /**
- * Inquiry for the public products catalog (pagination, sort, text/location filters).
- * GraphQL still accepts `PropertiesInquiry!` until dedicated product inputs exist.
+ * Inquiry for the public products catalog.
+ * GraphQL variable type: `ListingsInquiry!` on `getListings`.
  */
-export type ProductsInquiry = PropertiesInquiry;
+export type ProductsInquiry = ListingsInquiry;

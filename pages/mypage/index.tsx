@@ -10,6 +10,10 @@ import RecentlyVisited from '../../libs/components/mypage/RecentlyVisited';
 import AddProperty from '../../libs/components/mypage/AddNewProperty';
 import MyProfile from '../../libs/components/mypage/MyProfile';
 import MyArticles from '../../libs/components/mypage/MyArticles';
+import MyInquiries from '../../libs/components/mypage/MyInquiries';
+import AgentInquiries from '../../libs/components/mypage/AgentInquiries';
+import MyBookings from '../../libs/components/mypage/MyBookings';
+import AgentBookings from '../../libs/components/mypage/AgentBookings';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import MyMenu from '../../libs/components/mypage/MyMenu';
@@ -124,6 +128,10 @@ const MyPage: NextPage = () => {
 									{category === 'addProperty' && <AddProperty />}
 									{category === 'myProperties' && <MyProperties />}
 									{category === 'myFavorites' && <MyFavorites />}
+									{category === 'myInquiries' && <MyInquiries />}
+									{category === 'agentInquiries' && <AgentInquiries />}
+									{category === 'myBookings' && <MyBookings />}
+									{category === 'agentBookings' && <AgentBookings />}
 									{category === 'recentlyVisited' && <RecentlyVisited />}
 									{category === 'myArticles' && <MyArticles />}
 									{category === 'writeArticle' && <WriteArticle />}

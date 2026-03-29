@@ -1,7 +1,7 @@
-import type { PropertiesInquiry } from '../property/property.input';
+import type { ListingsInquiry } from '../listing/listing.input';
 
 /**
- * Inquiry for the public services catalog (pagination, sort, text/location filters).
- * GraphQL still accepts `PropertiesInquiry!` until dedicated service inputs exist.
+ * Inquiry for the public services catalog.
+ * GraphQL variable type: `ListingsInquiry!` on `getListings`.
  */
-export type ServicesInquiry = PropertiesInquiry;
+export type ServicesInquiry = ListingsInquiry;

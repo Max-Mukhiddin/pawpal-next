@@ -11,7 +11,7 @@ export interface ProductReviewCardProps {
 	comment: Comment;
 }
 
-/** Product detail review row; keeps `.review-config` tree for property detail SCSS. */
+/** Product detail review row; keeps `.review-config` tree for shared detail SCSS. */
 const ProductReviewCard: React.FC<ProductReviewCardProps> = ({ comment }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);

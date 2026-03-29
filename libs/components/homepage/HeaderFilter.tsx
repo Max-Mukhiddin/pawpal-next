@@ -6,9 +6,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { propertySquare, propertyYears } from '../../config';
-import { PropertyLocation, PropertyType } from '../../enums/property.enum';
-import { PropertiesInquiry } from '../../types/property/property.input';
+import { listingSquareOptions, listingConstructionYears, listingBarter, listingRent } from '../../config';
+import { ListingLocation, ListingType } from '../../enums/listing.enum';
+import type { ListingsInquiry } from '../../types/listing/listing.input';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 
@@ -35,14 +35,14 @@ const MenuProps = {
 const thisYear = new Date().getFullYear();
 
 interface HeaderFilterProps {
-	initialInput: PropertiesInquiry;
+	initialInput: ListingsInquiry;
 }
 
 const HeaderFilter = (props: HeaderFilterProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
-	const { t, i18n } = useTranslation('common');
-	const [searchFilter, setSearchFilter] = useState<PropertiesInquiry>(initialInput);
+	const { t } = useTranslation('common');
+	const [listingInquiry, setListingInquiry] = useState<ListingsInquiry>(initialInput);
 	const locationRef: any = useRef();
 	const typeRef: any = useRef();
 	const roomsRef: any = useRef();
@@ -51,8 +51,8 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 	const [openLocation, setOpenLocation] = useState(false);
 	const [openType, setOpenType] = useState(false);
 	const [openRooms, setOpenRooms] = useState(false);
-	const [propertyLocation, setPropertyLocation] = useState<PropertyLocation[]>(Object.values(PropertyLocation));
-	const [propertyType, setPropertyType] = useState<PropertyType[]>(Object.values(PropertyType));
+	const locationEnumValues = Object.values(ListingLocation);
+	const listingTypeEnumValues = Object.values(ListingType);
 	const [yearCheck, setYearCheck] = useState({ start: 1970, end: thisYear });
 	const [optionCheck, setOptionCheck] = useState('all');
 
@@ -111,155 +111,155 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 		setOpenLocation(false);
 	};
 
-	const propertyLocationSelectHandler = useCallback(
+	const listingLocationSelectHandler = useCallback(
 		async (value: any) => {
 			try {
-				setSearchFilter({
-					...searchFilter,
+				setListingInquiry({
+					...listingInquiry,
 					search: {
-						...searchFilter.search,
+						...listingInquiry.search,
 						locationList: [value],
 					},
 				});
 				typeStateChangeHandler();
 			} catch (err: any) {
-				console.log('ERROR, propertyLocationSelectHandler:', err);
+				console.log('ERROR, listingLocationSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyTypeSelectHandler = useCallback(
+	const listingTypeSelectHandler = useCallback(
 		async (value: any) => {
 			try {
-				setSearchFilter({
-					...searchFilter,
+				setListingInquiry({
+					...listingInquiry,
 					search: {
-						...searchFilter.search,
+						...listingInquiry.search,
 						typeList: [value],
 					},
 				});
 				roomStateChangeHandler();
 			} catch (err: any) {
-				console.log('ERROR, propertyTypeSelectHandler:', err);
+				console.log('ERROR, listingTypeSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyRoomSelectHandler = useCallback(
+	const listingRoomSelectHandler = useCallback(
 		async (value: any) => {
 			try {
-				setSearchFilter({
-					...searchFilter,
+				setListingInquiry({
+					...listingInquiry,
 					search: {
-						...searchFilter.search,
+						...listingInquiry.search,
 						roomsList: [value],
 					},
 				});
 				disableAllStateHandler();
 			} catch (err: any) {
-				console.log('ERROR, propertyRoomSelectHandler:', err);
+				console.log('ERROR, listingRoomSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyBedSelectHandler = useCallback(
+	const listingBedSelectHandler = useCallback(
 		async (number: Number) => {
 			try {
 				if (number != 0) {
-					if (searchFilter?.search?.bedsList?.includes(number)) {
-						setSearchFilter({
-							...searchFilter,
+					if (listingInquiry?.search?.bedsList?.includes(number)) {
+						setListingInquiry({
+							...listingInquiry,
 							search: {
-								...searchFilter.search,
-								bedsList: searchFilter?.search?.bedsList?.filter((item: Number) => item !== number),
+								...listingInquiry.search,
+								bedsList: listingInquiry?.search?.bedsList?.filter((item: Number) => item !== number),
 							},
 						});
 					} else {
-						setSearchFilter({
-							...searchFilter,
-							search: { ...searchFilter.search, bedsList: [...(searchFilter?.search?.bedsList || []), number] },
+						setListingInquiry({
+							...listingInquiry,
+							search: { ...listingInquiry.search, bedsList: [...(listingInquiry?.search?.bedsList || []), number] },
 						});
 					}
 				} else {
-					delete searchFilter?.search.bedsList;
-					setSearchFilter({ ...searchFilter });
+					delete listingInquiry?.search.bedsList;
+					setListingInquiry({ ...listingInquiry });
 				}
 
-				console.log('propertyBedSelectHandler:', number);
+				console.log('listingBedSelectHandler:', number);
 			} catch (err: any) {
-				console.log('ERROR, propertyBedSelectHandler:', err);
+				console.log('ERROR, listingBedSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertyOptionSelectHandler = useCallback(
+	const listingOptionSelectHandler = useCallback(
 		async (e: any) => {
 			try {
 				const value = e.target.value;
 				setOptionCheck(value);
 
 				if (value !== 'all') {
-					setSearchFilter({
-						...searchFilter,
+					setListingInquiry({
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
+							...listingInquiry.search,
 							options: [value],
 						},
 					});
 				} else {
-					delete searchFilter.search.options;
-					setSearchFilter({
-						...searchFilter,
+					delete listingInquiry.search.options;
+					setListingInquiry({
+						...listingInquiry,
 						search: {
-							...searchFilter.search,
+							...listingInquiry.search,
 						},
 					});
 				}
 			} catch (err: any) {
-				console.log('ERROR, propertyOptionSelectHandler:', err);
+				console.log('ERROR, listingOptionSelectHandler:', err);
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
-	const propertySquareHandler = useCallback(
+	const listingSquareRangeHandler = useCallback(
 		async (e: any, type: string) => {
 			const value = e.target.value;
 
 			if (type == 'start') {
-				setSearchFilter({
-					...searchFilter,
+				setListingInquiry({
+					...listingInquiry,
 					search: {
-						...searchFilter.search,
+						...listingInquiry.search,
 						// @ts-ignore
-						squaresRange: { ...searchFilter.search.squaresRange, start: parseInt(value) },
+						squaresRange: { ...listingInquiry.search.squaresRange, start: parseInt(value) },
 					},
 				});
 			} else {
-				setSearchFilter({
-					...searchFilter,
+				setListingInquiry({
+					...listingInquiry,
 					search: {
-						...searchFilter.search,
+						...listingInquiry.search,
 						// @ts-ignore
-						squaresRange: { ...searchFilter.search.squaresRange, end: parseInt(value) },
+						squaresRange: { ...listingInquiry.search.squaresRange, end: parseInt(value) },
 					},
 				});
 			}
 		},
-		[searchFilter],
+		[listingInquiry],
 	);
 
 	const yearStartChangeHandler = async (event: any) => {
 		setYearCheck({ ...yearCheck, start: Number(event.target.value) });
 
-		setSearchFilter({
-			...searchFilter,
+		setListingInquiry({
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 				periodsRange: { start: Number(event.target.value), end: yearCheck.end },
 			},
 		});
@@ -268,46 +268,46 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 	const yearEndChangeHandler = async (event: any) => {
 		setYearCheck({ ...yearCheck, end: Number(event.target.value) });
 
-		setSearchFilter({
-			...searchFilter,
+		setListingInquiry({
+			...listingInquiry,
 			search: {
-				...searchFilter.search,
+				...listingInquiry.search,
 				periodsRange: { start: yearCheck.start, end: Number(event.target.value) },
 			},
 		});
 	};
 
 	const resetFilterHandler = () => {
-		setSearchFilter(initialInput);
+		setListingInquiry(initialInput);
 		setOptionCheck('all');
 		setYearCheck({ start: 1970, end: thisYear });
 	};
 
 	const pushSearchHandler = async () => {
 		try {
-			if (searchFilter?.search?.locationList?.length == 0) {
-				delete searchFilter.search.locationList;
+			if (listingInquiry?.search?.locationList?.length == 0) {
+				delete listingInquiry.search.locationList;
 			}
 
-			if (searchFilter?.search?.typeList?.length == 0) {
-				delete searchFilter.search.typeList;
+			if (listingInquiry?.search?.typeList?.length == 0) {
+				delete listingInquiry.search.typeList;
 			}
 
-			if (searchFilter?.search?.roomsList?.length == 0) {
-				delete searchFilter.search.roomsList;
+			if (listingInquiry?.search?.roomsList?.length == 0) {
+				delete listingInquiry.search.roomsList;
 			}
 
-			if (searchFilter?.search?.options?.length == 0) {
-				delete searchFilter.search.options;
+			if (listingInquiry?.search?.options?.length == 0) {
+				delete listingInquiry.search.options;
 			}
 
-			if (searchFilter?.search?.bedsList?.length == 0) {
-				delete searchFilter.search.bedsList;
+			if (listingInquiry?.search?.bedsList?.length == 0) {
+				delete listingInquiry.search.bedsList;
 			}
 
 			await router.push(
-				`/property?input=${JSON.stringify(searchFilter)}`,
-				`/property?input=${JSON.stringify(searchFilter)}`,
+				`/property?input=${JSON.stringify(listingInquiry)}`,
+				`/property?input=${JSON.stringify(listingInquiry)}`,
 			);
 		} catch (err: any) {
 			console.log('ERROR, pushSearchHandler:', err);
@@ -322,16 +322,16 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 				<Stack className={'search-box'}>
 					<Stack className={'select-box'}>
 						<Box component={'div'} className={`box ${openLocation ? 'on' : ''}`} onClick={locationStateChangeHandler}>
-							<span>{searchFilter?.search?.locationList ? searchFilter?.search?.locationList[0] : t('Location')} </span>
+							<span>{listingInquiry?.search?.locationList ? listingInquiry?.search?.locationList[0] : t('Location')} </span>
 							<ExpandMoreIcon />
 						</Box>
 						<Box className={`box ${openType ? 'on' : ''}`} onClick={typeStateChangeHandler}>
-							<span> {searchFilter?.search?.typeList ? searchFilter?.search?.typeList[0] : t('Property type')} </span>
+							<span> {listingInquiry?.search?.typeList ? listingInquiry?.search?.typeList[0] : t('Property type')} </span>
 							<ExpandMoreIcon />
 						</Box>
 						<Box className={`box ${openRooms ? 'on' : ''}`} onClick={roomStateChangeHandler}>
 							<span>
-								{searchFilter?.search?.roomsList ? `${searchFilter?.search?.roomsList[0]} rooms}` : t('Rooms')}
+								{listingInquiry?.search?.roomsList ? `${listingInquiry?.search?.roomsList[0]} rooms}` : t('Rooms')}
 							</span>
 							<ExpandMoreIcon />
 						</Box>
@@ -348,9 +348,9 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 
 					{/*MENU */}
 					<div className={`filter-location ${openLocation ? 'on' : ''}`} ref={locationRef}>
-						{propertyLocation.map((location: string) => {
+						{locationEnumValues.map((location: string) => {
 							return (
-								<div onClick={() => propertyLocationSelectHandler(location)} key={location}>
+								<div onClick={() => listingLocationSelectHandler(location)} key={location}>
 									<img src={`img/banner/cities/${location}.webp`} alt="" />
 									<span>{location}</span>
 								</div>
@@ -359,11 +359,11 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 					</div>
 
 					<div className={`filter-type ${openType ? 'on' : ''}`} ref={typeRef}>
-						{propertyType.map((type: string) => {
+						{listingTypeEnumValues.map((type: string) => {
 							return (
 								<div
 									style={{ backgroundImage: `url(/img/banner/types/${type.toLowerCase()}.webp)` }}
-									onClick={() => propertyTypeSelectHandler(type)}
+									onClick={() => listingTypeSelectHandler(type)}
 									key={type}
 								>
 									<span>{type}</span>
@@ -375,7 +375,7 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 					<div className={`filter-rooms ${openRooms ? 'on' : ''}`} ref={roomsRef}>
 						{[1, 2, 3, 4, 5].map((room: number) => {
 							return (
-								<span onClick={() => propertyRoomSelectHandler(room)} key={room}>
+								<span onClick={() => listingRoomSelectHandler(room)} key={room}>
 									{room} room{room > 1 ? 's' : ''}
 								</span>
 							);
@@ -401,13 +401,13 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 								<div className={'search-input-box'}>
 									<img src="/img/icons/search.svg" alt="" />
 									<input
-										value={searchFilter?.search?.text ?? ''}
+										value={listingInquiry?.search?.text ?? ''}
 										type="text"
 										placeholder={'What are you looking for?'}
 										onChange={(e: any) => {
-											setSearchFilter({
-												...searchFilter,
-												search: { ...searchFilter.search, text: e.target.value },
+											setListingInquiry({
+												...listingInquiry,
+												search: { ...listingInquiry.search, text: e.target.value },
 											});
 										}}
 									/>
@@ -420,15 +420,15 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 										<span>bedrooms</span>
 										<div className={'inside'}>
 											<div
-												className={`room ${!searchFilter?.search?.bedsList ? 'active' : ''}`}
-												onClick={() => propertyBedSelectHandler(0)}
+												className={`room ${!listingInquiry?.search?.bedsList ? 'active' : ''}`}
+												onClick={() => listingBedSelectHandler(0)}
 											>
 												Any
 											</div>
 											{[1, 2, 3, 4, 5].map((bed: number) => (
 												<div
-													className={`room ${searchFilter?.search?.bedsList?.includes(bed) ? 'active' : ''}`}
-													onClick={() => propertyBedSelectHandler(bed)}
+													className={`room ${listingInquiry?.search?.bedsList?.includes(bed) ? 'active' : ''}`}
+													onClick={() => listingBedSelectHandler(bed)}
 													key={bed}
 												>
 													{bed == 0 ? 'Any' : bed}
@@ -442,13 +442,13 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 											<FormControl>
 												<Select
 													value={optionCheck}
-													onChange={propertyOptionSelectHandler}
+													onChange={listingOptionSelectHandler}
 													displayEmpty
 													inputProps={{ 'aria-label': 'Without label' }}
 												>
 													<MenuItem value={'all'}>All Options</MenuItem>
-													<MenuItem value={'propertyBarter'}>Barter</MenuItem>
-													<MenuItem value={'propertyRent'}>Rent</MenuItem>
+													<MenuItem value={listingBarter}>Barter</MenuItem>
+													<MenuItem value={listingRent}>Rent</MenuItem>
 												</Select>
 											</FormControl>
 										</div>
@@ -466,8 +466,8 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 													inputProps={{ 'aria-label': 'Without label' }}
 													MenuProps={MenuProps}
 												>
-													{propertyYears?.slice(0)?.map((year: number) => (
-														<MenuItem value={year} disabled={yearCheck.end <= year} key={year}>
+													{listingConstructionYears?.slice(0)?.map((year: string) => (
+														<MenuItem value={year} disabled={yearCheck.end <= Number(year)} key={year}>
 															{year}
 														</MenuItem>
 													))}
@@ -482,11 +482,11 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 													inputProps={{ 'aria-label': 'Without label' }}
 													MenuProps={MenuProps}
 												>
-													{propertyYears
+													{listingConstructionYears
 														?.slice(0)
 														.reverse()
-														.map((year: number) => (
-															<MenuItem value={year} disabled={yearCheck.start >= year} key={year}>
+														.map((year: string) => (
+															<MenuItem value={year} disabled={yearCheck.start >= Number(year)} key={year}>
 																{year}
 															</MenuItem>
 														))}
@@ -499,16 +499,16 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 										<div className={'inside space-between align-center'}>
 											<FormControl sx={{ width: '122px' }}>
 												<Select
-													value={searchFilter?.search?.squaresRange?.start}
-													onChange={(e: any) => propertySquareHandler(e, 'start')}
+													value={listingInquiry?.search?.squaresRange?.start}
+													onChange={(e: any) => listingSquareRangeHandler(e, 'start')}
 													displayEmpty
 													inputProps={{ 'aria-label': 'Without label' }}
 													MenuProps={MenuProps}
 												>
-													{propertySquare.map((square: number) => (
+													{listingSquareOptions.map((square: number) => (
 														<MenuItem
 															value={square}
-															disabled={(searchFilter?.search?.squaresRange?.end || 0) < square}
+															disabled={(listingInquiry?.search?.squaresRange?.end || 0) < square}
 															key={square}
 														>
 															{square}
@@ -519,16 +519,16 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 											<div className={'minus-line'}></div>
 											<FormControl sx={{ width: '122px' }}>
 												<Select
-													value={searchFilter?.search?.squaresRange?.end}
-													onChange={(e: any) => propertySquareHandler(e, 'end')}
+													value={listingInquiry?.search?.squaresRange?.end}
+													onChange={(e: any) => listingSquareRangeHandler(e, 'end')}
 													displayEmpty
 													inputProps={{ 'aria-label': 'Without label' }}
 													MenuProps={MenuProps}
 												>
-													{propertySquare.map((square: number) => (
+													{listingSquareOptions.map((square: number) => (
 														<MenuItem
 															value={square}
-															disabled={(searchFilter?.search?.squaresRange?.start || 0) > square}
+															disabled={(listingInquiry?.search?.squaresRange?.start || 0) > square}
 															key={square}
 														>
 															{square}

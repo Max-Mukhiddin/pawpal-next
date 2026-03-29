@@ -6,11 +6,13 @@ import { Stack, Pagination, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Member } from '../../libs/types/member/member';
+import { AgentsInquiry } from '../../libs/types/member/member.input';
 import { useMutation, useQuery } from '@apollo/client';
 import { LIKE_TARGET_MEMBER } from '../../apollo/user/mutation';
 import { GET_AGENTS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { Messages } from '../../libs/config';
+import { Direction } from '../../libs/enums/common.enum';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { SPECIALISTS_PAGE_MOCK } from '../../libs/data/specialists/specialistsPage.mock';
 import type { SpecialistsHeroContent } from '../../libs/types/specialists/specialists.page';
@@ -24,14 +26,14 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
-const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
+const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const [directoryHero] = useState<SpecialistsHeroContent>(() => SPECIALISTS_PAGE_MOCK.hero);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [filterSortName, setFilterSortName] = useState('Newest first');
 	const [sortingOpen, setSortingOpen] = useState(false);
-	const [searchFilter, setSearchFilter] = useState<any>(
+	const [specialistDirectoryInquiry, setSpecialistDirectoryInquiry] = useState<AgentsInquiry>(() =>
 		router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
 	);
 	const [agents, setAgents] = useState<Member[]>([]);
@@ -42,14 +44,9 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 	/** APOLLO REQUESTS **/
 	const [likeTargetMember] = useMutation(LIKE_TARGET_MEMBER);
 
-	const {
-		loading: getAgentsLoading,
-		data: getAgentsData,
-		error: getAgentsError,
-		refetch: getAgentsRefetch,
-	} = useQuery(GET_AGENTS, {
+	const { refetch: getAgentsRefetch } = useQuery(GET_AGENTS, {
 		fetchPolicy: 'network-only',
-		variables: { input: searchFilter },
+		variables: { input: specialistDirectoryInquiry },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			setAgents(data?.getAgents?.list);
@@ -60,11 +57,16 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (router.query.input) {
-			const input_obj = JSON.parse(router?.query?.input as string);
-			setSearchFilter(input_obj);
-		} else router.replace(`/specialists?input=${JSON.stringify(searchFilter)}`, `/specialists?input=${JSON.stringify(searchFilter)}`);
+			const inputObj = JSON.parse(router?.query?.input as string);
+			setSpecialistDirectoryInquiry(inputObj);
+		} else {
+			router.replace(
+				`/specialists?input=${JSON.stringify(specialistDirectoryInquiry)}`,
+				`/specialists?input=${JSON.stringify(specialistDirectoryInquiry)}`,
+			);
+		}
 
-		setCurrentPage(searchFilter.page === undefined ? 1 : searchFilter.page);
+		setCurrentPage(specialistDirectoryInquiry.page === undefined ? 1 : specialistDirectoryInquiry.page);
 	}, [router]);
 
 	/** HANDLERS **/
@@ -81,19 +83,19 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 	const sortingHandler = (e: React.MouseEvent<HTMLLIElement>) => {
 		switch (e.currentTarget.id) {
 			case 'recent':
-				setSearchFilter({ ...searchFilter, sort: 'createdAt', direction: 'DESC' });
+				setSpecialistDirectoryInquiry({ ...specialistDirectoryInquiry, sort: 'createdAt', direction: Direction.DESC });
 				setFilterSortName('Newest first');
 				break;
 			case 'old':
-				setSearchFilter({ ...searchFilter, sort: 'createdAt', direction: 'ASC' });
+				setSpecialistDirectoryInquiry({ ...specialistDirectoryInquiry, sort: 'createdAt', direction: Direction.ASC });
 				setFilterSortName('Earliest joined');
 				break;
 			case 'likes':
-				setSearchFilter({ ...searchFilter, sort: 'memberLikes', direction: 'DESC' });
+				setSpecialistDirectoryInquiry({ ...specialistDirectoryInquiry, sort: 'memberLikes', direction: Direction.DESC });
 				setFilterSortName('Most liked');
 				break;
 			case 'views':
-				setSearchFilter({ ...searchFilter, sort: 'memberViews', direction: 'DESC' });
+				setSpecialistDirectoryInquiry({ ...specialistDirectoryInquiry, sort: 'memberViews', direction: Direction.DESC });
 				setFilterSortName('Most viewed');
 				break;
 		}
@@ -102,17 +104,21 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 	};
 
 	const handleSearchEnter = () => {
-		setSearchFilter({
-			...searchFilter,
-			search: { ...searchFilter.search, text: searchText },
+		setSpecialistDirectoryInquiry({
+			...specialistDirectoryInquiry,
+			search: { ...specialistDirectoryInquiry.search, text: searchText },
 		});
 	};
 
 	const paginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		searchFilter.page = value;
-		await router.push(`/specialists?input=${JSON.stringify(searchFilter)}`, `/specialists?input=${JSON.stringify(searchFilter)}`, {
-			scroll: false,
-		});
+		specialistDirectoryInquiry.page = value;
+		await router.push(
+			`/specialists?input=${JSON.stringify(specialistDirectoryInquiry)}`,
+			`/specialists?input=${JSON.stringify(specialistDirectoryInquiry)}`,
+			{
+				scroll: false,
+			},
+		);
 		setCurrentPage(value);
 	};
 
@@ -127,7 +133,7 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 				},
 			});
 
-			await getAgentsRefetch({ input: searchFilter });
+			await getAgentsRefetch({ input: specialistDirectoryInquiry });
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
 			console.log('ERROR, likeMemberHandler:', err.message);
@@ -135,66 +141,70 @@ const SpecialistsListPage: NextPage = ({ initialInput, ...props }: any) => {
 		}
 	};
 
-	if (device === 'mobile') {
-		return <h1>SPECIALISTS PAGE MOBILE</h1>;
-	} else {
-		return (
-			<Stack className={'pawpal-static-page pawpal-static-page--specialists'}>
-				<Stack className={'container'}>
-					<SpecialistsHero data={directoryHero} />
+	return (
+		<Stack className={'pawpal-static-page pawpal-static-page--specialists'}>
+			<Stack className={'container'} sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
+				<SpecialistsHero data={directoryHero} />
 
-					<Stack className={'agent-list-page'} sx={{ padding: '28px 0 75px', width: '100%', alignSelf: 'stretch' }}>
-						<Stack className={'container'}>
-							<SpecialistsFilter
-								searchText={searchText}
-								onSearchTextChange={setSearchText}
-								onSearchEnter={handleSearchEnter}
-								filterSortName={filterSortName}
-								anchorEl={anchorEl}
-								sortingOpen={sortingOpen}
-								onSortingClick={sortingClickHandler}
-								onSortingClose={sortingCloseHandler}
-								onSortingSelect={sortingHandler}
-							/>
-							<Stack className={'card-wrap'}>
-								{agents?.length === 0 ? (
-									<div className={'no-data'}>
-										<img src="/img/icons/icoAlert.svg" alt="" />
-										<p>No Specialists found!</p>
-									</div>
-								) : (
-									agents.map((specialist: Member) => (
-										<SpecialistListCard specialist={specialist} key={specialist._id} onLike={likeMemberHandler} />
-									))
+				<Stack
+					className={'agent-list-page'}
+					sx={{
+						padding: device === 'mobile' ? '16px 0 40px' : '28px 0 75px',
+						width: '100%',
+						alignSelf: 'stretch',
+					}}
+				>
+					<Stack className={'container'}>
+						<SpecialistsFilter
+							searchText={searchText}
+							onSearchTextChange={setSearchText}
+							onSearchEnter={handleSearchEnter}
+							filterSortName={filterSortName}
+							anchorEl={anchorEl}
+							sortingOpen={sortingOpen}
+							onSortingClick={sortingClickHandler}
+							onSortingClose={sortingCloseHandler}
+							onSortingSelect={sortingHandler}
+						/>
+						<Stack className={'card-wrap'}>
+							{agents?.length === 0 ? (
+								<div className={'no-data'}>
+									<img src="/img/icons/icoAlert.svg" alt="" />
+									<p>No Specialists found!</p>
+								</div>
+							) : (
+								agents.map((specialist: Member) => (
+									<SpecialistListCard specialist={specialist} key={specialist._id} onLike={likeMemberHandler} />
+								))
+							)}
+						</Stack>
+						<Stack className={'pagination'}>
+							<Stack className="pagination-box">
+								{agents.length !== 0 && Math.ceil(total / specialistDirectoryInquiry.limit) > 1 && (
+									<Stack className="pagination-box">
+										<Pagination
+											page={currentPage}
+											count={Math.ceil(total / specialistDirectoryInquiry.limit)}
+											onChange={paginationChangeHandler}
+											shape="circular"
+											color="primary"
+											size={device === 'mobile' ? 'small' : 'medium'}
+										/>
+									</Stack>
 								)}
 							</Stack>
-							<Stack className={'pagination'}>
-								<Stack className="pagination-box">
-									{agents.length !== 0 && Math.ceil(total / searchFilter.limit) > 1 && (
-										<Stack className="pagination-box">
-											<Pagination
-												page={currentPage}
-												count={Math.ceil(total / searchFilter.limit)}
-												onChange={paginationChangeHandler}
-												shape="circular"
-												color="primary"
-											/>
-										</Stack>
-									)}
-								</Stack>
 
-								{agents.length !== 0 && (
-									<Typography component="span" sx={{ mt: '20px', fontSize: 14, color: '#181a20' }}>
-										Total {total} specialist{total !== 1 ? 's' : ''} available
-									</Typography>
-								)}
-							</Stack>
+							{agents.length !== 0 && (
+								<Typography component="span" sx={{ mt: '20px', fontSize: 14, color: '#181a20' }}>
+									Total {total} specialist{total !== 1 ? 's' : ''} available
+								</Typography>
+							)}
 						</Stack>
 					</Stack>
 				</Stack>
 			</Stack>
-		);
-	}
+		</Stack>
+	);
 };
 
 SpecialistsListPage.defaultProps = {
@@ -202,7 +212,7 @@ SpecialistsListPage.defaultProps = {
 		page: 1,
 		limit: 10,
 		sort: 'createdAt',
-		direction: 'DESC',
+		direction: Direction.DESC,
 		search: {},
 	},
 };

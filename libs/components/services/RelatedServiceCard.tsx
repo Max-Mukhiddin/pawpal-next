@@ -7,35 +7,35 @@ import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { REACT_APP_API_URL } from '../../config';
-import { Property } from '../../types/property/property';
+import type { Service } from '../../types/services/service';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
 
 export interface RelatedServiceCardProps {
-	service: Property;
+	service: Service;
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
 const RelatedServiceCard: React.FC<RelatedServiceCardProps> = ({ service, onLike }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const image = service?.propertyImages?.[0]
-		? `${REACT_APP_API_URL}/${service.propertyImages[0]}`
+	const image = service?.listingImages?.[0]
+		? `${REACT_APP_API_URL}/${service.listingImages[0]}`
 		: '/img/icons/icoAlert.svg';
 
 	return (
 		<Stack className="related-service-card" onClick={() => router.push(`/services/detail?id=${service._id}`)}>
 			<Box className="related-service-card__image" component={'div'}>
-				<img src={image} alt={service.propertyTitle} />
+				<img src={image} alt={service.listingTitle} />
 			</Box>
 			<Stack className="related-service-card__body">
-				<Typography className="related-service-card__title">{service.propertyTitle}</Typography>
-				<Typography className="related-service-card__meta">From ${formatterStr(service.propertyPrice)}</Typography>
+				<Typography className="related-service-card__title">{service.listingTitle}</Typography>
+				<Typography className="related-service-card__meta">From ${formatterStr(service.listingPrice)}</Typography>
 				<Stack direction={'row'} alignItems={'center'} className="related-service-card__stats">
 					<IconButton color={'default'}>
 						<RemoveRedEyeIcon />
 					</IconButton>
-					<Typography className="view-cnt">{service.propertyViews}</Typography>
+					<Typography className="view-cnt">{service.listingViews}</Typography>
 					<IconButton
 						color={'default'}
 						onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -45,7 +45,7 @@ const RelatedServiceCard: React.FC<RelatedServiceCardProps> = ({ service, onLike
 					>
 						{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
 					</IconButton>
-					<Typography className="view-cnt">{service.propertyLikes}</Typography>
+					<Typography className="view-cnt">{service.listingLikes}</Typography>
 				</Stack>
 			</Stack>
 		</Stack>

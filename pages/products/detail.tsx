@@ -24,18 +24,17 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { GET_COMMENTS } from '../../apollo/user/query';
-import { GET_PRODUCT, GET_PRODUCTS } from '../../apollo/products/query';
+import { GET_COMMENTS, GET_LISTING, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { Message } from '../../libs/enums/common.enum';
-import { PropertyType } from '../../libs/enums/property.enum';
+import { ListingType } from '../../libs/enums/listing.enum';
 import { relatedListingInquiryInput } from '../../libs/utils/catalogListingInquiry';
-import { CREATE_COMMENT } from '../../apollo/user/mutation';
-import { LIKE_TARGET_PRODUCT } from '../../apollo/products/mutation';
+import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import RelatedProductCard from '../../libs/components/products/RelatedProductCard';
 import ProductReviewCard from '../../libs/components/products/ProductReviewCard';
 import ProductDetailInquirySidebar from '../../libs/components/products/ProductDetailInquirySidebar';
+import ProductDetailMobile from '../../libs/components/products/ProductDetailMobile';
 
 SwiperCore.use([Autoplay, Navigation, Pagination]);
 
@@ -45,7 +44,7 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
-const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
+const ProductDetail: NextPage = ({ initialComment }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
@@ -63,35 +62,35 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 	});
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProduct] = useMutation(LIKE_TARGET_PRODUCT);
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 	const [createComment] = useMutation(CREATE_COMMENT);
 
-	const relatedProductsInquiry = useMemo(
-		() => relatedListingInquiryInput(PropertyType.PRODUCT, product?.propertyLocation),
-		[product?.propertyLocation],
+	const relatedProductCatalogInquiry = useMemo(
+		() => relatedListingInquiryInput(ListingType.PRODUCT, product?.listingLocation),
+		[product?.listingLocation],
 	);
 
 	const {
 		loading: productDetailLoading,
 		refetch: getProductRefetch,
-	} = useQuery(GET_PRODUCT, {
+	} = useQuery(GET_LISTING, {
 		fetchPolicy: 'network-only',
 		variables: { input: productId },
 		skip: !router.isReady || !productId,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			if (data?.getProperty) setProduct(data.getProperty);
-			if (data?.getProperty?.propertyImages?.length) setSlideImage(data.getProperty.propertyImages[0]);
+			if (data?.getListing) setProduct(data.getListing);
+			if (data?.getListing?.listingImages?.length) setSlideImage(data.getListing.listingImages[0]);
 		},
 	});
 
-	const { refetch: getProductsCatalogRefetch } = useQuery(GET_PRODUCTS, {
+	const { refetch: getProductsCatalogRefetch } = useQuery(GET_LISTINGS, {
 		fetchPolicy: 'cache-and-network',
-		variables: { input: relatedProductsInquiry },
+		variables: { input: relatedProductCatalogInquiry },
 		skip: !productId && !product,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			if (data?.getProperties?.list) setRelatedProducts(data?.getProperties?.list);
+			if (data?.getListings?.list) setRelatedProducts(data?.getListings?.list);
 		},
 	});
 
@@ -137,12 +136,12 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProduct({
+			await likeTargetListing({
 				variables: { input: id },
 			});
 			await getProductRefetch({ input: productId });
 			await getProductsCatalogRefetch({
-				input: relatedListingInquiryInput(PropertyType.PRODUCT, product?.propertyLocation),
+				input: relatedProductCatalogInquiry,
 			});
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
@@ -178,21 +177,43 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 	}
 
 	if (device === 'mobile') {
-		return <div>PRODUCT DETAIL PAGE</div>;
-	} else {
 		return (
+			<>
+				<ProductDetailMobile
+					product={product}
+					user={user}
+					slideImage={slideImage}
+					onSlideImageChange={changeImageHandler}
+					onLike={likeProductHandler}
+					relatedProducts={relatedProducts}
+					productComments={productComments}
+					commentTotal={commentTotal}
+					commentInquiry={commentInquiry}
+					onCommentPageChange={commentPaginationChangeHandler}
+					insertCommentData={insertCommentData}
+					onCommentTextChange={(value) => setInsertCommentData((prev) => ({ ...prev, commentContent: value }))}
+					onSubmitComment={createCommentHandler}
+				/>
+				<div className="container" style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 32 }}>
+					<ProductDetailInquirySidebar product={product} user={user} />
+				</div>
+			</>
+		);
+	}
+
+	return (
 			<div id={'property-detail-page'}>
 				<div className={'container'}>
 					<Stack className={'property-detail-config'}>
 						<Stack className={'property-info-config'}>
 							<Stack className={'info'}>
 								<Stack className={'left-box'}>
-									<Typography className={'title-main'}>{product?.propertyTitle}</Typography>
+									<Typography className={'title-main'}>{product?.listingTitle}</Typography>
 									<Stack className={'top-box'}>
-										<Typography className={'city'}>Category · {product?.propertyLocation}</Typography>
+										<Typography className={'city'}>Category · {product?.listingLocation}</Typography>
 										<Stack className={'divider'}></Stack>
 										<Stack className={'buy-rent-box'}>
-											{product?.propertyBarter && (
+											{product?.listingBarter && (
 												<>
 													<Stack className={'circle'}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
@@ -202,7 +223,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 													<Typography className={'buy-rent'}>Bundle</Typography>
 												</>
 											)}
-											{product?.propertyRent && (
+											{product?.listingRent && (
 												<>
 													<Stack className={'circle'}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
@@ -231,13 +252,13 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 									</Stack>
 									<Stack className={'bottom-box'}>
 										<Stack className="option">
-											<img src="/img/icons/bed.svg" alt="" /> <Typography>{product?.propertyBeds} pack size</Typography>
+											<img src="/img/icons/bed.svg" alt="" /> <Typography>{product?.listingBeds} pack size</Typography>
 										</Stack>
 										<Stack className="option">
-											<img src="/img/icons/room.svg" alt="" /> <Typography>{product?.propertyRooms} units</Typography>
+											<img src="/img/icons/room.svg" alt="" /> <Typography>{product?.listingRooms} units</Typography>
 										</Stack>
 										<Stack className="option">
-											<img src="/img/icons/expand.svg" alt="" /> <Typography>{product?.propertySquare} g net</Typography>
+											<img src="/img/icons/expand.svg" alt="" /> <Typography>{product?.listingSquare} g net</Typography>
 										</Stack>
 									</Stack>
 								</Stack>
@@ -245,7 +266,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 									<Stack className="buttons">
 										<Stack className="button-box">
 											<RemoveRedEyeIcon fontSize="medium" />
-											<Typography>{product?.propertyViews}</Typography>
+											<Typography>{product?.listingViews}</Typography>
 										</Stack>
 										<Stack className="button-box">
 											{product?.meLiked && product?.meLiked[0]?.myFavorite ? (
@@ -257,10 +278,10 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											) : (
 												<FavoriteBorderIcon fontSize={'medium'} onClick={() => likeProductHandler(user, product?._id as string)} />
 											)}
-											<Typography>{product?.propertyLikes}</Typography>
+											<Typography>{product?.listingLikes}</Typography>
 										</Stack>
 									</Stack>
-									<Typography>${formatterStr(product?.propertyPrice)}</Typography>
+									<Typography>${formatterStr(product?.listingPrice)}</Typography>
 								</Stack>
 							</Stack>
 							<Stack className={'images'}>
@@ -271,7 +292,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 									/>
 								</Stack>
 								<Stack className={'sub-images'}>
-									{product?.propertyImages?.map((subImg: string) => {
+									{product?.listingImages?.map((subImg: string) => {
 										const imagePath: string = `${REACT_APP_API_URL}/${subImg}`;
 										return (
 											<Stack className={'sub-img-box'} onClick={() => changeImageHandler(subImg)} key={subImg}>
@@ -296,7 +317,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 										</Stack>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Pack size</Typography>
-											<Typography className={'option-data'}>{product?.propertyBeds}</Typography>
+											<Typography className={'option-data'}>{product?.listingBeds}</Typography>
 										</Stack>
 									</Stack>
 									<Stack className={'option'}>
@@ -305,7 +326,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 										</Stack>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Units per order</Typography>
-											<Typography className={'option-data'}>{product?.propertyRooms}</Typography>
+											<Typography className={'option-data'}>{product?.listingRooms}</Typography>
 										</Stack>
 									</Stack>
 									<Stack className={'option'}>
@@ -351,7 +372,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 										</Stack>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Net weight</Typography>
-											<Typography className={'option-data'}>{product?.propertySquare} g</Typography>
+											<Typography className={'option-data'}>{product?.listingSquare} g</Typography>
 										</Stack>
 									</Stack>
 									<Stack className={'option'}>
@@ -366,14 +387,14 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 										</Stack>
 										<Stack className={'option-includes'}>
 											<Typography className={'title'}>Category</Typography>
-											<Typography className={'option-data'}>{product?.propertyType}</Typography>
+											<Typography className={'option-data'}>{product?.listingType}</Typography>
 										</Stack>
 									</Stack>
 								</Stack>
 								<Stack className={'prop-desc-config'}>
 									<Stack className={'top'}>
 										<Typography className={'title'}>About this product</Typography>
-										<Typography className={'desc'}>{product?.propertyDesc ?? 'No product description yet.'}</Typography>
+										<Typography className={'desc'}>{product?.listingDesc ?? 'No product description yet.'}</Typography>
 									</Stack>
 									<Stack className={'bottom'}>
 										<Typography className={'title'}>Product details</Typography>
@@ -381,19 +402,19 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											<Stack className={'left'}>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Price</Typography>
-													<Typography className={'data'}>${formatterStr(product?.propertyPrice)}</Typography>
+													<Typography className={'data'}>${formatterStr(product?.listingPrice)}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Net weight</Typography>
-													<Typography className={'data'}>{product?.propertySquare} g</Typography>
+													<Typography className={'data'}>{product?.listingSquare} g</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Units</Typography>
-													<Typography className={'data'}>{product?.propertyRooms}</Typography>
+													<Typography className={'data'}>{product?.listingRooms}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Pack size</Typography>
-													<Typography className={'data'}>{product?.propertyBeds}</Typography>
+													<Typography className={'data'}>{product?.listingBeds}</Typography>
 												</Box>
 											</Stack>
 											<Stack className={'right'}>
@@ -403,14 +424,14 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Category</Typography>
-													<Typography className={'data'}>{product?.propertyType}</Typography>
+													<Typography className={'data'}>{product?.listingType}</Typography>
 												</Box>
 												<Box component={'div'} className={'info'}>
 													<Typography className={'title'}>Purchase options</Typography>
 													<Typography className={'data'}>
-														{product?.propertyBarter ? 'Bundle ' : ''}
-														{product?.propertyRent ? 'Subscribe & save' : ''}
-														{!product?.propertyBarter && !product?.propertyRent ? 'Standard checkout' : ''}
+														{product?.listingBarter ? 'Bundle ' : ''}
+														{product?.listingRent ? 'Subscribe & save' : ''}
+														{!product?.listingBarter && !product?.listingRent ? 'Standard checkout' : ''}
 													</Typography>
 												</Box>
 											</Stack>
@@ -510,7 +531,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 									</Box>
 								</Stack>
 							</Stack>
-							<ProductDetailInquirySidebar product={product} />
+							<ProductDetailInquirySidebar product={product} user={user} />
 						</Stack>
 						{relatedProducts.length !== 0 && (
 							<Stack className={'similar-properties-config'}>
@@ -539,10 +560,10 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 											el: '.swiper-similar-pagination',
 										}}
 									>
-										{relatedProducts.map((item: Product) => {
+										{relatedProducts.map((relatedProduct: Product) => {
 											return (
-												<SwiperSlide className={'similar-homes-slide'} key={item._id}>
-													<RelatedProductCard product={item} onLike={likeProductHandler} />
+												<SwiperSlide className={'similar-homes-slide'} key={relatedProduct._id}>
+													<RelatedProductCard product={relatedProduct} onLike={likeProductHandler} />
 												</SwiperSlide>
 											);
 										})}
@@ -553,8 +574,7 @@ const ProductDetail: NextPage = ({ initialComment, ...props }: any) => {
 					</Stack>
 				</div>
 			</div>
-		);
-	}
+	);
 };
 
 ProductDetail.defaultProps = {
