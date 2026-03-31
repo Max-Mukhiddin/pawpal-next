@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useReactiveVar } from '@apollo/client';
@@ -22,10 +21,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 	const user = useReactiveVar(userVar);
 	const image = service?.listingImages?.[0]
 		? `${REACT_APP_API_URL}/${service.listingImages[0]}`
-		: '/img/icons/icoAlert.svg';
-
-	const shortDesc =
-		service?.listingDesc?.trim() || service?.listingAddress || 'Thoughtful care tailored to your companion.';
+		: '/images/services/service-grooming.jpg';
 
 	const goDetail = async () => {
 		await router.push(`/service/detail?id=${service._id}`);
@@ -35,32 +31,26 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 		<Stack className="services-list-card" onClick={goDetail}>
 			<Box className="services-list-card__media" component={'div'}>
 				<img src={image} alt={service.listingTitle} />
+				{service.durationMinutes != null ? (
+					<span className="services-list-card__duration-pill">{service.durationMinutes} min</span>
+				) : null}
+				<span className="services-list-card__arrow">↗</span>
+				<div className="services-list-card__overlay">
+					<Typography className="services-list-card__title">{service.listingTitle}</Typography>
+					<Typography className="services-list-card__price">${formatterStr(service.listingPrice)}</Typography>
+				</div>
 			</Box>
-			<Stack className="services-list-card__body">
-				<Typography className="services-list-card__title">{service.listingTitle}</Typography>
-				<Typography className="services-list-card__desc">{shortDesc}</Typography>
-				<Stack className="services-list-card__meta" direction={'row'} alignItems={'center'} justifyContent={'space-between'}>
-					<Typography className="services-list-card__price">From ${formatterStr(service.listingPrice)}</Typography>
-					<Typography className="services-list-card__duration">
-						{service.durationMinutes != null ? `${service.durationMinutes} min` : '—'}
-					</Typography>
-				</Stack>
-				<Stack className="services-list-card__actions" direction={'row'} alignItems={'center'}>
-					<IconButton color={'default'}>
-						<RemoveRedEyeIcon />
-					</IconButton>
-					<Typography className="view-cnt">{service.listingViews}</Typography>
-					<IconButton
-						color={'default'}
-						onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-							e.stopPropagation();
-							onLike(user, service._id);
-						}}
-					>
-						{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
-					</IconButton>
-					<Typography className="view-cnt">{service.listingLikes}</Typography>
-				</Stack>
+			<Stack className="services-list-card__actions" direction={'row'} alignItems={'center'}>
+				<IconButton
+					color={'default'}
+					onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+						e.stopPropagation();
+						onLike(user, service._id);
+					}}
+				>
+					{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
+				</IconButton>
+				<Typography className="view-cnt">{service.listingLikes}</Typography>
 			</Stack>
 		</Stack>
 	);

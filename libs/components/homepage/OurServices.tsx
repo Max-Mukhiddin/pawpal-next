@@ -1,10 +1,16 @@
 import Link from 'next/link';
+import { useMemo } from 'react';
+import { useQuery } from '@apollo/client';
 import NorthEastOutlinedIcon from '@mui/icons-material/NorthEastOutlined';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper';
+import { GET_LISTINGS } from '../../../apollo/user/query';
+import { ListingType } from '../../enums/listing.enum';
+import { REACT_APP_API_URL } from '../../config';
+import type { Listing } from '../../types/listing/listing';
 
 const CARDS = [
 	{
@@ -12,46 +18,79 @@ const CARDS = [
 		title: 'Grooming',
 		description: 'Spa baths, trims, and coat care with a gentle touch.',
 		image: '/images/services/service-grooming.jpg',
-		href: '/services',
+		href: '/service',
 	},
 	{
 		slug: 'walking',
 		title: 'Walking',
 		description: 'Daily walks that match your pet’s energy and routine.',
 		image: '/images/services/service-walking.jpg',
-		href: '/services',
+		href: '/service',
 	},
 	{
 		slug: 'training',
 		title: 'Training',
 		description: 'Positive coaching for calmer habits at home.',
 		image: '/images/services/service-training.jpg',
-		href: '/services',
+		href: '/service',
 	},
 	{
 		slug: 'vet',
 		title: 'Vet Care',
 		description: 'Checkups and trusted support when they need it.',
 		image: '/images/services/service-vet.jpg',
-		href: '/services',
+		href: '/service',
 	},
 	{
 		slug: 'boarding',
 		title: 'Boarding',
 		description: 'Comfortable stays with routines they already know.',
 		image: '/images/services/service-boarding.jpg',
-		href: '/services',
+		href: '/service',
 	},
 	{
 		slug: 'shop',
 		title: 'Pet Shop',
 		description: 'Curated food, toys, and essentials in one place.',
 		image: '/images/services/service-shop.jpg',
-		href: '/services',
+		href: '/service',
 	},
 ] as const;
 
 export default function OurServices() {
+	const variables = useMemo(
+		() => ({
+			input: {
+				page: 1,
+				limit: 4,
+				sort: 'createdAt',
+				direction: 'DESC',
+				search: { typeList: [ListingType.SERVICE] },
+			},
+		}),
+		[],
+	);
+
+	const { data } = useQuery(GET_LISTINGS, {
+		variables,
+		fetchPolicy: 'cache-and-network',
+	});
+
+	const listings: Listing[] = data?.getListings?.list ?? [];
+
+	const getBackendImage = (img?: string) => (img ? `${REACT_APP_API_URL}/${img}` : '');
+
+	const cards =
+		listings.length > 0
+			? listings.map((listing) => ({
+					slug: listing._id,
+					title: listing.listingTitle,
+					description: `$${listing.listingPrice ?? 0}`,
+					image: getBackendImage(listing.listingImages?.[0]) || '/images/services/service-grooming.jpg',
+					href: `/service/detail?id=${listing._id}`,
+				}))
+			: CARDS;
+
 	return (
 		<section
 			className="pawpal-home-section our-services"
@@ -68,7 +107,7 @@ export default function OurServices() {
 							Thoughtfully designed care for every stage of your pet’s life.
 						</p>
 					</div>
-					<Link href="/services" className="our-services__browse">
+					<Link href="/service" className="our-services__browse">
 						<span>Browse all services</span>
 						<ArrowForwardOutlinedIcon className="our-services__browse-icon" aria-hidden />
 					</Link>
@@ -108,7 +147,7 @@ export default function OurServices() {
 								clickable: true,
 							}}
 						>
-							{CARDS.map((card) => (
+							{cards.map((card) => (
 								<SwiperSlide key={card.slug} className="our-services__slide">
 									<Link href={card.href} className="our-services__card">
 										<div className="our-services__card-media">

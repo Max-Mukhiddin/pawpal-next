@@ -15,7 +15,7 @@ import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Messages } from '../../libs/config';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
+import { CREATE_COMMENT, LIKE_TARGET_LISTING, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
 import { GET_COMMENTS, GET_MEMBER, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import SpecialistProfileSummary from '../../libs/components/specialists/SpecialistProfileSummary';
@@ -53,6 +53,8 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 	/** APOLLO REQUESTS **/
 	const [createComment] = useMutation(CREATE_COMMENT);
 	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
+	const [subscribe] = useMutation(SUBSCRIBE);
+	const [unsubscribe] = useMutation(UNSUBSCRIBE);
 
 	const { loading: getMemberLoading } = useQuery(GET_MEMBER, {
 		fetchPolicy: 'network-only',
@@ -166,6 +168,35 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 		}
 	};
 
+	const followToggleHandler = async (memberId: string, isFollowing: boolean) => {
+		try {
+			if (!user?._id) throw new Error(Messages.error2);
+			if (!memberId) return;
+			if (isFollowing) {
+				await unsubscribe({ variables: { input: memberId.toString() } });
+			} else {
+				await subscribe({ variables: { input: memberId.toString() } });
+			}
+			await sweetTopSmallSuccessAlert(isFollowing ? 'Unfollowed!' : 'Followed!', 800);
+			setSpecialist((prev) =>
+				prev
+					? ({
+							...prev,
+							meFollowed: [
+								{
+									followingId: memberId,
+									followerId: user._id,
+									myFollowing: !isFollowing,
+								},
+							],
+						} as Member)
+					: prev,
+			);
+		} catch (err: any) {
+			await sweetErrorHandling(err);
+		}
+	};
+
 	if (!router.isReady) {
 		return (
 			<Stack sx={{ minHeight: 400, justifyContent: 'center', alignItems: 'center' }}>
@@ -176,7 +207,7 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 
 	if (!router.query.id) {
 		return (
-			<Stack className={'agent-detail-page'} sx={{ py: 10, alignItems: 'center' }}>
+			<Stack className={'specialist-detail-page'} sx={{ py: 10, alignItems: 'center' }}>
 				<Typography>Open a specialist from the directory to view their profile.</Typography>
 			</Stack>
 		);
@@ -191,9 +222,14 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 	}
 
 	return (
-		<Stack className={'agent-detail-page'} sx={{ px: { xs: 1, sm: 0 } }}>
+		<Stack className={'specialist-detail-page'} sx={{ px: { xs: 1, sm: 0 } }}>
 			<Stack className={'container'}>
-				<SpecialistProfileSummary specialist={specialist} onOpenMemberProfile={redirectToMemberPageHandler} />
+				<SpecialistProfileSummary
+					specialist={specialist}
+					onOpenMemberProfile={redirectToMemberPageHandler}
+					onToggleFollow={followToggleHandler}
+					isLoggedIn={Boolean(user?._id)}
+				/>
 
 				<Stack
 					direction={{ xs: 'column', lg: 'row' }}
@@ -210,7 +246,7 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 							that service, or open the card for full details and the same flows on the service page.
 						</Typography>
 
-						<Stack className={'agent-home-list'}>
+						<Stack className={'specialist-home-list'}>
 							<Stack className={'card-wrap'}>
 								{specialistListings.map((listing: Listing) => {
 									return (

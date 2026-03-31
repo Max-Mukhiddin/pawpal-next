@@ -157,7 +157,7 @@ const CatalogBrowseFilter = (props: FilterType) => {
 					Location
 				</p>
 				<Stack
-					className={`property-location`}
+					className={`listing-location`}
 					style={{ height: showMore ? '253px' : '115px' }}
 					onMouseEnter={() => setShowMore(true)}
 					onMouseLeave={() => {
@@ -170,7 +170,7 @@ const CatalogBrowseFilter = (props: FilterType) => {
 						<Stack className={'input-box'} key={location}>
 							<Checkbox
 								id={location}
-								className="property-checkbox"
+								className="listing-checkbox"
 								color="default"
 								size="small"
 								value={location}
@@ -178,7 +178,7 @@ const CatalogBrowseFilter = (props: FilterType) => {
 								onChange={listingLocationSelectHandler}
 							/>
 							<label htmlFor={location} style={{ cursor: 'pointer' }}>
-								<Typography className="property-type">{location}</Typography>
+								<Typography className="listing-type">{location}</Typography>
 							</label>
 						</Stack>
 					))}
@@ -190,7 +190,7 @@ const CatalogBrowseFilter = (props: FilterType) => {
 					<Stack className={'input-box'} key={type}>
 						<Checkbox
 							id={type}
-							className="property-checkbox"
+							className="listing-checkbox"
 							color="default"
 							size="small"
 							value={type}
@@ -198,7 +198,7 @@ const CatalogBrowseFilter = (props: FilterType) => {
 							checked={(listingInquiry?.search?.typeList || []).includes(type)}
 						/>
 						<label style={{ cursor: 'pointer' }}>
-							<Typography className="property_type">{type}</Typography>
+							<Typography className="listing-type">{type}</Typography>
 						</label>
 					</Stack>
 				))}

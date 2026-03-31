@@ -27,7 +27,7 @@ const AgentCard = (props: AgentCardProps) => {
 		return <div>AGENT CARD</div>;
 	} else {
 		return (
-			<Stack className="agent-general-card">
+			<Stack className="specialist-general-card">
 				<Link
 					href={{
 						pathname: '/agent/detail',
@@ -36,7 +36,7 @@ const AgentCard = (props: AgentCardProps) => {
 				>
 					<Box
 						component={'div'}
-						className={'agent-img'}
+						className={'specialist-img'}
 						style={{
 							backgroundImage: `url(${imagePath})`,
 							backgroundSize: 'cover',
@@ -44,12 +44,12 @@ const AgentCard = (props: AgentCardProps) => {
 							backgroundRepeat: 'no-repeat',
 						}}
 					>
-						<div>{agent?.memberProperties} published</div>
+						<div>{agent?.memberListings} published</div>
 					</Box>
 				</Link>
 
-				<Stack className={'agent-desc'}>
-					<Box component={'div'} className={'agent-info'}>
+				<Stack className={'specialist-desc'}>
+					<Box component={'div'} className={'specialist-info'}>
 						<Link
 							href={{
 								pathname: '/agent/detail',

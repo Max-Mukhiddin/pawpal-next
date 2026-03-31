@@ -3,16 +3,12 @@ import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import { NextPage } from 'next';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import SwiperCore, { Autoplay, Navigation, Pagination } from 'swiper';
+import Link from 'next/link';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import WestIcon from '@mui/icons-material/West';
-import EastIcon from '@mui/icons-material/East';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import type { Service } from '../../libs/types/services/service';
-import moment from 'moment';
 import { formatterStr } from '../../libs/utils';
 import { REACT_APP_API_URL } from '../../libs/config';
 import { userVar } from '../../apollo/store';
@@ -20,10 +16,7 @@ import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Pagination as MuiPagination } from '@mui/material';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import 'swiper/css';
-import 'swiper/css/pagination';
 import { GET_COMMENTS, GET_LISTING, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { Message } from '../../libs/enums/common.enum';
@@ -31,12 +24,9 @@ import { ListingType } from '../../libs/enums/listing.enum';
 import { relatedListingInquiryInput } from '../../libs/utils/catalogListingInquiry';
 import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import RelatedServiceCard from '../../libs/components/services/RelatedServiceCard';
 import ServiceReviewCard from '../../libs/components/services/ServiceReviewCard';
 import ServiceDetailMobile from '../../libs/components/services/ServiceDetailMobile';
 import ServiceDetailInquirySidebar from '../../libs/components/inquiry/ServiceDetailInquirySidebar';
-
-SwiperCore.use([Autoplay, Navigation, Pagination]);
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -51,6 +41,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 	const [serviceId, setServiceId] = useState<string | null>(null);
 	const [service, setService] = useState<Service | null>(null);
 	const [slideImage, setSlideImage] = useState<string>('');
+	const [activeTab, setActiveTab] = useState<'about' | 'details'>('about');
 	const [relatedServices, setRelatedServices] = useState<Service[]>([]);
 	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
 	const [serviceComments, setServiceComments] = useState<Comment[]>([]);
@@ -131,6 +122,8 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 		setSlideImage(image);
 	};
 
+	const getImg = (p?: string) => (p ? `${REACT_APP_API_URL}/${p}` : '/images/placeholder-pet.jpg');
+
 	const likeServiceHandler = async (user: T, id: string) => {
 		try {
 			if (!id) return;
@@ -197,271 +190,164 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 	}
 
 	return (
-			<div id={'service-detail-page'}>
-				<div className={'container'}>
-					<Stack className={'service-detail-page'}>
-						<Stack className={'service-info-config'}>
-							<Stack className={'info'}>
-								<Stack className={'left-box'}>
-									<Typography className={'title-main'}>{service?.listingTitle}</Typography>
-									<Stack className={'top-box'}>
-										<Typography className={'city'}>{service?.listingLocation}</Typography>
-										<Stack className={'divider'}></Stack>
-										<Stack className={'buy-rent-box'}>
-											<Stack className={'circle'}>
-												<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
-													<circle cx="3" cy="3" r="3" fill="#EB6753" />
-												</svg>
-											</Stack>
-											<Typography className={'buy-rent'}>{service?.listingType}</Typography>
-										</Stack>
-										<Stack className={'divider'}></Stack>
-										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-											<g clipPath="url(#clip0_time)">
-												<path
-													d="M7 14C5.61553 14 4.26216 13.5895 3.11101 12.8203C1.95987 12.0511 1.06266 10.9579 0.532846 9.67879C0.00303297 8.3997 -0.13559 6.99224 0.134506 5.63437C0.404603 4.2765 1.07129 3.02922 2.05026 2.05026C3.02922 1.07129 4.2765 0.404603 5.63437 0.134506C6.99224 -0.13559 8.3997 0.00303297 9.67879 0.532846C10.9579 1.06266 12.0511 1.95987 12.8203 3.11101C13.5895 4.26216 14 5.61553 14 7Z"
-													fill="#181A20"
-												/>
-											</g>
-											<defs>
-												<clipPath id="clip0_time">
-													<rect width="14" height="14" fill="white" />
-												</clipPath>
-											</defs>
-										</svg>
-										<Typography className={'date'}>{moment().diff(service?.createdAt, 'days')} days ago</Typography>
-									</Stack>
-									<Stack className={'bottom-box'}>
-										<Stack className="option">
-											<Typography variant="body2">
-												Duration {service?.durationMinutes != null ? `${service.durationMinutes} min` : '—'}
-											</Typography>
-										</Stack>
-										<Stack className="option">
-											<Typography variant="body2">Views {service?.listingViews ?? 0}</Typography>
-										</Stack>
-										<Stack className="option">
-											<Typography variant="body2">Comments {service?.listingComments ?? 0}</Typography>
-										</Stack>
-									</Stack>
-								</Stack>
-								<Stack className={'right-box'}>
-									<Stack className="buttons">
-										<Stack className="button-box">
-											<RemoveRedEyeIcon fontSize="medium" />
-											<Typography>{service?.listingViews}</Typography>
-										</Stack>
-										<Stack className="button-box">
-											{service?.meLiked && service?.meLiked[0]?.myFavorite ? (
-												<FavoriteIcon color="primary" fontSize={'medium'} onClick={() => likeServiceHandler(user, service?._id as string)} />
-											) : (
-												<FavoriteBorderIcon fontSize={'medium'} onClick={() => likeServiceHandler(user, service?._id as string)} />
-											)}
-											<Typography>{service?.listingLikes}</Typography>
-										</Stack>
-									</Stack>
-									<Typography>From ${formatterStr(service?.listingPrice)}</Typography>
-								</Stack>
-							</Stack>
-							<Stack className={'images'}>
-								<Stack className={'main-image'}>
-									<img
-										src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/listing/bigImage.png'}
-										alt={'service-main-image'}
-									/>
-								</Stack>
-								<Stack className={'sub-images'}>
-									{service?.listingImages?.map((subImg: string) => {
-										const imagePath: string = `${REACT_APP_API_URL}/${subImg}`;
-										return (
-											<Stack className={'sub-img-box'} onClick={() => changeImageHandler(subImg)} key={subImg}>
-												<img src={imagePath} alt={'service-sub-image'} />
-											</Stack>
-										);
-									})}
-								</Stack>
-							</Stack>
-						</Stack>
-						<Stack className={'service-detail-content'}>
-							<Stack className={'left-config'}>
-								<Stack className={'options-config'}>
-									<Stack className={'option'}>
-										<Stack className={'option-includes'}>
-											<Typography className={'title'}>Duration</Typography>
-											<Typography className={'option-data'}>
-												{service?.durationMinutes != null ? `${service.durationMinutes} min` : '—'}
-											</Typography>
-										</Stack>
-									</Stack>
-									<Stack className={'option'}>
-										<Stack className={'option-includes'}>
-											<Typography className={'title'}>Rank</Typography>
-											<Typography className={'option-data'}>{service?.listingRank ?? 0}</Typography>
-										</Stack>
-									</Stack>
-									<Stack className={'option'}>
-										<Stack className={'option-includes'}>
-											<Typography className={'title'}>Type</Typography>
-											<Typography className={'option-data'}>{service?.listingType}</Typography>
-										</Stack>
-									</Stack>
-								</Stack>
-								<Stack className={'prop-desc-config'}>
-									<Stack className={'top'}>
-										<Typography className={'title'}>About This Service</Typography>
-										<Typography className={'desc'}>{service?.listingDesc ?? 'No service description yet.'}</Typography>
-									</Stack>
-									<Stack className={'bottom'}>
-										<Typography className={'title'}>Service Details</Typography>
-										<Stack className={'info-box'}>
-											<Stack className={'left'}>
-												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Starting Price</Typography>
-													<Typography className={'data'}>${formatterStr(service?.listingPrice)}</Typography>
-												</Box>
-												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Duration</Typography>
-													<Typography className={'data'}>
-														{service?.durationMinutes != null ? `${service.durationMinutes} min` : '—'}
-													</Typography>
-												</Box>
-												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Status</Typography>
-													<Typography className={'data'}>{service?.listingStatus}</Typography>
-												</Box>
-											</Stack>
-											<Stack className={'right'}>
-												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Listed</Typography>
-													<Typography className={'data'}>{moment(service?.createdAt).format('YYYY-MM-DD')}</Typography>
-												</Box>
-												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Type</Typography>
-													<Typography className={'data'}>{service?.listingType}</Typography>
-												</Box>
-												<Box component={'div'} className={'info'}>
-													<Typography className={'title'}>Views</Typography>
-													<Typography className={'data'}>{service?.listingViews ?? 0}</Typography>
-												</Box>
-											</Stack>
-										</Stack>
-									</Stack>
-								</Stack>
-								<Stack className={'service-process-config'}>
-									<Typography className={'title'}>How This Service Works</Typography>
-									<Stack className={'service-process-config__steps'}>
-										<Typography className={'service-process-config__step'}>
-											1. Share your pet profile and preferred care schedule.
-										</Typography>
-										<Typography className={'service-process-config__step'}>
-											2. We match you with the best specialist and confirm session details.
-										</Typography>
-										<Typography className={'service-process-config__step'}>
-											3. Receive service updates and follow-up care recommendations.
-										</Typography>
-									</Stack>
-								</Stack>
-								<Stack className={'address-config'}>
-									<Typography className={'title'}>Service Coverage</Typography>
-									<Stack className={'map-box'}>
-										<iframe
-											src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d25867.098915951767!2d128.68632810247993!3d35.86402299180927!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x35660bba427bf179%3A0x1fc02da732b9072f!2sGeumhogangbyeon-ro%2C%20Dong-gu%2C%20Daegu!5e0!3m2!1suz!2skr!4v1695537640704!5m2!1suz!2skr"
-											width="100%"
-											height="100%"
-											style={{ border: 0 }}
-											allowFullScreen={true}
-											loading="lazy"
-											referrerPolicy="no-referrer-when-downgrade"
-										></iframe>
-									</Stack>
-								</Stack>
-
-								{commentTotal !== 0 && (
-									<Stack className={'service-reviews-config'}>
-										<Stack className={'filter-box'}>
-											<Stack className={'review-cnt'}>
-												<Typography className={'reviews'}>{commentTotal} reviews</Typography>
-											</Stack>
-										</Stack>
-										<Stack className={'review-list'}>
-											{serviceComments?.map((comment: Comment) => {
-												return <ServiceReviewCard comment={comment} key={comment?._id} />;
-											})}
-											<Box component={'div'} className={'pagination-box'}>
-												<MuiPagination
-													page={commentInquiry.page}
-													count={Math.ceil(commentTotal / commentInquiry.limit)}
-													onChange={commentPaginationChangeHandler}
-													shape="circular"
-													color="primary"
-												/>
-											</Box>
-										</Stack>
-									</Stack>
-								)}
-								<Stack className={'leave-review-config'}>
-									<Typography className={'main-title'}>Leave A Review</Typography>
-									<Typography className={'review-title'}>Review</Typography>
-									<textarea
-										onChange={({ target: { value } }: any) => {
-											setInsertCommentData({ ...insertCommentData, commentContent: value });
-										}}
-										value={insertCommentData.commentContent}
-									></textarea>
-									<Box className={'submit-btn'} component={'div'}>
-										<Button
-											className={'submit-review'}
-											disabled={insertCommentData.commentContent === '' || user?._id === ''}
-											onClick={createCommentHandler}
-										>
-											<Typography className={'title'}>Submit Review</Typography>
-										</Button>
-									</Box>
-								</Stack>
-							</Stack>
-							<ServiceDetailInquirySidebar service={service} user={user} />
-						</Stack>
-						{relatedServices.length !== 0 && (
-							<Stack className={'related-services-config'}>
-								<Stack className={'title-pagination-box'}>
-									<Stack className={'title-box'}>
-										<Typography className={'main-title'}>Related Services</Typography>
-										<Typography className={'sub-title'}>Recommended services you can book next.</Typography>
-									</Stack>
-									<Stack className={'pagination-box'}>
-										<WestIcon className={'swiper-similar-prev'} />
-										<div className={'swiper-similar-pagination'}></div>
-										<EastIcon className={'swiper-similar-next'} />
-									</Stack>
-								</Stack>
-								<Stack className={'cards-box'}>
-									<Swiper
-										className={'related-services-swiper'}
-										slidesPerView={'auto'}
-										spaceBetween={35}
-										modules={[Autoplay, Navigation, Pagination]}
-										navigation={{
-											nextEl: '.swiper-similar-next',
-											prevEl: '.swiper-similar-prev',
-										}}
-										pagination={{
-											el: '.swiper-similar-pagination',
-										}}
-									>
-										{relatedServices.map((relatedService: Service) => {
-											return (
-												<SwiperSlide className={'related-services-slide'} key={relatedService._id}>
-													<RelatedServiceCard service={relatedService} onLike={likeServiceHandler} />
-												</SwiperSlide>
-											);
-										})}
-									</Swiper>
-								</Stack>
-							</Stack>
-						)}
-					</Stack>
+		<div className="service-detail-revamp">
+			<section className="service-detail-revamp__hero">
+				<div className="service-detail-revamp__hero-inner">
+					<h1>{service?.listingTitle}</h1>
+					<p>{`Home / Services / ${service?.listingTitle ?? ''}`}</p>
 				</div>
+			</section>
+
+			<div className="service-detail-revamp__container">
+				<div className="service-detail-revamp__grid">
+					<div className="service-detail-revamp__left">
+						<div className="media-card">
+							<img src={getImg(slideImage || service?.listingImages?.[0])} alt="" className="main-image" />
+							{(service?.listingImages?.length ?? 0) > 1 && (
+								<div className="thumb-row">
+									{service?.listingImages?.slice(0, 3).map((img) => (
+										<button
+											key={img}
+											type="button"
+											className={slideImage === img ? 'thumb is-active' : 'thumb'}
+											onClick={() => changeImageHandler(img)}
+										>
+											<img src={getImg(img)} alt="" />
+										</button>
+									))}
+								</div>
+							)}
+						</div>
+
+						<div className="tabs-card">
+							<div className="tabs">
+								<button type="button" className={activeTab === 'about' ? 'is-active' : ''} onClick={() => setActiveTab('about')}>
+									About
+								</button>
+								<button
+									type="button"
+									className={activeTab === 'details' ? 'is-active' : ''}
+									onClick={() => setActiveTab('details')}
+								>
+									Details
+								</button>
+							</div>
+							{activeTab === 'about' ? (
+								<p className="tab-copy">{service?.listingDesc ?? 'No service description yet.'}</p>
+							) : (
+								<div className="tab-details">
+									<p>
+										<strong>Location:</strong> {service?.listingLocation || '-'}
+									</p>
+									<p>
+										<strong>Status:</strong> {service?.listingStatus || '-'}
+									</p>
+									<p>
+										<strong>Views:</strong> {service?.listingViews ?? 0}
+									</p>
+								</div>
+							)}
+						</div>
+					</div>
+
+					<div className="service-detail-revamp__right">
+						<div className="summary-card">
+							<h2>{service?.listingTitle}</h2>
+							<p className="price">From ${formatterStr(service?.listingPrice)}</p>
+							{service?.durationMinutes ? <p className="meta">⏱ {service.durationMinutes} min</p> : null}
+							{service?.listingLocation ? <span className="location-badge">📍 {service.listingLocation}</span> : null}
+							<div className="stats">
+								<span>👁 {service?.listingViews ?? 0}</span>
+								<button type="button" onClick={() => likeServiceHandler(user, service?._id as string)} aria-label="Like service">
+									{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon />}
+								</button>
+								<span>{service?.listingLikes ?? 0}</span>
+							</div>
+						</div>
+
+						<div className="specialist-card">
+							<img src={getImg(service?.memberData?.memberImage ?? undefined)} alt="" />
+							<div>
+								<strong>{service?.memberData?.memberNick || 'Specialist'}</strong>
+								<Link href={`/specialist/detail?id=${service?.memberData?._id}`}>View Profile →</Link>
+							</div>
+						</div>
+
+						<div className="inquiry-card">
+							<ServiceDetailInquirySidebar
+								service={service}
+								user={user}
+								mainTitle="Have a question?"
+								profileLinkLabel="View Profile →"
+							/>
+						</div>
+					</div>
+				</div>
+
+				{commentTotal !== 0 && (
+					<Stack className={'service-reviews-config'}>
+						<Stack className={'filter-box'}>
+							<Stack className={'review-cnt'}>
+								<Typography className={'reviews'}>{commentTotal} reviews</Typography>
+							</Stack>
+						</Stack>
+						<Stack className={'review-list'}>
+							{serviceComments?.map((comment: Comment) => {
+								return <ServiceReviewCard comment={comment} key={comment?._id} />;
+							})}
+							<Box component={'div'} className={'pagination-box'}>
+								<MuiPagination
+									page={commentInquiry.page}
+									count={Math.ceil(commentTotal / commentInquiry.limit)}
+									onChange={commentPaginationChangeHandler}
+									shape="circular"
+									color="primary"
+								/>
+							</Box>
+						</Stack>
+					</Stack>
+				)}
+
+				<Stack className={'leave-review-config'}>
+					<Typography className={'main-title'}>Leave A Review</Typography>
+					<Typography className={'review-title'}>Review</Typography>
+					<textarea
+						onChange={({ target: { value } }: any) => {
+							setInsertCommentData({ ...insertCommentData, commentContent: value });
+						}}
+						value={insertCommentData.commentContent}
+					></textarea>
+					<Box className={'submit-btn'} component={'div'}>
+						<Button
+							className={'submit-review'}
+							disabled={insertCommentData.commentContent === '' || user?._id === ''}
+							onClick={createCommentHandler}
+						>
+							<Typography className={'title'}>Submit Review</Typography>
+						</Button>
+					</Box>
+				</Stack>
+
+				{relatedServices.length !== 0 && (
+					<section className="related-section">
+						<h3>You Might Also Like</h3>
+						<div className="related-grid">
+							{relatedServices
+								.filter((item) => item._id !== service?._id)
+								.slice(0, 4)
+								.map((relatedService: Service) => (
+									<Link href={`/service/detail?id=${relatedService._id}`} className="related-card" key={relatedService._id}>
+										<img src={getImg(relatedService.listingImages?.[0])} alt="" />
+										<div className="overlay">
+											<strong>{relatedService.listingTitle}</strong>
+										</div>
+									</Link>
+								))}
+						</div>
+					</section>
+				)}
 			</div>
+		</div>
 	);
 };
 

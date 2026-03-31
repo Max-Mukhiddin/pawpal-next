@@ -7,6 +7,7 @@ import { gql } from '@apollo/client';
 export const SIGN_UP = gql`
 	mutation Signup($input: MemberInput!) {
 		signup(input: $input) {
+			accessToken
 			_id
 			memberType
 			memberStatus
@@ -31,6 +32,7 @@ export const SIGN_UP = gql`
 export const LOGIN = gql`
 	mutation Login($input: LoginInput!) {
 		login(input: $input) {
+			accessToken
 			_id
 			memberType
 			memberStatus
@@ -373,10 +375,9 @@ export const SUBSCRIBE = gql`
 	mutation Subscribe($input: String!) {
 		subscribe(input: $input) {
 			_id
-			followingId
 			followerId
+			followingId
 			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -385,10 +386,9 @@ export const UNSUBSCRIBE = gql`
 	mutation Unsubscribe($input: String!) {
 		unsubscribe(input: $input) {
 			_id
-			followingId
 			followerId
+			followingId
 			createdAt
-			updatedAt
 		}
 	}
 `;

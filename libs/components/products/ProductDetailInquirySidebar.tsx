@@ -23,7 +23,7 @@ const ProductDetailInquirySidebar: React.FC<ProductDetailInquirySidebarProps> = 
 	return (
 		<Stack className={'right-config'}>
 			<Stack className={'info-box'}>
-				<Typography className={'main-title'}>Product inquiry & seller support</Typography>
+				<Typography className={'main-title'}>Send an Inquiry</Typography>
 				<Typography sx={{ fontSize: 13, color: '#717171', mb: 2 }}>
 					Questions about fit, ingredients, or shipping? Message the seller before you check out.
 				</Typography>
@@ -53,7 +53,7 @@ const ProductDetailInquirySidebar: React.FC<ProductDetailInquirySidebarProps> = 
 				errors={errors}
 				onFieldChange={setField}
 				onSubmitClick={handleSubmitIntent}
-				submitLabel={'Send product inquiry'}
+				submitLabel={'Send Inquiry'}
 				messagePlaceholder={
 					'e.g. Size or flavor in stock, ingredients, shipping time to my area, or returns.'
 				}

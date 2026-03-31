@@ -56,7 +56,7 @@ const MemberPage: NextPage = () => {
 
 			await subscribe({
 				variables: {
-					input: id,
+					input: id.toString(),
 				},
 			});
 
@@ -74,7 +74,7 @@ const MemberPage: NextPage = () => {
 
 			await unsubscribe({
 				variables: {
-					input: id,
+					input: id.toString(),
 				},
 			});
 

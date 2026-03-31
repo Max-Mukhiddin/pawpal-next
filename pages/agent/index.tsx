@@ -132,7 +132,7 @@ const AgentList: NextPage = ({ initialInput, ...props }: any) => {
 		return <h1>AGENTS PAGE MOBILE</h1>;
 	} else {
 		return (
-			<Stack className={'agent-list-page'}>
+			<Stack className={'specialist-list-page'}>
 				<Stack className={'container'}>
 					<Stack className={'filter'}>
 						<Box component={'div'} className={'left'}>

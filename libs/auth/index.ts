@@ -46,7 +46,7 @@ const requestJwtToken = async ({
 			fetchPolicy: 'network-only',
 		});
 
-		const { accessToken } = result?.data?.login;
+		const accessToken = result?.data?.login?.accessToken ?? result?.data?.Login?.accessToken;
 
 		return { jwtToken: accessToken };
 	} catch (err: any) {
@@ -100,7 +100,7 @@ const requestSignUpJwtToken = async ({
 			fetchPolicy: 'network-only',
 		});
 
-		const { accessToken } = result?.data?.signup;
+		const accessToken = result?.data?.signup?.accessToken ?? result?.data?.Signup?.accessToken;
 
 		return { jwtToken: accessToken };
 	} catch (err: any) {
@@ -140,7 +140,7 @@ export const updateUserInfo = (jwtToken: any) => {
 				: `${claims.memberImage}`,
 		memberAddress: claims.memberAddress ?? '',
 		memberDesc: claims.memberDesc ?? '',
-		memberProperties: claims.memberProperties,
+		memberListings: claims.memberListings,
 		memberRank: claims.memberRank,
 		memberArticles: claims.memberArticles,
 		memberPoints: claims.memberPoints,
@@ -174,7 +174,7 @@ const deleteUserInfo = () => {
 		memberImage: '',
 		memberAddress: '',
 		memberDesc: '',
-		memberProperties: 0,
+		memberListings: 0,
 		memberRank: 0,
 		memberArticles: 0,
 		memberPoints: 0,

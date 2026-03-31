@@ -23,63 +23,27 @@ const withLayoutBasic = (Component: any) => {
 		const user = useReactiveVar(userVar);
 
 		const memoizedValues = useMemo(() => {
-			let title = '',
-				desc = '',
-				bgImage = '';
+			const routeMap: Record<string, { title: string; breadcrumb: string }> = {
+				'/mypage': { title: 'My Account', breadcrumb: 'My Account' },
+				'/community': { title: 'Community', breadcrumb: 'Community' },
+				'/specialist': { title: 'Our Specialists', breadcrumb: 'Specialists' },
+				'/about': { title: 'About Us', breadcrumb: 'About Us' },
+				'/cs': { title: 'Contact', breadcrumb: 'Contact' },
+				'/member': { title: 'Members', breadcrumb: 'Members' },
+				'/agent': { title: 'Our Specialists', breadcrumb: 'Specialists' },
+				'/listings': { title: 'All Listings', breadcrumb: 'All Listings' },
+				'/account/join': { title: 'Login/Signup', breadcrumb: 'Authentication' },
+			};
 
-			switch (router.pathname) {
-				case '/listings':
-				case '/listings/':
-					title = 'Browse Listings';
-					desc = 'We are glad to see you again!';
-					bgImage = '/img/banner/properties.png';
-					break;
-				case '/agent':
-					title = 'Agents';
-					desc = 'Home / For Rent';
-					bgImage = '/img/banner/agents.webp';
-					break;
-				case '/agent/detail':
-					title = 'Agent Page';
-					desc = 'Home / For Rent';
-					bgImage = '/img/banner/header2.svg';
-					break;
-				case '/mypage':
-					title = 'my page';
-					desc = 'Home / For Rent';
-					bgImage = '/img/banner/header1.svg';
-					break;
-				case '/community':
-					title = 'Community';
-					desc = 'Home / For Rent';
-					bgImage = '/img/banner/header2.svg';
-					break;
-				case '/community/detail':
-					title = 'Community Detail';
-					desc = 'Home / For Rent';
-					bgImage = '/img/banner/header2.svg';
-					break;
-				case '/cs':
-					title = 'CS';
-					desc = 'We are glad to see you again!';
-					bgImage = '/img/banner/header2.svg';
-					break;
-				case '/account/join':
-					title = 'Login/Signup';
-					desc = 'Authentication Process';
-					bgImage = '/img/banner/header2.svg';
-					setAuthHeader(true);
-					break;
-				case '/member':
-					title = 'Member Page';
-					desc = 'Home / For Rent';
-					bgImage = '/img/banner/header1.svg';
-					break;
-				default:
-					break;
-			}
+			const matchedKey =
+				Object.keys(routeMap).find((key) => router.pathname === key || router.pathname.startsWith(`${key}/`)) ?? '';
+			const matched = routeMap[matchedKey] ?? { title: 'PawPal', breadcrumb: 'PawPal' };
 
-			return { title, desc, bgImage };
+			return { title: matched.title, desc: `Home / ${matched.breadcrumb}` };
+		}, [router.pathname]);
+
+		useEffect(() => {
+			setAuthHeader(router.pathname === '/account/join');
 		}, [router.pathname]);
 
 		/** LIFECYCLES **/
@@ -127,8 +91,7 @@ const withLayoutBasic = (Component: any) => {
 						<Stack
 							className={`header-basic ${authHeader && 'auth'}`}
 							style={{
-								backgroundImage: `url(${memoizedValues.bgImage})`,
-								backgroundSize: 'cover',
+								background: '#1A1A1A',
 								boxShadow: 'inset 10px 40px 150px 40px rgb(24 22 36)',
 							}}
 						>

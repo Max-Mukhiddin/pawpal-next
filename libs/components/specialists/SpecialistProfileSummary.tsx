@@ -6,14 +6,21 @@ import { REACT_APP_API_URL } from '../../config';
 export interface SpecialistProfileSummaryProps {
 	specialist: Member | null;
 	onOpenMemberProfile: (memberId: string) => void;
+	onToggleFollow: (memberId: string, isFollowing: boolean) => void;
+	isLoggedIn: boolean;
 }
 
-/** Hero row + PawPal bio and activity stats; reuses `.agent-info` image/title styles from agent detail SCSS. */
-const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({ specialist, onOpenMemberProfile }) => {
+/** Hero row + PawPal bio and activity stats; reuses `.specialist-info` image/title styles from specialist detail SCSS. */
+const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({
+	specialist,
+	onOpenMemberProfile,
+	onToggleFollow,
+	isLoggedIn,
+}) => {
 	if (!specialist) return null;
 
 	return (
-		<Stack className={'agent-info'}>
+		<Stack className={'specialist-info'}>
 			<img
 				src={specialist?.memberImage ? `${REACT_APP_API_URL}/${specialist.memberImage}` : '/img/profile/defaultUser.svg'}
 				alt=""
@@ -36,8 +43,8 @@ const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({ spe
 				</Typography>
 				<Stack direction="row" flexWrap="wrap" gap={2} sx={{ mt: 2 }}>
 					<Typography sx={{ fontSize: 13, color: '#181a20' }}>
-						<strong>{specialist.memberProperties}</strong> active{' '}
-						{specialist.memberProperties === 1 ? 'PawPal care listing' : 'PawPal care listings'}
+						<strong>{specialist.memberListings}</strong> active{' '}
+						{specialist.memberListings === 1 ? 'PawPal care listing' : 'PawPal care listings'}
 					</Typography>
 					<Typography sx={{ fontSize: 13, color: '#181a20' }}>
 						<strong>{specialist.memberViews}</strong> profile views
@@ -45,6 +52,27 @@ const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({ spe
 					<Typography sx={{ fontSize: 13, color: '#181a20' }}>
 						<strong>{specialist.memberLikes}</strong> client likes
 					</Typography>
+				</Stack>
+				<Stack sx={{ mt: 2 }}>
+					{isLoggedIn ? (
+						<button
+							type="button"
+							onClick={() => onToggleFollow(specialist._id, Boolean(specialist?.meFollowed?.[0]?.myFollowing))}
+							style={{
+								padding: '8px 14px',
+								borderRadius: 999,
+								border: '1px solid #eb6753',
+								background: specialist?.meFollowed?.[0]?.myFollowing ? '#fff' : '#eb6753',
+								color: specialist?.meFollowed?.[0]?.myFollowing ? '#eb6753' : '#fff',
+								fontWeight: 700,
+								cursor: 'pointer',
+							}}
+						>
+							{specialist?.meFollowed?.[0]?.myFollowing ? 'Unfollow' : 'Follow'}
+						</button>
+					) : (
+						<Typography sx={{ fontSize: 13, fontWeight: 700, color: '#eb6753' }}>Login to follow</Typography>
+					)}
 				</Stack>
 			</Stack>
 		</Stack>

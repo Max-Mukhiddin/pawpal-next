@@ -24,16 +24,16 @@ const SpecialistListCard: React.FC<SpecialistListCardProps> = ({ specialist, onL
 		: '/img/profile/defaultUser.svg';
 
 	return (
-		<Stack className="agent-general-card">
+		<Stack className="specialist-general-card">
 			<Link
 				href={{
-					pathname: '/specialists/detail',
+					pathname: '/specialist/detail',
 					query: { id: specialist?._id },
 				}}
 			>
 				<Box
 					component={'div'}
-					className={'agent-img'}
+					className={'specialist-img'}
 					style={{
 						backgroundImage: `url(${imagePath})`,
 						backgroundSize: 'cover',
@@ -42,16 +42,16 @@ const SpecialistListCard: React.FC<SpecialistListCardProps> = ({ specialist, onL
 					}}
 				>
 					<div>
-						{specialist?.memberProperties} {specialist?.memberProperties === 1 ? 'listing' : 'listings'}
+						{specialist?.memberListings} {specialist?.memberListings === 1 ? 'listing' : 'listings'}
 					</div>
 				</Box>
 			</Link>
 
-			<Stack className={'agent-desc'}>
-				<Box component={'div'} className={'agent-info'}>
+			<Stack className={'specialist-desc'}>
+				<Box component={'div'} className={'specialist-info'}>
 					<Link
 						href={{
-							pathname: '/specialists/detail',
+							pathname: '/specialist/detail',
 							query: { id: specialist?._id },
 						}}
 					>

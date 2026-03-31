@@ -181,9 +181,9 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 		return <div>AGENT DETAIL PAGE MOBILE</div>;
 	} else {
 		return (
-			<Stack className={'agent-detail-page'}>
+			<Stack className={'specialist-detail-page'}>
 				<Stack className={'container'}>
-					<Stack className={'agent-info'}>
+					<Stack className={'specialist-info'}>
 						<img
 							src={agent?.memberImage ? `${REACT_APP_API_URL}/${agent?.memberImage}` : '/img/profile/defaultUser.svg'}
 							alt=""
@@ -196,7 +196,7 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 							</div>
 						</Box>
 					</Stack>
-					<Stack className={'agent-home-list'}>
+					<Stack className={'specialist-home-list'}>
 						<Stack className={'card-wrap'}>
 							{agentListings.map((listing: Listing) => {
 								return (

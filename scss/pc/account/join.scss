@@ -25,12 +25,7 @@
            display: flex;
            flex-direction: row;
            align-items: center;
-           img {
-             width: 40px;
-             height: 40px;
-           }
            span {
-             margin-left: 10px;
              font-family: $font ;
              font-size: 22px;
              font-style: normal;
@@ -150,8 +145,8 @@
              margin-top: 25px;
              width: 100%;
              height: 55px;
-             border-radius: 12px;
-             background:  #EB6753;
+             border-radius: 50px;
+             background:  #E07B3A;
              font-family: $font;
              font-size: 15px;
              font-style: normal;
@@ -185,8 +180,9 @@
        .right {
          width: 50%;
          height: 100%;
-         background-image: url("/img/banner/joinBg.svg");
+         background-image: url("/images/hero/hero-main.jpg");
          background-size: cover;
+         background-position: center;
        }
      }
    }
