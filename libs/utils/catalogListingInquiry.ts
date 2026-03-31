@@ -14,7 +14,7 @@ export function relatedListingInquiryInput(
 		direction: Direction.DESC,
 		search: {
 			typeList: [listingKind],
-			locationList: location ? [location] : [],
+			text: location ?? '',
 		},
 	};
 }

@@ -15,7 +15,6 @@ export interface ListingInput {
 
 interface ListingsSearch {
 	memberId?: string;
-	locationList?: ListingLocation[];
 	typeList?: ListingType[];
 	pricesRange?: Range;
 	periodsRange?: PeriodsRange;
@@ -32,8 +31,6 @@ export interface ListingsInquiry {
 
 interface AgentListingsSearch {
 	listingStatus?: ListingStatus;
-	/** When set, restricts agent catalog to products or services (backend-supported filter). */
-	typeList?: ListingType[];
 }
 
 export interface AgentListingsInquiry {

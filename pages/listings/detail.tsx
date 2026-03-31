@@ -82,7 +82,7 @@ const ListingDetail: NextPage = ({ initialComment, ...props }: any) => {
 				sort: 'createdAt',
 				direction: Direction.DESC,
 				search: {
-					locationList: listing?.listingLocation ? [listing?.listingLocation] : [],
+					text: listing?.listingLocation ?? '',
 				},
 			},
 		},
@@ -153,7 +153,7 @@ const ListingDetail: NextPage = ({ initialComment, ...props }: any) => {
 					sort: 'createdAt',
 					direction: Direction.DESC,
 					search: {
-						locationList: [listing?.listingLocation],
+						text: listing?.listingLocation ?? '',
 					},
 				},
 			});

@@ -72,7 +72,7 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 		async (value: ListingLocation) => {
 			setListingInquiry({
 				...listingInquiry,
-				search: { ...listingInquiry.search, locationList: [value] },
+				search: { ...listingInquiry.search, text: value },
 			});
 			typeStateChangeHandler();
 		},
@@ -92,9 +92,6 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 
 	const pushSearchHandler = async () => {
 		try {
-			if (listingInquiry?.search?.locationList?.length === 0) {
-				delete listingInquiry.search.locationList;
-			}
 			if (listingInquiry?.search?.typeList?.length === 0) {
 				delete listingInquiry.search.typeList;
 			}
@@ -120,7 +117,7 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 			<Stack className={'search-box'}>
 				<Stack className={'select-box'}>
 					<div className={`box ${openLocation ? 'on' : ''}`} onClick={locationStateChangeHandler}>
-						<span>{listingInquiry?.search?.locationList ? listingInquiry?.search?.locationList[0] : t('Location')} </span>
+						<span>{listingInquiry?.search?.text || t('Location')} </span>
 						<ExpandMoreIcon />
 					</div>
 					<div className={`box ${openType ? 'on' : ''}`} onClick={typeStateChangeHandler}>
