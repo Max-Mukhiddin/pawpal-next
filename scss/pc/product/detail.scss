@@ -1,0 +1,271 @@
+#pc-wrap {
+	.product-detail-revamp {
+		background: #f5f0e8;
+		min-height: 100vh;
+		padding-bottom: 80px;
+	}
+
+	.product-detail-revamp__hero {
+		background: #1a1a1a;
+		padding: 80px 0;
+	}
+
+	.product-detail-revamp__hero-inner {
+		width: min(1200px, calc(100% - 32px));
+		margin: 0 auto;
+		color: #fff;
+		h1 {
+			font-size: 36px;
+			line-height: 1.2;
+			margin: 0;
+		}
+		p {
+			margin-top: 10px;
+			font-size: 14px;
+			opacity: 0.9;
+		}
+	}
+
+	.product-detail-revamp__container {
+		width: min(1200px, calc(100% - 32px));
+		margin: 32px auto 0;
+	}
+
+	.product-detail-revamp__grid {
+		display: grid;
+		grid-template-columns: 55% 45%;
+		gap: 22px;
+		align-items: flex-start;
+	}
+
+	.media-card,
+	.tabs-card,
+	.summary-card,
+	.specialist-card,
+	.inquiry-card,
+	.reviews-config,
+	.leave-review-config {
+		background: #fff;
+		border-radius: 16px;
+	}
+
+	.media-card {
+		padding: 16px;
+		.main-image {
+			width: 100%;
+			height: 420px;
+			object-fit: cover;
+			border-radius: 16px;
+		}
+		.thumb-row {
+			margin-top: 12px;
+			display: flex;
+			gap: 10px;
+		}
+		.thumb {
+			width: 80px;
+			height: 80px;
+			border: 1px solid #e5e5e5;
+			border-radius: 12px;
+			padding: 0;
+			overflow: hidden;
+			background: #fff;
+			cursor: pointer;
+			&.is-active {
+				border-color: #e07b3a;
+			}
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+			}
+		}
+	}
+
+	.tabs-card {
+		margin-top: 16px;
+		padding: 16px;
+		.tabs {
+			display: flex;
+			gap: 8px;
+			margin-bottom: 14px;
+			button {
+				border: none;
+				background: #f4f4f4;
+				padding: 8px 16px;
+				border-radius: 50px;
+				cursor: pointer;
+				&.is-active {
+					background: #e07b3a;
+					color: #fff;
+				}
+			}
+		}
+		.tab-copy,
+		.tab-details p {
+			margin: 0;
+			font-size: 14px;
+			line-height: 1.7;
+			color: #353535;
+		}
+		.tab-details p + p {
+			margin-top: 8px;
+		}
+	}
+
+	.product-detail-revamp__right {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.summary-card {
+		padding: 20px;
+		h2 {
+			margin: 0;
+			font-size: 22px;
+			color: #181a20;
+		}
+		.price {
+			margin: 10px 0 0;
+			color: #e07b3a;
+			font-size: 20px;
+			font-weight: 700;
+		}
+		.location-badge {
+			margin-top: 10px;
+			display: inline-flex;
+			padding: 6px 12px;
+			background: #f8f1e8;
+			border-radius: 999px;
+			font-size: 13px;
+		}
+		.stats {
+			margin-top: 12px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			button {
+				border: none;
+				background: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				cursor: pointer;
+			}
+		}
+	}
+
+	.specialist-card {
+		padding: 16px;
+		display: flex;
+		gap: 12px;
+		align-items: center;
+		img {
+			width: 48px;
+			height: 48px;
+			border-radius: 50%;
+			object-fit: cover;
+		}
+		strong {
+			display: block;
+			font-size: 15px;
+			color: #181a20;
+		}
+		a {
+			font-size: 13px;
+			color: #e07b3a;
+			text-decoration: none;
+		}
+	}
+
+	.inquiry-card {
+		padding: 14px;
+		.right-config {
+			padding: 0;
+			border: none;
+			box-shadow: none;
+			background: transparent;
+			.info-box {
+				background: #fff;
+				border-radius: 16px;
+				padding: 18px;
+				border: 1px solid #f0f0f0;
+			}
+			.main-title {
+				font-size: 20px;
+				font-weight: 700;
+			}
+			.send-message {
+				border-radius: 50px;
+				background: #e07b3a;
+			}
+		}
+	}
+
+	.reviews-config,
+	.leave-review-config {
+		margin-top: 18px;
+		padding: 20px;
+	}
+
+	.leave-review-config {
+		textarea {
+			width: 100%;
+			min-height: 120px;
+			border: 1px solid #ddd;
+			border-radius: 12px;
+			padding: 12px;
+			outline: none;
+		}
+		.submit-btn {
+			margin-top: 12px;
+		}
+		.submit-review {
+			border-radius: 50px;
+			background: #e07b3a;
+			color: #fff;
+			padding: 10px 20px;
+		}
+	}
+
+	.related-section {
+		margin-top: 26px;
+		h3 {
+			margin: 0 0 14px;
+			font-size: 34px;
+			color: #181a20;
+		}
+	}
+
+	.related-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 14px;
+	}
+
+	.related-card {
+		position: relative;
+		display: block;
+		border-radius: 16px;
+		overflow: hidden;
+		height: 230px;
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+		.overlay {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			align-items: flex-end;
+			padding: 14px;
+			background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 20%, rgba(0, 0, 0, 0.7) 100%);
+			strong {
+				color: #fff;
+				font-size: 16px;
+			}
+		}
+	}
+}
