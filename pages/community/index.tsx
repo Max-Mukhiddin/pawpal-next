@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Stack, Tab, Typography, Button, Pagination } from '@mui/material';
-import CommunityCard from '../../libs/components/common/CommunityCard';
+import { Stack, Typography, Button, Pagination, Chip, TextField } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
@@ -11,11 +9,13 @@ import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { BoardArticlesInquiry } from '../../libs/types/board-article/board-article.input';
 import { BoardArticleCategory } from '../../libs/enums/board-article.enum';
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLES } from '../../apollo/user/query';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { Messages } from '../../libs/config';
+import Link from 'next/link';
+import { userVar } from '../../apollo/store';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -26,9 +26,11 @@ export const getStaticProps = async ({ locale }: any) => ({
 const Community: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
+	const user = useReactiveVar(userVar);
 	const { query } = router;
 	const articleCategory = query?.articleCategory as string;
 	const [searchCommunity, setSearchCommunity] = useState<BoardArticlesInquiry>(initialInput);
+	const [searchText, setSearchText] = useState('');
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
 	if (articleCategory) initialInput.search.articleCategory = articleCategory;
@@ -68,9 +70,11 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 
 	/** HANDLERS **/
 	const tabChangeHandler = async (e: T, value: string) => {
-		console.log(value);
-
-		setSearchCommunity({ ...searchCommunity, page: 1, search: { articleCategory: value as BoardArticleCategory } });
+		setSearchCommunity({
+			...searchCommunity,
+			page: 1,
+			search: { ...searchCommunity.search, articleCategory: value as BoardArticleCategory },
+		});
 		await router.push(
 			{
 				pathname: '/community',
@@ -100,186 +104,212 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 			await boardArticlesRefetch({ input: searchCommunity });
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR, likePropertyHandler:', err.message);
+			console.error('ERROR, likePropertyHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
+	};
+
+	const applySearchHandler = () => {
+		setSearchCommunity((prev) => ({
+			...prev,
+			page: 1,
+			search: {
+				...prev.search,
+				text: searchText.trim(),
+			},
+		}));
 	};
 
 	if (device === 'mobile') {
 		return <h1>COMMUNITY PAGE MOBILE</h1>;
 	} else {
 		return (
-			<div id="community-list-page">
-				<div className="container">
-					<TabContext value={searchCommunity.search.articleCategory}>
-						<Stack className="main-box">
-							<Stack className="left-config">
-								<Stack className={'image-info'}>
-									<img src={'/img/logo/logoText.svg'} />
-									<Stack className={'community-name'}>
-										<Typography className={'name'}>pawpal Community</Typography>
+			<Stack id="community-list-page" sx={{ bgcolor: '#f8f7f4', pb: 8 }}>
+				<Stack
+					sx={{
+						mt: 3,
+						mx: 'auto',
+						maxWidth: 1200,
+						width: 'calc(100% - 32px)',
+						height: 240,
+						borderRadius: 4,
+						overflow: 'hidden',
+						position: 'relative',
+						backgroundImage:
+							"linear-gradient(180deg, rgba(17,17,17,0.42) 0%, rgba(17,17,17,0.58) 100%), url('/img/banner/header3.svg')",
+						backgroundSize: 'cover',
+						backgroundPosition: 'center',
+						color: '#fff',
+						alignItems: 'center',
+						justifyContent: 'center',
+					}}
+				>
+					<Typography sx={{ fontSize: 42, fontWeight: 700, lineHeight: 1.1 }}>Community</Typography>
+					<Typography sx={{ mt: 1.5, fontSize: 14, opacity: 0.95 }}>Home / Community</Typography>
+				</Stack>
+
+				<Stack sx={{ mx: 'auto', maxWidth: 1200, width: 'calc(100% - 32px)', mt: 4 }}>
+					<Stack direction="row" gap={3} alignItems="flex-start">
+						<Stack sx={{ width: '65%', minWidth: 0 }}>
+							<Stack
+								direction="row"
+								flexWrap="wrap"
+								gap={2.5}
+								sx={{ '& > *': { width: 'calc(50% - 10px)' } }}
+							>
+								{boardArticles?.length ? (
+									boardArticles.map((boardArticle: BoardArticle) => {
+										const imageSrc = boardArticle?.articleImage
+											? `${process.env.REACT_APP_API_URL}/${boardArticle.articleImage}`
+											: '/img/banner/header2.svg';
+										return (
+											<Stack
+												key={boardArticle?._id}
+												sx={{
+													bgcolor: '#fff',
+													borderRadius: 2.5,
+													overflow: 'hidden',
+													border: '1px solid #ece8e1',
+												}}
+											>
+												<img
+													src={imageSrc}
+													alt={boardArticle?.articleTitle || 'Article cover'}
+													style={{ width: '100%', height: 180, objectFit: 'cover' }}
+												/>
+												<Stack sx={{ p: 1.75 }}>
+													<Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+														<Typography sx={{ fontSize: 12, color: '#676767' }}>
+															{boardArticle?.memberData?.memberNick || 'PawPal'}
+														</Typography>
+														<Chip
+															size="small"
+															label={boardArticle?.articleCategory || 'FREE'}
+															sx={{
+																height: 22,
+																fontSize: 11,
+																bgcolor: '#fff3eb',
+																color: '#eb6753',
+																fontWeight: 600,
+															}}
+														/>
+													</Stack>
+													<Typography
+														sx={{
+															mt: 1,
+															fontSize: 17,
+															fontWeight: 700,
+															lineHeight: 1.3,
+															display: '-webkit-box',
+															WebkitLineClamp: 2,
+															WebkitBoxOrient: 'vertical',
+															overflow: 'hidden',
+															minHeight: 44,
+														}}
+													>
+														{boardArticle?.articleTitle}
+													</Typography>
+													<Typography sx={{ mt: 0.9, fontSize: 12, color: '#7a7a7a' }}>
+														Views {boardArticle?.articleViews ?? 0} · Likes {boardArticle?.articleLikes ?? 0}
+													</Typography>
+													<Link href={`/community/detail?id=${boardArticle?._id}`} style={{ marginTop: 10 }}>
+														<Typography sx={{ color: '#eb6753', fontSize: 13, fontWeight: 700 }}>
+															Read More →
+														</Typography>
+													</Link>
+												</Stack>
+											</Stack>
+										);
+									})
+								) : (
+									<Stack sx={{ width: '100%', bgcolor: '#fff', borderRadius: 2, p: 3 }}>
+										<Typography>No Article found!</Typography>
+									</Stack>
+								)}
+							</Stack>
+
+							{totalCount > 0 && (
+								<Stack className="pagination-config" sx={{ mt: 3 }}>
+									<Stack className="pagination-box">
+										<Pagination
+											count={Math.ceil(totalCount / searchCommunity.limit)}
+											page={searchCommunity.page}
+											shape="circular"
+											color="primary"
+											onChange={paginationHandler}
+										/>
 									</Stack>
 								</Stack>
+							)}
+						</Stack>
 
-								<TabList
-									orientation="vertical"
-									aria-label="lab API tabs example"
-									TabIndicatorProps={{
-										style: { display: 'none' },
+						<Stack sx={{ width: '35%', minWidth: 300, bgcolor: '#fff', borderRadius: 2.5, border: '1px solid #ece8e1', p: 2.25 }}>
+							<Typography sx={{ fontSize: 24, fontWeight: 700 }}>PawPal Community</Typography>
+							<Typography sx={{ mt: 0.5, color: '#7a7a7a', fontSize: 13 }}>
+								Find the latest tips, stories, and updates.
+							</Typography>
+
+							<TextField
+								size="small"
+								placeholder="Search articles"
+								value={searchText}
+								onChange={(e) => setSearchText(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') applySearchHandler();
+								}}
+								sx={{ mt: 2, '& .MuiOutlinedInput-root': { borderRadius: 8 } }}
+							/>
+
+							<Stack sx={{ mt: 2 }}>
+								{(['FREE', 'RECOMMEND', 'NEWS', 'HUMOR'] as BoardArticleCategory[]).map((cat) => (
+									<Button
+										key={cat}
+										onClick={(e) => void tabChangeHandler(e, cat)}
+										sx={{
+											justifyContent: 'space-between',
+											mb: 1,
+											px: 1.4,
+											py: 1,
+											textTransform: 'none',
+											fontWeight: 700,
+											borderRadius: 2,
+											color: searchCommunity.search.articleCategory === cat ? '#fff' : '#181818',
+											bgcolor: searchCommunity.search.articleCategory === cat ? '#eb6753' : '#f7f7f7',
+											'&:hover': {
+												bgcolor: searchCommunity.search.articleCategory === cat ? '#d85845' : '#f0f0f0',
+											},
+										}}
+									>
+										{cat === 'RECOMMEND' ? 'RECOMMENDATION' : cat === 'FREE' ? 'FREE BOARD' : cat}
+									</Button>
+								))}
+							</Stack>
+
+							{user?._id && (
+								<Button
+									onClick={() =>
+										router.push({
+											pathname: '/mypage',
+											query: { category: 'writeArticle' },
+										})
+									}
+									variant="contained"
+									sx={{
+										mt: 1.5,
+										bgcolor: '#eb6753',
+										textTransform: 'none',
+										fontWeight: 700,
+										borderRadius: 999,
+										'&:hover': { bgcolor: '#d85845' },
 									}}
-									onChange={tabChangeHandler}
 								>
-									<Tab
-										value={'FREE'}
-										label={'Free Board'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'FREE' ? 'active' : ''}`}
-									/>
-									<Tab
-										value={'RECOMMEND'}
-										label={'Recommendation'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'RECOMMEND' ? 'active' : ''}`}
-									/>
-									<Tab
-										value={'NEWS'}
-										label={'News'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'NEWS' ? 'active' : ''}`}
-									/>
-									<Tab
-										value={'HUMOR'}
-										label={'Humor'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'HUMOR' ? 'active' : ''}`}
-									/>
-								</TabList>
-							</Stack>
-							<Stack className="right-config">
-								<Stack className="panel-config">
-									<Stack className="title-box">
-										<Stack className="left">
-											<Typography className="title">{searchCommunity.search.articleCategory} BOARD</Typography>
-											<Typography className="sub-title">
-												Express your opinions freely here without content restrictions
-											</Typography>
-										</Stack>
-										<Button
-											onClick={() =>
-												router.push({
-													pathname: '/mypage',
-													query: {
-														category: 'writeArticle',
-													},
-												})
-											}
-											className="right"
-										>
-											Write
-										</Button>
-									</Stack>
-
-									<TabPanel value="FREE">
-										<Stack className="list-box">
-											{totalCount ? (
-												boardArticles?.map((boardArticle: BoardArticle) => {
-													return (
-														<CommunityCard
-															boardArticle={boardArticle}
-															key={boardArticle?._id}
-															likeArticleHandler={likeArticleHandler}
-														/>
-													);
-												})
-											) : (
-												<Stack className={'no-data'}>
-													<img src="/img/icons/icoAlert.svg" alt="" />
-													<p>No Article found!</p>
-												</Stack>
-											)}
-										</Stack>
-									</TabPanel>
-									<TabPanel value="RECOMMEND">
-										<Stack className="list-box">
-											{totalCount ? (
-												boardArticles?.map((boardArticle: BoardArticle) => {
-													return (
-														<CommunityCard
-															boardArticle={boardArticle}
-															key={boardArticle?._id}
-															likeArticleHandler={likeArticleHandler}
-														/>
-													);
-												})
-											) : (
-												<Stack className={'no-data'}>
-													<img src="/img/icons/icoAlert.svg" alt="" />
-													<p>No Article found!</p>
-												</Stack>
-											)}
-										</Stack>
-									</TabPanel>
-									<TabPanel value="NEWS">
-										<Stack className="list-box">
-											{totalCount ? (
-												boardArticles?.map((boardArticle: BoardArticle) => {
-													return (
-														<CommunityCard
-															boardArticle={boardArticle}
-															key={boardArticle?._id}
-															likeArticleHandler={likeArticleHandler}
-														/>
-													);
-												})
-											) : (
-												<Stack className={'no-data'}>
-													<img src="/img/icons/icoAlert.svg" alt="" />
-													<p>No Article found!</p>
-												</Stack>
-											)}
-										</Stack>
-									</TabPanel>
-									<TabPanel value="HUMOR">
-										<Stack className="list-box">
-											{totalCount ? (
-												boardArticles?.map((boardArticle: BoardArticle) => {
-													return (
-														<CommunityCard
-															boardArticle={boardArticle}
-															key={boardArticle?._id}
-															likeArticleHandler={likeArticleHandler}
-														/>
-													);
-												})
-											) : (
-												<Stack className={'no-data'}>
-													<img src="/img/icons/icoAlert.svg" alt="" />
-													<p>No Article found!</p>
-												</Stack>
-											)}
-										</Stack>
-									</TabPanel>
-								</Stack>
-							</Stack>
+									Write
+								</Button>
+							)}
 						</Stack>
-					</TabContext>
-
-					{totalCount > 0 && (
-						<Stack className="pagination-config">
-							<Stack className="pagination-box">
-								<Pagination
-									count={Math.ceil(totalCount / searchCommunity.limit)}
-									page={searchCommunity.page}
-									shape="circular"
-									color="primary"
-									onChange={paginationHandler}
-								/>
-							</Stack>
-							<Stack className="total-result">
-								<Typography>
-									Total {totalCount} article{totalCount > 1 ? 's' : ''} available
-								</Typography>
-							</Stack>
-						</Stack>
-					)}
-				</div>
-			</div>
+					</Stack>
+				</Stack>
+			</Stack>
 		);
 	}
 };
