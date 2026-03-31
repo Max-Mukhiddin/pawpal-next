@@ -7,6 +7,8 @@ import { ThemeModeProvider } from '../libs/theme';
 import '../scss/app.scss';
 import '../scss/pc/main.scss';
 import '../scss/mobile/main.scss';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const nextI18NextConfig = require('../next-i18next.config');
 
 const App = ({ Component, pageProps }: AppProps) => {
 	const client = useApollo(pageProps.initialApolloState);
@@ -20,4 +22,4 @@ const App = ({ Component, pageProps }: AppProps) => {
 	);
 };
 
-export default appWithTranslation(App);
+export default appWithTranslation(App, nextI18NextConfig);

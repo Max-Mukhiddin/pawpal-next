@@ -1,9 +1,5 @@
-/** PawPal / Nestar listing-kind and geography — GraphQL `Listing` / `ListingsInquiry` enums. */
+/** PawPal listing kind and geography — GraphQL `Listing` / `ListingsInquiry` enums. */
 export enum ListingType {
-	APARTMENT = 'APARTMENT',
-	VILLA = 'VILLA',
-	HOUSE = 'HOUSE',
-	/** Catalog discrimination via `search.typeList` on `getListings`. */
 	PRODUCT = 'PRODUCT',
 	SERVICE = 'SERVICE',
 }

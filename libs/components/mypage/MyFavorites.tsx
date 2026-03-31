@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
-import PropertyCard from '../property/PropertyCard';
+import CatalogBrowseCard from '../listings/CatalogBrowseCard';
 import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
 import { GET_FAVORITES } from '../../../apollo/user/query';
@@ -55,7 +55,7 @@ const MyFavorites: NextPage = () => {
 
 			await getFavoritesRefetch({ input: searchFavorites });
 		} catch (err: any) {
-			console.log('ERROR, likeListingHandler:', err.message);
+			console.error('ERROR, likeListingHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -75,7 +75,7 @@ const MyFavorites: NextPage = () => {
 					{myFavorites?.length ? (
 						myFavorites?.map((listing: Listing) => {
 							return (
-								<PropertyCard
+								<CatalogBrowseCard
 									listing={listing}
 									myFavorites={true}
 									likeListingHandler={likeListingHandler}
@@ -103,7 +103,7 @@ const MyFavorites: NextPage = () => {
 						</Stack>
 						<Stack className="total-result">
 							<Typography>
-								Total {total} favorite propert{total > 1 ? 'ies' : 'y'}
+								Total {total} favorite listing{total > 1 ? 's' : ''}
 							</Typography>
 						</Stack>
 					</Stack>

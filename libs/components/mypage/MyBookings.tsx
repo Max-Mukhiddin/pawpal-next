@@ -100,7 +100,10 @@ const MyBookings: NextPage = () => {
 				) : rows.length ? (
 					rows.map((b) => {
 						const st = normalizeStatus(b.bookingStatus);
-						const headline = inboxListingHeadline(undefined, b.listingId);
+						const headline = inboxListingHeadline(b.listingData?.listingTitle, b.listingId);
+						const agentName = b.agentData?.memberNick?.trim();
+						const agentPhone = b.agentData?.memberPhone?.trim();
+						const agentImage = b.agentData?.memberImage?.trim();
 						return (
 							<Stack key={b._id} sx={inboxListCardSx}>
 								<Stack direction="row" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={1.5}>
@@ -109,7 +112,10 @@ const MyBookings: NextPage = () => {
 											{headline}
 										</Typography>
 										{b.listingId ? (
-											<InboxOpenListingLink listingId={b.listingId} listingType={ListingType.SERVICE} />
+											<InboxOpenListingLink
+												listingId={b.listingId}
+												listingType={b.listingData?.listingType ?? ListingType.SERVICE}
+											/>
 										) : null}
 									</Stack>
 									<Chip
@@ -126,7 +132,40 @@ const MyBookings: NextPage = () => {
 								<Typography sx={{ fontSize: 14, lineHeight: 1.45 }}>{formatDisplayDateTime(b.createdAt)}</Typography>
 
 								<Typography sx={{ ...fieldLabelSx, mt: 1.5 }}>Specialist</Typography>
-								<Typography sx={{ ...metaLineSx, mt: 0 }}>Specialist ID: {b.agentId ?? '—'}</Typography>
+								<Stack direction="row" alignItems="center" spacing={1.5}>
+									<Stack
+										sx={{
+											width: 40,
+											height: 40,
+											borderRadius: '50%',
+											bgcolor: '#ececec',
+											alignItems: 'center',
+											justifyContent: 'center',
+											fontWeight: 700,
+											fontSize: 15,
+											color: '#181a20',
+											flexShrink: 0,
+											overflow: 'hidden',
+										}}
+									>
+										{agentImage ? (
+											<img
+												src={`${process.env.REACT_APP_API_URL}/${agentImage}`}
+												alt="specialist avatar"
+												style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+											/>
+										) : (
+											(agentName?.charAt(0) || 'S').toUpperCase()
+										)}
+									</Stack>
+									<Stack spacing={0.25} minWidth={0}>
+										<Typography sx={{ fontSize: 14, color: '#181a20', fontWeight: 600 }}>
+											{agentName || 'Unknown specialist'}
+										</Typography>
+										<Typography sx={{ ...metaLineSx, mt: 0 }}>{agentPhone || 'Phone unavailable'}</Typography>
+									</Stack>
+								</Stack>
+								<Typography sx={{ ...metaLineSx, mt: 0.5 }}>Specialist ID: {b.agentId ?? b.agentData?._id ?? '—'}</Typography>
 								<Typography sx={{ ...metaLineSx, mt: 0.5 }}>Booking ID: {b._id}</Typography>
 
 								<Typography sx={{ ...fieldLabelSx, mt: 1.5 }}>Your note</Typography>

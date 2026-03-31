@@ -63,7 +63,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 
 			await sweetTopSmallSuccessAlert('Success!', 750);
 		} catch (err: any) {
-			console.log('ERROR, likeArticleHandler:', err.message);
+			console.error('ERROR, likeArticleHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};

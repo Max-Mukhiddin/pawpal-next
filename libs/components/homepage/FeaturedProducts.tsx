@@ -6,7 +6,7 @@ import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
 import { homeFeaturedListingsInquiry } from '../../utils/catalogListingInquiry';
 import type { Listing } from '../../types/listing/listing';
-import HomeFeaturedListingCard from './HomeFeaturedListingCard';
+import HomeFeaturedItemCard from './HomeFeaturedItemCard';
 
 const PRODUCT_HOME_INPUT = homeFeaturedListingsInquiry(ListingType.PRODUCT);
 
@@ -34,7 +34,7 @@ export default function FeaturedProducts() {
 							From nutrition to comfort, discover quality picks trusted by PawPal families.
 						</p>
 					</div>
-					<Link href="/products" className="featured-products-pawpal__browse">
+					<Link href="/product" className="featured-products-pawpal__browse">
 						<span>Browse all products</span>
 						<ArrowForwardOutlinedIcon className="featured-products-pawpal__browse-icon" aria-hidden />
 					</Link>
@@ -48,17 +48,17 @@ export default function FeaturedProducts() {
 
 				{showEmpty && (
 					<p className="pawpal-home-section__lead" style={{ marginTop: 0 }}>
-						Product listings will appear here as sellers publish on PawPal.
+						Products will appear here as sellers publish on PawPal.
 					</p>
 				)}
 
 				{listings.length > 0 && (
 					<div className="featured-products-pawpal__grid">
 						{listings.map((listing) => (
-							<HomeFeaturedListingCard
+							<HomeFeaturedItemCard
 								key={listing._id}
 								listing={listing}
-								detailBasePath="/products/detail"
+								detailBasePath="/product/detail"
 								viewLabel="View product"
 							/>
 						))}

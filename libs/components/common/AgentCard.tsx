@@ -44,7 +44,7 @@ const AgentCard = (props: AgentCardProps) => {
 							backgroundRepeat: 'no-repeat',
 						}}
 					>
-						<div>{agent?.memberProperties} properties</div>
+						<div>{agent?.memberProperties} published</div>
 					</Box>
 				</Link>
 
@@ -58,7 +58,7 @@ const AgentCard = (props: AgentCardProps) => {
 						>
 							<strong>{agent?.memberFullName ?? agent?.memberNick}</strong>
 						</Link>
-						<span>Agent</span>
+						<span>Specialist</span>
 					</Box>
 					<Box component={'div'} className={'buttons'}>
 						<IconButton color={'default'}>

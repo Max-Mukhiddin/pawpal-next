@@ -1,4 +1,4 @@
-import { MeLiked, TotalCounter } from '../property/property';
+import type { MeLiked, TotalCounter } from '../common/aggregates';
 import { Member } from '../member/member';
 
 export interface MeFollowed {

@@ -46,13 +46,13 @@ function ProductDetailMobile({
 	onSubmitComment,
 }: ProductDetailMobileProps) {
 	return (
-	<div id="property-detail-page" className="product-detail-mobile">
+	<div id="listing-detail-page" className="product-detail-mobile">
 		<div className="container">
 			<Stack spacing={2} sx={{ py: 2, px: { xs: 1, sm: 0 } }}>
 				<Stack className="images">
 					<Stack className="main-image" sx={{ borderRadius: 2, overflow: 'hidden' }}>
 						<img
-							src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/property/bigImage.png'}
+							src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/listing/bigImage.png'}
 							alt=""
 							style={{ width: '100%', display: 'block', maxHeight: 280, objectFit: 'cover' }}
 						/>
@@ -98,9 +98,8 @@ function ProductDetailMobile({
 						</Stack>
 					</Stack>
 					<Stack direction="row" flexWrap="wrap" gap={1} className="bottom-box">
-						<Typography variant="caption">Pack {product?.listingBeds}</Typography>
-						<Typography variant="caption">Units {product?.listingRooms}</Typography>
-						<Typography variant="caption">Net {product?.listingSquare} g</Typography>
+						<Typography variant="caption">{product?.listingType}</Typography>
+						<Typography variant="caption">Comments {product?.listingComments ?? 0}</Typography>
 					</Stack>
 				</Stack>
 
@@ -113,10 +112,10 @@ function ProductDetailMobile({
 						<Typography className="title">Product details</Typography>
 						<Stack spacing={1} sx={{ mt: 1 }}>
 							<Typography variant="body2">Price: ${formatterStr(product?.listingPrice)}</Typography>
-							<Typography variant="body2">Net weight: {product?.listingSquare} g</Typography>
-							<Typography variant="body2">Units: {product?.listingRooms}</Typography>
-							<Typography variant="body2">Pack size: {product?.listingBeds}</Typography>
-							<Typography variant="body2">In catalog since {moment(product?.createdAt).format('YYYY')}</Typography>
+							<Typography variant="body2">Status: {product?.listingStatus}</Typography>
+							<Typography variant="body2">Views: {product?.listingViews ?? 0}</Typography>
+							<Typography variant="body2">Comments: {product?.listingComments ?? 0}</Typography>
+							<Typography variant="body2">Listed {moment(product?.createdAt).format('YYYY-MM-DD')}</Typography>
 						</Stack>
 					</Stack>
 				</Stack>

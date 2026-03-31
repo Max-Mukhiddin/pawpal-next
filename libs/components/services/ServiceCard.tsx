@@ -28,7 +28,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 		service?.listingDesc?.trim() || service?.listingAddress || 'Thoughtful care tailored to your companion.';
 
 	const goDetail = async () => {
-		await router.push(`/services/detail?id=${service._id}`);
+		await router.push(`/service/detail?id=${service._id}`);
 	};
 
 	return (
@@ -41,7 +41,9 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 				<Typography className="services-list-card__desc">{shortDesc}</Typography>
 				<Stack className="services-list-card__meta" direction={'row'} alignItems={'center'} justifyContent={'space-between'}>
 					<Typography className="services-list-card__price">From ${formatterStr(service.listingPrice)}</Typography>
-					<Typography className="services-list-card__duration">{service.listingRooms} step care</Typography>
+					<Typography className="services-list-card__duration">
+						{service.durationMinutes != null ? `${service.durationMinutes} min` : '—'}
+					</Typography>
 				</Stack>
 				<Stack className="services-list-card__actions" direction={'row'} alignItems={'center'}>
 					<IconButton color={'default'}>

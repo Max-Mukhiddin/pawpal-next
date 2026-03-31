@@ -53,7 +53,7 @@ function ServiceDetailMobile({
 				<Stack className="images">
 					<Stack className="main-image" sx={{ borderRadius: 2, overflow: 'hidden' }}>
 						<img
-							src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/property/bigImage.png'}
+							src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/listing/bigImage.png'}
 							alt=""
 							style={{ width: '100%', display: 'block', maxHeight: 280, objectFit: 'cover' }}
 						/>
@@ -99,9 +99,9 @@ function ServiceDetailMobile({
 						</Stack>
 					</Stack>
 					<Stack direction="row" flexWrap="wrap" gap={1}>
-						<Typography variant="caption">Steps {service?.listingBeds}</Typography>
-						<Typography variant="caption">Sessions {service?.listingRooms}</Typography>
-						<Typography variant="caption">Score {service?.listingSquare}</Typography>
+						<Typography variant="caption">
+							Duration {service?.durationMinutes != null ? `${service.durationMinutes} min` : '—'}
+						</Typography>
 					</Stack>
 				</Stack>
 
@@ -109,21 +109,15 @@ function ServiceDetailMobile({
 					<Stack direction="row" flexWrap="wrap" gap={2}>
 						<Stack>
 							<Typography variant="caption" color="text.secondary">
-								Care steps
+								Duration
 							</Typography>
-							<Typography>{service?.listingBeds}</Typography>
+							<Typography>{service?.durationMinutes != null ? `${service.durationMinutes} min` : '—'}</Typography>
 						</Stack>
 						<Stack>
 							<Typography variant="caption" color="text.secondary">
-								Sessions
+								Listed
 							</Typography>
-							<Typography>{service?.listingRooms}</Typography>
-						</Stack>
-						<Stack>
-							<Typography variant="caption" color="text.secondary">
-								Since
-							</Typography>
-							<Typography>{moment(service?.createdAt).format('YYYY')}</Typography>
+							<Typography>{moment(service?.createdAt).format('YYYY-MM-DD')}</Typography>
 						</Stack>
 					</Stack>
 

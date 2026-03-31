@@ -8,14 +8,7 @@ export interface ListingUpdate {
 	listingAddress?: string;
 	listingTitle?: string;
 	listingPrice?: number;
-	listingSquare?: number;
-	listingBeds?: number;
-	listingRooms?: number;
 	listingImages?: string[];
 	listingDesc?: string;
-	listingBarter?: boolean;
-	listingRent?: boolean;
-	soldAt?: Date;
-	deletedAt?: Date;
-	constructedAt?: Date;
+	durationMinutes?: number | null;
 }

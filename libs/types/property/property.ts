@@ -1,15 +1,8 @@
 import { PropertyLocation, PropertyStatus, PropertyType } from '../../enums/property.enum';
 import { Member } from '../member/member';
+import type { MeLiked, TotalCounter } from '../common/aggregates';
 
-export interface MeLiked {
-	memberId: string;
-	likeRefId: string;
-	myFavorite: boolean;
-}
-
-export interface TotalCounter {
-	total: number;
-}
+export type { MeLiked, TotalCounter };
 
 export interface Property {
 	_id: string;

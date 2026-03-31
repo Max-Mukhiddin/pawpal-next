@@ -1,6 +1,6 @@
 import React from 'react';
 
-/** Catalog intro for `/products` listing — text-first PawPal tone, no marketing composition. */
+/** Catalog intro for `/product` listing — text-first PawPal tone, no marketing composition. */
 const ProductsHero: React.FC = () => (
 	<section className="pawpal-static-page__hero products-hero products-hero--catalog">
 		<div className="pawpal-static-page__hero-content">

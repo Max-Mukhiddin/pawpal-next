@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
-import { PropertyCard } from '../mypage/PropertyCard';
+import { SpecialistCatalogRow } from '../mypage/SpecialistCatalogRow';
 import type { Listing } from '../../types/listing/listing';
 import type { ListingsInquiry } from '../../types/listing/listing.input';
 import { T } from '../../types/common';
@@ -10,7 +10,7 @@ import { useRouter } from 'next/router';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
 
-const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
+const MemberAgentListings: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const { memberId } = router.query;
@@ -54,13 +54,13 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 	};
 
 	if (device === 'mobile') {
-		return <div>pawpal PROPERTIES MOBILE</div>;
+		return <div>pawpal LISTINGS MOBILE</div>;
 	} else {
 		return (
 			<div id="member-properties-page">
 				<Stack className="main-title-box">
 					<Stack className="right-box">
-						<Typography className="main-title">Properties</Typography>
+						<Typography className="main-title">Listings</Typography>
 					</Stack>
 				</Stack>
 				<Stack className="properties-list-box">
@@ -76,11 +76,11 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 						{agentListings?.length === 0 && (
 							<div className={'no-data'}>
 								<img src="/img/icons/icoAlert.svg" alt="" />
-								<p>No Property found!</p>
+								<p>No listings found!</p>
 							</div>
 						)}
 						{agentListings?.map((listing: Listing) => {
-							return <PropertyCard listing={listing} memberPage={true} key={listing?._id} />;
+							return <SpecialistCatalogRow listing={listing} memberPage={true} key={listing?._id} />;
 						})}
 
 						{agentListings.length !== 0 && (
@@ -95,7 +95,7 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 									/>
 								</Stack>
 								<Stack className="total-result">
-									<Typography>{total} property available</Typography>
+									<Typography>{total} listing(s) available</Typography>
 								</Stack>
 							</Stack>
 						)}
@@ -106,7 +106,7 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 	}
 };
 
-MyProperties.defaultProps = {
+MemberAgentListings.defaultProps = {
 	initialInput: {
 		page: 1,
 		limit: 5,
@@ -117,4 +117,4 @@ MyProperties.defaultProps = {
 	},
 };
 
-export default MyProperties;
+export default MemberAgentListings;

@@ -6,7 +6,7 @@ import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
 import { homeFeaturedListingsInquiry } from '../../utils/catalogListingInquiry';
 import type { Listing } from '../../types/listing/listing';
-import HomeFeaturedListingCard from './HomeFeaturedListingCard';
+import HomeFeaturedItemCard from './HomeFeaturedItemCard';
 
 const SERVICE_HOME_INPUT = homeFeaturedListingsInquiry(ListingType.SERVICE);
 
@@ -30,10 +30,10 @@ export default function FeaturedServices() {
 							Featured services
 						</h2>
 						<p className="pawpal-home-section__lead" style={{ marginBottom: 0 }}>
-							Hand-picked care listings from PawPal specialists and partners.
+							Hand-picked care services from PawPal specialists and partners.
 						</p>
 					</div>
-					<Link href="/services" className="featured-products-pawpal__browse">
+					<Link href="/service" className="featured-products-pawpal__browse">
 						<span>Browse all services</span>
 						<ArrowForwardOutlinedIcon className="featured-products-pawpal__browse-icon" aria-hidden />
 					</Link>
@@ -47,7 +47,7 @@ export default function FeaturedServices() {
 
 				{showEmpty && (
 					<p className="pawpal-home-section__lead" style={{ marginTop: 16 }}>
-						Service listings will appear here as providers publish on PawPal.
+						Services will appear here as providers publish on PawPal.
 					</p>
 				)}
 
@@ -55,10 +55,10 @@ export default function FeaturedServices() {
 					<div className="featured-products-pawpal featured-products-pawpal--embedded">
 						<div className="featured-products-pawpal__grid">
 							{listings.map((listing) => (
-								<HomeFeaturedListingCard
+								<HomeFeaturedItemCard
 									key={listing._id}
 									listing={listing}
-									detailBasePath="/services/detail"
+									detailBasePath="/service/detail"
 									viewLabel="View service"
 								/>
 							))}

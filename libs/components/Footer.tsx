@@ -31,7 +31,7 @@ const contactStrip = [
 ];
 
 const categories = [
-	{ label: 'Services', href: '/services' },
+	{ label: 'Services', href: '/service' },
 	{ label: 'Grooming', href: '/grooming' },
 	{ label: 'Walking', href: '/walking' },
 	{ label: 'Boarding', href: '/boarding' },
@@ -123,7 +123,7 @@ const Footer = () => {
 					<div className="footer-pawpal__col footer-pawpal__col--brand">
 						<Link href="/" className="footer-pawpal__logo-link">
 							<img
-								src="/images/footer/pawpal-logo-light.png"
+								src="/images/footer/pawpal-logo-light.svg"
 								alt="PawPal"
 								className="footer-pawpal__logo"
 								width={160}

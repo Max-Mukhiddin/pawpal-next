@@ -1,6 +1,11 @@
 import { ListingType } from '../enums/listing.enum';
 
-/** Detail URL for a listing; unknown type → `/property/detail` (safe fallback). */
+/** Browse URL with filter state in `?input=` (JSON string, same shape as `ListingsInquiry`). */
+export function getListingsIndexHref(listingInquiry: unknown): string {
+	return `/listings?input=${JSON.stringify(listingInquiry)}`;
+}
+
+/** Detail URL for a listing; unknown type → `/listings/detail` (generic marketplace fallback). */
 export function getListingDetailHref(
 	listingId: string | null | undefined,
 	listingType: string | null | undefined,
@@ -8,20 +13,20 @@ export function getListingDetailHref(
 	if (!listingId?.trim()) return null;
 	const id = listingId.trim();
 	const t = listingType ? String(listingType).toUpperCase() : '';
-	if (t === ListingType.PRODUCT) return `/products/detail?id=${encodeURIComponent(id)}`;
-	if (t === ListingType.SERVICE) return `/services/detail?id=${encodeURIComponent(id)}`;
-	return `/property/detail?id=${encodeURIComponent(id)}`;
+	if (t === ListingType.PRODUCT) return `/product/detail?id=${encodeURIComponent(id)}`;
+	if (t === ListingType.SERVICE) return `/service/detail?id=${encodeURIComponent(id)}`;
+	return `/listings/detail?id=${encodeURIComponent(id)}`;
 }
 
-/** Primary card title: prefer API listing title, else `Listing ID: …`, else `Listing`. */
+/** Primary card title: prefer API title, else reference id, else generic label. */
 export function inboxListingHeadline(
 	listingTitle: string | null | undefined,
 	listingId: string | null | undefined,
 ): string {
 	const title = listingTitle?.trim();
 	if (title) return title;
-	if (listingId?.trim()) return `Listing ID: ${listingId.trim()}`;
-	return 'Listing';
+	if (listingId?.trim()) return `Reference: ${listingId.trim()}`;
+	return 'Catalog item';
 }
 
 /** How to refer to the listing owner on “my inquiry” views from `listingType`. */

@@ -23,7 +23,7 @@ const MyMenu = () => {
 		try {
 			if (await sweetConfirmAlert('Do you want to logout?')) logOut();
 		} catch (err: any) {
-			console.log('ERROR, logoutHandler:', err.message);
+			console.error('ERROR, logoutHandler:', err.message);
 		}
 	};
 
@@ -55,29 +55,29 @@ const MyMenu = () => {
 					</Stack>
 				</Stack>
 				<Stack className={'sections'}>
-					<Stack className={'section'} style={{ height: user.memberType === 'AGENT' ? '400px' : '266px' }}>
+					<Stack className={'section'} style={{ height: user.memberType === 'AGENT' ? '480px' : '266px' }}>
 						<Typography className="title" variant={'h5'}>
-							MANAGE LISTINGS
+							PRODUCTS &amp; SERVICES
 						</Typography>
 						<List className={'sub-section'}>
 							{user.memberType === 'AGENT' && (
 								<>
-									<ListItem className={pathname === 'addProperty' ? 'focus' : ''}>
+									<ListItem className={pathname === 'addListing' ? 'focus' : ''}>
 										<Link
 											href={{
 												pathname: '/mypage',
-												query: { category: 'addProperty' },
+												query: { category: 'addListing' },
 											}}
 											scroll={false}
 										>
 											<div className={'flex-box'}>
-												{category === 'addProperty' ? (
+												{category === 'addListing' ? (
 													<img className={'com-icon'} src={'/img/icons/whiteTab.svg'} alt={'com-icon'} />
 												) : (
 													<img className={'com-icon'} src={'/img/icons/newTab.svg'} alt={'com_icon'} />
 												)}
 												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
-													Add Property
+													Add product or service
 												</Typography>
 												<IconButton aria-label="delete" sx={{ ml: '40px' }}>
 													<PortraitIcon style={{ color: 'red' }} />
@@ -85,22 +85,22 @@ const MyMenu = () => {
 											</div>
 										</Link>
 									</ListItem>
-									<ListItem className={pathname === 'myProperties' ? 'focus' : ''}>
+									<ListItem className={pathname === 'myProducts' ? 'focus' : ''}>
 										<Link
 											href={{
 												pathname: '/mypage',
-												query: { category: 'myProperties' },
+												query: { category: 'myProducts' },
 											}}
 											scroll={false}
 										>
 											<div className={'flex-box'}>
-												{category === 'myProperties' ? (
+												{category === 'myProducts' ? (
 													<img className={'com-icon'} src={'/img/icons/homeWhite.svg'} alt={'com-icon'} />
 												) : (
 													<img className={'com-icon'} src={'/img/icons/home.svg'} alt={'com-icon'} />
 												)}
 												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
-													My Properties
+													My products
 												</Typography>
 												<IconButton aria-label="delete" sx={{ ml: '36px' }}>
 													<PortraitIcon style={{ color: 'red' }} />
@@ -108,36 +108,71 @@ const MyMenu = () => {
 											</div>
 										</Link>
 									</ListItem>
-									<ListItem className={pathname === 'agentInquiries' ? 'focus' : ''}>
+									<ListItem
+										className={
+											pathname === 'myServices' || pathname === 'myListings' ? 'focus' : ''
+										}
+									>
 										<Link
 											href={{
 												pathname: '/mypage',
-												query: { category: 'agentInquiries' },
+												query: { category: 'myServices' },
 											}}
 											scroll={false}
 										>
 											<div className={'flex-box'}>
-												{category === 'agentInquiries' ? (
+												{category === 'myServices' || category === 'myListings' ? (
+													<img className={'com-icon'} src={'/img/icons/homeWhite.svg'} alt={'com-icon'} />
+												) : (
+													<img className={'com-icon'} src={'/img/icons/home.svg'} alt={'com-icon'} />
+												)}
+												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
+													My services
+												</Typography>
+												<IconButton aria-label="delete" sx={{ ml: '36px' }}>
+													<PortraitIcon style={{ color: 'red' }} />
+												</IconButton>
+											</div>
+										</Link>
+									</ListItem>
+									<ListItem
+										className={
+											pathname === 'specialistInquiries' || pathname === 'agentInquiries' ? 'focus' : ''
+										}
+									>
+										<Link
+											href={{
+												pathname: '/mypage',
+												query: { category: 'specialistInquiries' },
+											}}
+											scroll={false}
+										>
+											<div className={'flex-box'}>
+												{category === 'specialistInquiries' || category === 'agentInquiries' ? (
 													<img className={'com-icon'} src={'/img/icons/reviewWhite.svg'} alt={'com-icon'} />
 												) : (
 													<img className={'com-icon'} src={'/img/icons/review.svg'} alt={'com-icon'} />
 												)}
 												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
-													Listing inquiries
+													Service inquiries
 												</Typography>
 											</div>
 										</Link>
 									</ListItem>
-									<ListItem className={pathname === 'agentBookings' ? 'focus' : ''}>
+									<ListItem
+										className={
+											pathname === 'specialistBookings' || pathname === 'agentBookings' ? 'focus' : ''
+										}
+									>
 										<Link
 											href={{
 												pathname: '/mypage',
-												query: { category: 'agentBookings' },
+												query: { category: 'specialistBookings' },
 											}}
 											scroll={false}
 										>
 											<div className={'flex-box'}>
-												{category === 'agentBookings' ? (
+												{category === 'specialistBookings' || category === 'agentBookings' ? (
 													<img className={'com-icon'} src={'/img/icons/discoveryWhite.svg'} alt={'com-icon'} />
 												) : (
 													<img className={'com-icon'} src={'/img/icons/discovery.svg'} alt={'com-icon'} />

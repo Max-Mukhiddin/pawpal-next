@@ -1,565 +1,255 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Stack, Box, Modal, Divider, Button } from '@mui/material';
+import { Stack, Modal, Divider, Button } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import { listingSquareOptions, listingConstructionYears, listingBarter, listingRent } from '../../config';
 import { ListingLocation, ListingType } from '../../enums/listing.enum';
 import type { ListingsInquiry } from '../../types/listing/listing.input';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 
-const style = {
-	position: 'absolute' as 'absolute',
+const advancedFilterModalRootStyle: React.CSSProperties = {
+	position: 'absolute',
 	top: '50%',
 	left: '50%',
 	transform: 'translate(-50%, -50%)',
 	width: 'auto',
-	bgcolor: 'background.paper',
+	backgroundColor: '#fff',
 	borderRadius: '12px',
 	outline: 'none',
-	boxShadow: 24,
+	boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
 };
-
-const MenuProps = {
-	PaperProps: {
-		style: {
-			maxHeight: '200px',
-		},
-	},
-};
-
-const thisYear = new Date().getFullYear();
 
 interface HeaderFilterProps {
 	initialInput: ListingsInquiry;
 }
+
+const CATALOG_TYPES = [ListingType.PRODUCT, ListingType.SERVICE];
 
 const HeaderFilter = (props: HeaderFilterProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
 	const { t } = useTranslation('common');
 	const [listingInquiry, setListingInquiry] = useState<ListingsInquiry>(initialInput);
-	const locationRef: any = useRef();
-	const typeRef: any = useRef();
-	const roomsRef: any = useRef();
+	const locationRef = useRef<HTMLDivElement>(null);
+	const typeRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const [openAdvancedFilter, setOpenAdvancedFilter] = useState(false);
 	const [openLocation, setOpenLocation] = useState(false);
 	const [openType, setOpenType] = useState(false);
-	const [openRooms, setOpenRooms] = useState(false);
 	const locationEnumValues = Object.values(ListingLocation);
-	const listingTypeEnumValues = Object.values(ListingType);
-	const [yearCheck, setYearCheck] = useState({ start: 1970, end: thisYear });
-	const [optionCheck, setOptionCheck] = useState('all');
 
-	/** LIFECYCLES **/
 	useEffect(() => {
 		const clickHandler = (event: MouseEvent) => {
-			if (!locationRef?.current?.contains(event.target)) {
+			if (!locationRef?.current?.contains(event.target as Node)) {
 				setOpenLocation(false);
 			}
-
-			if (!typeRef?.current?.contains(event.target)) {
+			if (!typeRef?.current?.contains(event.target as Node)) {
 				setOpenType(false);
 			}
-
-			if (!roomsRef?.current?.contains(event.target)) {
-				setOpenRooms(false);
-			}
 		};
-
 		document.addEventListener('mousedown', clickHandler);
-
-		return () => {
-			document.removeEventListener('mousedown', clickHandler);
-		};
+		return () => document.removeEventListener('mousedown', clickHandler);
 	}, []);
 
-	/** HANDLERS **/
 	const advancedFilterHandler = (status: boolean) => {
 		setOpenLocation(false);
-		setOpenRooms(false);
 		setOpenType(false);
 		setOpenAdvancedFilter(status);
 	};
 
 	const locationStateChangeHandler = () => {
 		setOpenLocation((prev) => !prev);
-		setOpenRooms(false);
 		setOpenType(false);
 	};
 
 	const typeStateChangeHandler = () => {
 		setOpenType((prev) => !prev);
 		setOpenLocation(false);
-		setOpenRooms(false);
-	};
-
-	const roomStateChangeHandler = () => {
-		setOpenRooms((prev) => !prev);
-		setOpenType(false);
-		setOpenLocation(false);
-	};
-
-	const disableAllStateHandler = () => {
-		setOpenRooms(false);
-		setOpenType(false);
-		setOpenLocation(false);
 	};
 
 	const listingLocationSelectHandler = useCallback(
-		async (value: any) => {
-			try {
-				setListingInquiry({
-					...listingInquiry,
-					search: {
-						...listingInquiry.search,
-						locationList: [value],
-					},
-				});
-				typeStateChangeHandler();
-			} catch (err: any) {
-				console.log('ERROR, listingLocationSelectHandler:', err);
-			}
+		async (value: ListingLocation) => {
+			setListingInquiry({
+				...listingInquiry,
+				search: { ...listingInquiry.search, locationList: [value] },
+			});
+			typeStateChangeHandler();
 		},
 		[listingInquiry],
 	);
 
 	const listingTypeSelectHandler = useCallback(
-		async (value: any) => {
-			try {
-				setListingInquiry({
-					...listingInquiry,
-					search: {
-						...listingInquiry.search,
-						typeList: [value],
-					},
-				});
-				roomStateChangeHandler();
-			} catch (err: any) {
-				console.log('ERROR, listingTypeSelectHandler:', err);
-			}
+		async (value: ListingType) => {
+			setListingInquiry({
+				...listingInquiry,
+				search: { ...listingInquiry.search, typeList: [value] },
+			});
+			setOpenType(false);
 		},
 		[listingInquiry],
 	);
-
-	const listingRoomSelectHandler = useCallback(
-		async (value: any) => {
-			try {
-				setListingInquiry({
-					...listingInquiry,
-					search: {
-						...listingInquiry.search,
-						roomsList: [value],
-					},
-				});
-				disableAllStateHandler();
-			} catch (err: any) {
-				console.log('ERROR, listingRoomSelectHandler:', err);
-			}
-		},
-		[listingInquiry],
-	);
-
-	const listingBedSelectHandler = useCallback(
-		async (number: Number) => {
-			try {
-				if (number != 0) {
-					if (listingInquiry?.search?.bedsList?.includes(number)) {
-						setListingInquiry({
-							...listingInquiry,
-							search: {
-								...listingInquiry.search,
-								bedsList: listingInquiry?.search?.bedsList?.filter((item: Number) => item !== number),
-							},
-						});
-					} else {
-						setListingInquiry({
-							...listingInquiry,
-							search: { ...listingInquiry.search, bedsList: [...(listingInquiry?.search?.bedsList || []), number] },
-						});
-					}
-				} else {
-					delete listingInquiry?.search.bedsList;
-					setListingInquiry({ ...listingInquiry });
-				}
-
-				console.log('listingBedSelectHandler:', number);
-			} catch (err: any) {
-				console.log('ERROR, listingBedSelectHandler:', err);
-			}
-		},
-		[listingInquiry],
-	);
-
-	const listingOptionSelectHandler = useCallback(
-		async (e: any) => {
-			try {
-				const value = e.target.value;
-				setOptionCheck(value);
-
-				if (value !== 'all') {
-					setListingInquiry({
-						...listingInquiry,
-						search: {
-							...listingInquiry.search,
-							options: [value],
-						},
-					});
-				} else {
-					delete listingInquiry.search.options;
-					setListingInquiry({
-						...listingInquiry,
-						search: {
-							...listingInquiry.search,
-						},
-					});
-				}
-			} catch (err: any) {
-				console.log('ERROR, listingOptionSelectHandler:', err);
-			}
-		},
-		[listingInquiry],
-	);
-
-	const listingSquareRangeHandler = useCallback(
-		async (e: any, type: string) => {
-			const value = e.target.value;
-
-			if (type == 'start') {
-				setListingInquiry({
-					...listingInquiry,
-					search: {
-						...listingInquiry.search,
-						// @ts-ignore
-						squaresRange: { ...listingInquiry.search.squaresRange, start: parseInt(value) },
-					},
-				});
-			} else {
-				setListingInquiry({
-					...listingInquiry,
-					search: {
-						...listingInquiry.search,
-						// @ts-ignore
-						squaresRange: { ...listingInquiry.search.squaresRange, end: parseInt(value) },
-					},
-				});
-			}
-		},
-		[listingInquiry],
-	);
-
-	const yearStartChangeHandler = async (event: any) => {
-		setYearCheck({ ...yearCheck, start: Number(event.target.value) });
-
-		setListingInquiry({
-			...listingInquiry,
-			search: {
-				...listingInquiry.search,
-				periodsRange: { start: Number(event.target.value), end: yearCheck.end },
-			},
-		});
-	};
-
-	const yearEndChangeHandler = async (event: any) => {
-		setYearCheck({ ...yearCheck, end: Number(event.target.value) });
-
-		setListingInquiry({
-			...listingInquiry,
-			search: {
-				...listingInquiry.search,
-				periodsRange: { start: yearCheck.start, end: Number(event.target.value) },
-			},
-		});
-	};
-
-	const resetFilterHandler = () => {
-		setListingInquiry(initialInput);
-		setOptionCheck('all');
-		setYearCheck({ start: 1970, end: thisYear });
-	};
 
 	const pushSearchHandler = async () => {
 		try {
-			if (listingInquiry?.search?.locationList?.length == 0) {
+			if (listingInquiry?.search?.locationList?.length === 0) {
 				delete listingInquiry.search.locationList;
 			}
-
-			if (listingInquiry?.search?.typeList?.length == 0) {
+			if (listingInquiry?.search?.typeList?.length === 0) {
 				delete listingInquiry.search.typeList;
 			}
-
-			if (listingInquiry?.search?.roomsList?.length == 0) {
-				delete listingInquiry.search.roomsList;
-			}
-
-			if (listingInquiry?.search?.options?.length == 0) {
-				delete listingInquiry.search.options;
-			}
-
-			if (listingInquiry?.search?.bedsList?.length == 0) {
-				delete listingInquiry.search.bedsList;
-			}
-
 			await router.push(
-				`/property?input=${JSON.stringify(listingInquiry)}`,
-				`/property?input=${JSON.stringify(listingInquiry)}`,
+				`/listings?input=${JSON.stringify(listingInquiry)}`,
+				`/listings?input=${JSON.stringify(listingInquiry)}`,
 			);
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.log('ERROR, pushSearchHandler:', err);
 		}
 	};
 
+	const resetFilterHandler = () => {
+		setListingInquiry(initialInput);
+	};
+
 	if (device === 'mobile') {
 		return <div>HEADER FILTER MOBILE</div>;
-	} else {
-		return (
-			<>
-				<Stack className={'search-box'}>
-					<Stack className={'select-box'}>
-						<Box component={'div'} className={`box ${openLocation ? 'on' : ''}`} onClick={locationStateChangeHandler}>
-							<span>{listingInquiry?.search?.locationList ? listingInquiry?.search?.locationList[0] : t('Location')} </span>
-							<ExpandMoreIcon />
-						</Box>
-						<Box className={`box ${openType ? 'on' : ''}`} onClick={typeStateChangeHandler}>
-							<span> {listingInquiry?.search?.typeList ? listingInquiry?.search?.typeList[0] : t('Property type')} </span>
-							<ExpandMoreIcon />
-						</Box>
-						<Box className={`box ${openRooms ? 'on' : ''}`} onClick={roomStateChangeHandler}>
-							<span>
-								{listingInquiry?.search?.roomsList ? `${listingInquiry?.search?.roomsList[0]} rooms}` : t('Rooms')}
-							</span>
-							<ExpandMoreIcon />
-						</Box>
-					</Stack>
-					<Stack className={'search-box-other'}>
-						<Box className={'advanced-filter'} onClick={() => advancedFilterHandler(true)}>
-							<img src="/img/icons/tune.svg" alt="" />
-							<span>{t('Advanced')}</span>
-						</Box>
-						<Box className={'search-btn'} onClick={pushSearchHandler}>
-							<img src="/img/icons/search_white.svg" alt="" />
-						</Box>
-					</Stack>
+	}
 
-					{/*MENU */}
-					<div className={`filter-location ${openLocation ? 'on' : ''}`} ref={locationRef}>
-						{locationEnumValues.map((location: string) => {
-							return (
-								<div onClick={() => listingLocationSelectHandler(location)} key={location}>
-									<img src={`img/banner/cities/${location}.webp`} alt="" />
-									<span>{location}</span>
-								</div>
-							);
-						})}
+	return (
+		<>
+			<Stack className={'search-box'}>
+				<Stack className={'select-box'}>
+					<div className={`box ${openLocation ? 'on' : ''}`} onClick={locationStateChangeHandler}>
+						<span>{listingInquiry?.search?.locationList ? listingInquiry?.search?.locationList[0] : t('Location')} </span>
+						<ExpandMoreIcon />
 					</div>
-
-					<div className={`filter-type ${openType ? 'on' : ''}`} ref={typeRef}>
-						{listingTypeEnumValues.map((type: string) => {
-							return (
-								<div
-									style={{ backgroundImage: `url(/img/banner/types/${type.toLowerCase()}.webp)` }}
-									onClick={() => listingTypeSelectHandler(type)}
-									key={type}
-								>
-									<span>{type}</span>
-								</div>
-							);
-						})}
+					<div className={`box ${openType ? 'on' : ''}`} onClick={typeStateChangeHandler}>
+						<span>
+							{' '}
+							{listingInquiry?.search?.typeList ? listingInquiry?.search?.typeList[0] : 'Product or service'}{' '}
+						</span>
+						<ExpandMoreIcon />
 					</div>
-
-					<div className={`filter-rooms ${openRooms ? 'on' : ''}`} ref={roomsRef}>
-						{[1, 2, 3, 4, 5].map((room: number) => {
-							return (
-								<span onClick={() => listingRoomSelectHandler(room)} key={room}>
-									{room} room{room > 1 ? 's' : ''}
-								</span>
-							);
-						})}
+				</Stack>
+				<Stack className={'search-box-other'}>
+					<div className={'advanced-filter'} onClick={() => advancedFilterHandler(true)}>
+						<img src="/img/icons/tune.svg" alt="" />
+						<span>{t('Advanced')}</span>
+					</div>
+					<div className={'search-btn'} onClick={pushSearchHandler}>
+						<img src="/img/icons/search_white.svg" alt="" />
 					</div>
 				</Stack>
 
-				{/* ADVANCED FILTER MODAL */}
-				<Modal
-					open={openAdvancedFilter}
-					onClose={() => advancedFilterHandler(false)}
-					aria-labelledby="modal-modal-title"
-					aria-describedby="modal-modal-description"
-				>
-					{/* @ts-ignore */}
-					<Box sx={style}>
-						<Box className={'advanced-filter-modal'}>
-							<div className={'close'} onClick={() => advancedFilterHandler(false)}>
-								<CloseIcon />
+				<div className={`filter-location ${openLocation ? 'on' : ''}`} ref={locationRef}>
+					{locationEnumValues.map((location: string) => (
+						<div onClick={() => listingLocationSelectHandler(location as ListingLocation)} key={location}>
+							<img src={`img/banner/cities/${location}.webp`} alt="" />
+							<span>{location}</span>
+						</div>
+					))}
+				</div>
+
+				<div className={`filter-type ${openType ? 'on' : ''}`} ref={typeRef}>
+					{CATALOG_TYPES.map((type) => (
+						<div
+							style={{ backgroundImage: `url(/img/banner/types/${type.toLowerCase()}.webp)` }}
+							onClick={() => listingTypeSelectHandler(type)}
+							key={type}
+						>
+							<span>{type}</span>
+						</div>
+					))}
+				</div>
+			</Stack>
+
+			<Modal open={openAdvancedFilter} onClose={() => advancedFilterHandler(false)} aria-labelledby="modal-modal-title">
+				<div style={advancedFilterModalRootStyle}>
+					<div className={'advanced-filter-modal'}>
+						<div className={'close'} onClick={() => advancedFilterHandler(false)}>
+							<CloseIcon />
+						</div>
+						<div className={'top'}>
+							<span>Search catalog</span>
+							<div className={'search-input-box'}>
+								<img src="/img/icons/search.svg" alt="" />
+								<input
+									value={listingInquiry?.search?.text ?? ''}
+									type="text"
+									placeholder={'What are you looking for?'}
+									onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+										setListingInquiry({
+											...listingInquiry,
+											search: { ...listingInquiry.search, text: e.target.value },
+										});
+									}}
+								/>
 							</div>
-							<div className={'top'}>
-								<span>Find your home</span>
-								<div className={'search-input-box'}>
-									<img src="/img/icons/search.svg" alt="" />
-									<input
-										value={listingInquiry?.search?.text ?? ''}
-										type="text"
-										placeholder={'What are you looking for?'}
-										onChange={(e: any) => {
-											setListingInquiry({
-												...listingInquiry,
-												search: { ...listingInquiry.search, text: e.target.value },
-											});
-										}}
-									/>
-								</div>
-							</div>
-							<Divider sx={{ mt: '30px', mb: '35px' }} />
-							<div className={'middle'}>
-								<div className={'row-box'}>
-									<div className={'box'}>
-										<span>bedrooms</span>
-										<div className={'inside'}>
-											<div
-												className={`room ${!listingInquiry?.search?.bedsList ? 'active' : ''}`}
-												onClick={() => listingBedSelectHandler(0)}
-											>
-												Any
-											</div>
-											{[1, 2, 3, 4, 5].map((bed: number) => (
-												<div
-													className={`room ${listingInquiry?.search?.bedsList?.includes(bed) ? 'active' : ''}`}
-													onClick={() => listingBedSelectHandler(bed)}
-													key={bed}
-												>
-													{bed == 0 ? 'Any' : bed}
-												</div>
-											))}
-										</div>
-									</div>
-									<div className={'box'}>
-										<span>options</span>
-										<div className={'inside'}>
-											<FormControl>
-												<Select
-													value={optionCheck}
-													onChange={listingOptionSelectHandler}
-													displayEmpty
-													inputProps={{ 'aria-label': 'Without label' }}
-												>
-													<MenuItem value={'all'}>All Options</MenuItem>
-													<MenuItem value={listingBarter}>Barter</MenuItem>
-													<MenuItem value={listingRent}>Rent</MenuItem>
-												</Select>
-											</FormControl>
-										</div>
-									</div>
-								</div>
-								<div className={'row-box'} style={{ marginTop: '44px' }}>
-									<div className={'box'}>
-										<span>Year Built</span>
-										<div className={'inside space-between align-center'}>
-											<FormControl sx={{ width: '122px' }}>
-												<Select
-													value={yearCheck.start.toString()}
-													onChange={yearStartChangeHandler}
-													displayEmpty
-													inputProps={{ 'aria-label': 'Without label' }}
-													MenuProps={MenuProps}
-												>
-													{listingConstructionYears?.slice(0)?.map((year: string) => (
-														<MenuItem value={year} disabled={yearCheck.end <= Number(year)} key={year}>
-															{year}
-														</MenuItem>
-													))}
-												</Select>
-											</FormControl>
-											<div className={'minus-line'}></div>
-											<FormControl sx={{ width: '122px' }}>
-												<Select
-													value={yearCheck.end.toString()}
-													onChange={yearEndChangeHandler}
-													displayEmpty
-													inputProps={{ 'aria-label': 'Without label' }}
-													MenuProps={MenuProps}
-												>
-													{listingConstructionYears
-														?.slice(0)
-														.reverse()
-														.map((year: string) => (
-															<MenuItem value={year} disabled={yearCheck.start >= Number(year)} key={year}>
-																{year}
-															</MenuItem>
-														))}
-												</Select>
-											</FormControl>
-										</div>
-									</div>
-									<div className={'box'}>
-										<span>square meter</span>
-										<div className={'inside space-between align-center'}>
-											<FormControl sx={{ width: '122px' }}>
-												<Select
-													value={listingInquiry?.search?.squaresRange?.start}
-													onChange={(e: any) => listingSquareRangeHandler(e, 'start')}
-													displayEmpty
-													inputProps={{ 'aria-label': 'Without label' }}
-													MenuProps={MenuProps}
-												>
-													{listingSquareOptions.map((square: number) => (
-														<MenuItem
-															value={square}
-															disabled={(listingInquiry?.search?.squaresRange?.end || 0) < square}
-															key={square}
-														>
-															{square}
-														</MenuItem>
-													))}
-												</Select>
-											</FormControl>
-											<div className={'minus-line'}></div>
-											<FormControl sx={{ width: '122px' }}>
-												<Select
-													value={listingInquiry?.search?.squaresRange?.end}
-													onChange={(e: any) => listingSquareRangeHandler(e, 'end')}
-													displayEmpty
-													inputProps={{ 'aria-label': 'Without label' }}
-													MenuProps={MenuProps}
-												>
-													{listingSquareOptions.map((square: number) => (
-														<MenuItem
-															value={square}
-															disabled={(listingInquiry?.search?.squaresRange?.start || 0) > square}
-															key={square}
-														>
-															{square}
-														</MenuItem>
-													))}
-												</Select>
-											</FormControl>
-										</div>
+						</div>
+						<Divider sx={{ mt: '30px', mb: '35px' }} />
+						<div className={'middle'}>
+							<div className={'row-box'}>
+								<div className={'box'} style={{ width: '100%' }}>
+									<span>Price range</span>
+									<div className={'inside space-between align-center'} style={{ gap: 12, flexWrap: 'wrap' }}>
+										<input
+											type="number"
+											className="description-input"
+											placeholder="Min"
+											value={listingInquiry.search.pricesRange?.start ?? ''}
+											onChange={(e) => {
+												const v = parseInt(e.target.value, 10);
+												setListingInquiry({
+													...listingInquiry,
+													search: {
+														...listingInquiry.search,
+														pricesRange: {
+															start: Number.isNaN(v) ? 0 : v,
+															end: listingInquiry.search.pricesRange?.end ?? 2_000_000,
+														},
+													},
+												});
+											}}
+										/>
+										<span>—</span>
+										<input
+											type="number"
+											className="description-input"
+											placeholder="Max"
+											value={listingInquiry.search.pricesRange?.end ?? ''}
+											onChange={(e) => {
+												const v = parseInt(e.target.value, 10);
+												setListingInquiry({
+													...listingInquiry,
+													search: {
+														...listingInquiry.search,
+														pricesRange: {
+															start: listingInquiry.search.pricesRange?.start ?? 0,
+															end: Number.isNaN(v) ? 2_000_000 : v,
+														},
+													},
+												});
+											}}
+										/>
 									</div>
 								</div>
 							</div>
-							<Divider sx={{ mt: '60px', mb: '18px' }} />
-							<div className={'bottom'}>
-								<div onClick={resetFilterHandler}>
-									<img src="/img/icons/reset.svg" alt="" />
-									<span>Reset all filters</span>
-								</div>
-								<Button
-									startIcon={<img src={'/img/icons/search.svg'} />}
-									className={'search-btn'}
-									onClick={pushSearchHandler}
-								>
-									Search
-								</Button>
+						</div>
+						<Divider sx={{ mt: '60px', mb: '18px' }} />
+						<div className={'bottom'}>
+							<div onClick={resetFilterHandler}>
+								<img src="/img/icons/reset.svg" alt="" />
+								<span>Reset all filters</span>
 							</div>
-						</Box>
-					</Box>
-				</Modal>
-			</>
-		);
-	}
+							<Button startIcon={<img src={'/img/icons/search.svg'} alt="" />} className={'search-btn'} onClick={pushSearchHandler}>
+								Search
+							</Button>
+						</div>
+					</div>
+				</div>
+			</Modal>
+		</>
+	);
 };
 
 HeaderFilter.defaultProps = {
@@ -567,10 +257,6 @@ HeaderFilter.defaultProps = {
 		page: 1,
 		limit: 9,
 		search: {
-			squaresRange: {
-				start: 0,
-				end: 500,
-			},
 			pricesRange: {
 				start: 0,
 				end: 2000000,

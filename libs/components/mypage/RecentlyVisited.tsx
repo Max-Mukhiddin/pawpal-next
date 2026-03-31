@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
-import PropertyCard from '../property/PropertyCard';
+import CatalogBrowseCard from '../listings/CatalogBrowseCard';
 import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
 import { GET_VISITED } from '../../../apollo/user/query';
@@ -51,12 +51,12 @@ const RecentlyVisited: NextPage = () => {
 				<Stack className="favorites-list-box">
 					{recentlyVisited?.length ? (
 						recentlyVisited?.map((listing: Listing) => {
-							return <PropertyCard listing={listing} recentlyVisited={true} key={listing._id} />;
+							return <CatalogBrowseCard listing={listing} recentlyVisited={true} key={listing._id} />;
 						})
 					) : (
 						<div className={'no-data'}>
 							<img src="/img/icons/icoAlert.svg" alt="" />
-							<p>No Recently Visited Properties found!</p>
+							<p>No recently visited items yet.</p>
 						</div>
 					)}
 				</Stack>
@@ -73,7 +73,7 @@ const RecentlyVisited: NextPage = () => {
 						</Stack>
 						<Stack className="total-result">
 							<Typography>
-								Total {total} recently visited propert{total > 1 ? 'ies' : 'y'}
+								Total {total} recently visited item{total === 1 ? '' : 's'}
 							</Typography>
 						</Stack>
 					</Stack>

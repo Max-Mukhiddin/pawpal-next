@@ -7,27 +7,18 @@ export interface ListingInput {
 	listingAddress: string;
 	listingTitle: string;
 	listingPrice: number;
-	listingSquare: number;
-	listingBeds: number;
-	listingRooms: number;
 	listingImages: string[];
 	listingDesc?: string;
-	listingBarter?: boolean;
-	listingRent?: boolean;
+	durationMinutes?: number | null;
 	memberId?: string;
-	constructedAt?: Date;
 }
 
 interface ListingsSearch {
 	memberId?: string;
 	locationList?: ListingLocation[];
 	typeList?: ListingType[];
-	roomsList?: Number[];
-	options?: string[];
-	bedsList?: Number[];
 	pricesRange?: Range;
 	periodsRange?: PeriodsRange;
-	squaresRange?: Range;
 	text?: string;
 }
 
@@ -41,6 +32,8 @@ export interface ListingsInquiry {
 
 interface AgentListingsSearch {
 	listingStatus?: ListingStatus;
+	/** When set, restricts agent catalog to products or services (backend-supported filter). */
+	typeList?: ListingType[];
 }
 
 export interface AgentListingsInquiry {

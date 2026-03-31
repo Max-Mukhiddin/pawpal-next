@@ -4,16 +4,16 @@ import { NextPage } from 'next';
 import { Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import MyProperties from '../../libs/components/mypage/MyProperties';
+import SpecialistCatalog from '../../libs/components/mypage/SpecialistCatalog';
 import MyFavorites from '../../libs/components/mypage/MyFavorites';
 import RecentlyVisited from '../../libs/components/mypage/RecentlyVisited';
-import AddProperty from '../../libs/components/mypage/AddNewProperty';
+import AddNewListing from '../../libs/components/mypage/AddNewListing';
 import MyProfile from '../../libs/components/mypage/MyProfile';
 import MyArticles from '../../libs/components/mypage/MyArticles';
 import MyInquiries from '../../libs/components/mypage/MyInquiries';
-import AgentInquiries from '../../libs/components/mypage/AgentInquiries';
+import SpecialistInquiries from '../../libs/components/mypage/SpecialistInquiries';
 import MyBookings from '../../libs/components/mypage/MyBookings';
-import AgentBookings from '../../libs/components/mypage/AgentBookings';
+import SpecialistBookings from '../../libs/components/mypage/SpecialistBookings';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import MyMenu from '../../libs/components/mypage/MyMenu';
@@ -125,13 +125,19 @@ const MyPage: NextPage = () => {
 							</Stack>
 							<Stack className="main-config" mb={'76px'}>
 								<Stack className={'list-config'}>
-									{category === 'addProperty' && <AddProperty />}
-									{category === 'myProperties' && <MyProperties />}
+									{category === 'addListing' && <AddNewListing />}
+									{(category === 'myProducts' ||
+										category === 'myServices' ||
+										category === 'myListings') && <SpecialistCatalog />}
 									{category === 'myFavorites' && <MyFavorites />}
 									{category === 'myInquiries' && <MyInquiries />}
-									{category === 'agentInquiries' && <AgentInquiries />}
+									{(category === 'specialistInquiries' || category === 'agentInquiries') && (
+										<SpecialistInquiries />
+									)}
 									{category === 'myBookings' && <MyBookings />}
-									{category === 'agentBookings' && <AgentBookings />}
+									{(category === 'specialistBookings' || category === 'agentBookings') && (
+										<SpecialistBookings />
+									)}
 									{category === 'recentlyVisited' && <RecentlyVisited />}
 									{category === 'myArticles' && <MyArticles />}
 									{category === 'writeArticle' && <WriteArticle />}

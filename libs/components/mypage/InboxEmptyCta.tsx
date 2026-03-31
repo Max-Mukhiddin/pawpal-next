@@ -2,13 +2,21 @@ import React from 'react';
 import Link from 'next/link';
 import { Button, Stack } from '@mui/material';
 
-export type InboxEmptyCtaVariant = 'myBookings' | 'agentBookings' | 'myInquiries' | 'agentInquiries';
+export type InboxEmptyCtaVariant =
+	| 'myBookings'
+	| 'agentBookings'
+	| 'specialistBookings'
+	| 'myInquiries'
+	| 'agentInquiries'
+	| 'specialistInquiries';
 
 const CTA: Record<InboxEmptyCtaVariant, { href: string; label: string }> = {
-	myBookings: { href: '/services', label: 'Browse services' },
-	agentBookings: { href: '/specialists', label: 'View specialists' },
-	myInquiries: { href: '/products', label: 'Browse products' },
-	agentInquiries: { href: '/services', label: 'Browse services' },
+	myBookings: { href: '/service', label: 'Browse services' },
+	agentBookings: { href: '/specialist', label: 'View specialists' },
+	specialistBookings: { href: '/specialist', label: 'View specialists' },
+	myInquiries: { href: '/product', label: 'Browse products' },
+	agentInquiries: { href: '/service', label: 'Browse services' },
+	specialistInquiries: { href: '/service', label: 'Browse services' },
 };
 
 /** Single primary CTA under inbox empty states (existing app routes only). */

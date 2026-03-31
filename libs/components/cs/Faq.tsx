@@ -33,7 +33,7 @@ const AccordionSummary = styled((props: AccordionSummaryProps) => (
 const Faq = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
-	const [category, setCategory] = useState<string>('property');
+	const [category, setCategory] = useState<string>('listings');
 	const [expanded, setExpanded] = useState<string | false>('panel1');
 
 	/** APOLLO REQUESTS **/
@@ -49,56 +49,66 @@ const Faq = () => {
 	};
 
 	const data: any = {
-		property: [
+		listings: [
 			{
 				id: '00f5a45ed8897f8090116a01',
-				subject: 'Are the properties displayed on the site reliable?',
-				content: 'of course we only have verified properties',
+				subject: 'Are care listings on PawPal trustworthy?',
+				content:
+					'We focus on verified specialists and clear listing details. Always review photos, descriptions, and host credentials before you book or buy.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a22',
-				subject: 'What types of properties do you offer?',
-				content: 'We offer single-family homes, condos, townhouses, apartments, and penthouses',
+				subject: 'What kinds of listings can I find here?',
+				content:
+					'You can browse pet care services, products, and other listings from vetted providers — not generic real-estate inventory.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a21',
-				subject: 'How can I search for properties on your website?',
-				content: 'Simply use our search bar to enter location, price range, bedrooms/bathrooms, and property type.',
+				subject: 'How do I search for the right listing?',
+				content:
+					'Use filters for category, location, price, and keywords. Read the full description and messaging expectations before you contact a host.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a23',
-				subject: 'Do you provide assistance for first-time homebuyers?',
-				content: 'Yes, we guide you through the process and help find suitable financing.',
+				subject: 'I am new to booking pet care online. Any tips?',
+				content:
+					'Start with a short message about your pet’s needs, ask about availability, and confirm what is included (supplies, pickup, vaccines, etc.).',
 			},
 			{
 				id: '00f5a45ed8897f8090116a24',
-				subject: 'What should I consider when buying a property?',
-				content: 'Location, condition, size, amenities, and future development plans.',
+				subject: 'What should I check before I book?',
+				content:
+					'Location, services offered, pricing, cancellation rules, and any requirements the host lists for health, temperament, or equipment.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a25',
-				subject: 'How long does the home-buying process typically take?',
-				content: 'Usually 3 to 6 days, depending on various factors.',
+				subject: 'How long does it take to hear back from a host?',
+				content:
+					'Response times vary by provider. If you are planning travel or an urgent need, mention your timeline in the first message.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a29',
-				subject: 'What happens if I encounter issues with the property after purchase?',
-				content: 'We offer post-purchase support to address any concerns promptly.',
+				subject: 'What if something goes wrong after I book?',
+				content:
+					'Contact support with your booking details. We will help you follow the right process based on the listing type and policies in place.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a28',
-				subject: 'Do you offer properties in specific neighborhoods?',
-				content: 'Yes, we have listings in various neighborhoods based on your preferences.',
+				subject: 'Can I find hosts in my area?',
+				content:
+					'Yes. Use location filters and map-friendly addresses where available to narrow results near you.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a27',
-				subject: 'Can I sell my property through your website?',
-				content: 'Absolutely, we provide services for selling properties as well.',
+				subject: 'Can I publish my own care listing?',
+				content:
+					'Approved agent accounts can create and manage listings from My Page. Follow the onboarding steps for your account type.',
 			},
 			{
 				id: '00f5a45ed8897f8090116b99',
-				subject: 'What if I need help understanding legal aspects of property purchase?',
-				content: 'Our team can provide basic guidance and recommend legal professionals if needed.',
+				subject: 'Where can I get help with contracts or liability questions?',
+				content:
+					'We can share general guidance, but legal questions should be handled with a qualified professional who knows your jurisdiction.',
 			},
 		],
 		payment: [
@@ -115,7 +125,7 @@ const Faq = () => {
 			{
 				id: '00f5a45ed8897f8090116a92',
 				subject: 'Is there an option for installment payments?',
-				content: 'Yes, we offer installment payment plans for certain properties. Please inquire for more details.',
+				content: 'Yes, we offer installment payment plans for certain listings. Please inquire for more details.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a93',
@@ -161,117 +171,126 @@ const Faq = () => {
 		buyers: [
 			{
 				id: '00f5a45ed8897f8090116a03',
-				subject: 'What should buyers pay attention to?',
-				content: 'Buyers should check and decide whether the property they want to buy or rent is actually suitable!',
+				subject: 'What should pet parents check before booking?',
+				content:
+					'Confirm vaccines, temperament notes, pickup or drop-off, what supplies are included, and the host’s cancellation rules.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a85',
-				subject: 'How can I determine if a property is within my budget?',
+				subject: 'How do I stay within my budget?',
 				content:
-					'Calculate your budget by considering your income, down payment, and potential mortgage payments. Our agents can assist you within your budget.',
+					'Compare similar listings, note any add-on fees, and ask upfront about packages or multi-day discounts when they apply.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a84',
-				subject: 'What documents do I need to provide when purchasing a property?',
+				subject: 'What information should I share with a host?',
 				content:
-					"You'll typically need identification, proof of income, bank statements, and any necessary loan documentation. Our team will guide you through.",
+					'Share species, age, medical needs, behavior with other animals, feeding routine, and emergency contacts when asked.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a83',
-				subject: 'What factors should I consider when choosing a neighborhood?',
+				subject: 'How do I choose between similar listings?',
 				content:
-					'Consider factors such as location, safety, schools, amenities, transportation, and future development plans.',
+					'Look at reviews, response time, photos, location convenience, and how clearly the host explains their process.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a82',
-				subject: 'Can I negotiate the price of a property?',
+				subject: 'Can I ask for a meet-and-greet first?',
 				content:
-					'Yes, you can negotiate the price of a property. Our agents will assist you in making competitive offers and negotiating terms with the seller.',
+					'Many hosts welcome a short introduction. Ask politely in your first message and respect their safety policies.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a81',
-				subject: 'What are some red flags to watch out for when viewing properties?',
+				subject: 'What are red flags in a listing or chat?',
 				content:
-					'Watch out for signs of structural damage, water damage, mold, outdated systems, and undesirable neighborhood conditions.',
+					'Vague descriptions, pressure to pay off-platform, unwillingness to answer basic care questions, or missing health and safety details.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a80',
-				subject: 'Do you provide assistance with property inspections?',
+				subject: 'Do you help with disputes?',
 				content:
-					'Yes, we can recommend reputable inspectors and accompany you during property inspections to identify any potential issues.',
+					'Contact support with booking references. We route issues according to listing type and the policies shown on the platform.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a79',
-				subject: 'How long does it typically take to find the right property?',
+				subject: 'How fast can I find availability?',
 				content:
-					'The timeframe varies depending on your preferences and market conditions. Our agents will work diligently to find the right property as quickly as possible.',
+					'It depends on demand in your area. Messaging multiple qualified hosts with clear dates usually speeds things up.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a78',
-				subject: 'What are the advantages of using a real estate agent when buying a property?',
+				subject: 'Why use PawPal instead of informal referrals?',
 				content:
-					'Real estate agents provide expertise, negotiation skills, and guidance throughout the buying process, ultimately saving you time and hassle.',
+					'Structured listings, messaging history, and clearer expectations help both pet parents and providers stay aligned.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a77',
-				subject: 'What happens if I change my mind about a property after making an offer?',
+				subject: 'What if my plans change after I reach out?',
 				content:
-					'Depending on the terms of the offer and the stage of the transaction, you may have options to withdraw your offer.',
+					'Let the host know as soon as possible. Final rules depend on their stated cancellation and rescheduling policy.',
 			},
 		],
 
 		agents: [
 			{
 				id: '00f5a45ed8897f8090116a04',
-				subject: 'What do I need to do if I want to become an agent?',
+				subject: 'How do I become a listing host on PawPal?',
 				content:
-					'If you really decide to become an agent, you should read our terms and conditions and contact the admin!',
+					'Review our terms, complete your agent profile, and contact admin if your account type needs an upgrade.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a62',
-				subject: 'What qualifications do I need to become a real estate agent?',
-				content: 'Complete pre-licensing course, pass licensing exam, meet state requirements.',
+				subject: 'What should a strong listing include?',
+				content:
+					'Accurate photos, transparent pricing, clear boundaries (size, breed, medical needs), and realistic availability.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a63',
-				subject: 'How do I find clients as a new real estate agent?',
-				content: 'Build network, use online/offline marketing, join reputable brokerage.',
+				subject: 'How can I attract my first bookings?',
+				content:
+					'Respond quickly, keep descriptions updated, ask happy clients for reviews, and highlight any certifications you hold.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a64',
-				subject: 'What are some effective marketing strategies for selling properties?',
-				content: 'Use social media, online platforms, networking events, and direct mail.',
+				subject: 'What marketing channels work well?',
+				content:
+					'Social posts, local pet communities, partnerships with vets or trainers, and keeping your PawPal listing complete.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a65',
-				subject: 'How do I handle negotiations with buyers and sellers?',
-				content: 'Develop strong negotiation skills, understand market trends, represent client interests.',
+				subject: 'How should I handle pricing conversations?',
+				content:
+					'Explain what is included, note travel fees or holiday rates early, and document agreements in platform messages when possible.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a66',
-				subject: 'What should I do to stay updated with market trends and changes?',
-				content: 'Attend industry events, follow real estate news, participate in training.',
+				subject: 'How do I stay current with pet-care expectations?',
+				content:
+					'Follow reputable veterinary guidance, refresh first-aid knowledge, and note seasonal risks (heat, ticks, fireworks, etc.).',
 			},
 			{
 				id: '00f5a45ed8897f8090116a67',
-				subject: 'How do I handle difficult clients or situations?',
+				subject: 'What if a booking becomes difficult?',
 				content:
-					'Approach with professionalism, empathy, and patience. Listen actively, address issues collaboratively.',
+					'Stay calm, document facts, prioritize animal safety, and escalate to support if policies or safety are unclear.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a68',
-				subject: 'What tools and technologies should I utilize as a real estate agent?',
-				content: 'Use CRM software, virtual tours, digital marketing tools, and mobile apps.',
+				subject: 'Which tools help day to day?',
+				content:
+					'Calendars, templated replies for common questions, checklists for intake, and photo updates parents appreciate.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a69',
-				subject: 'How do I ensure compliance with real estate laws and regulations?',
-				content: 'Stay updated with laws, attend education courses, consult legal professionals.',
+				subject: 'How do I stay compliant with local rules?',
+				content:
+					'Research business licensing, insurance, and animal ordinances for your city. Consult professionals when requirements are unclear.',
 			},
 			{
 				id: '00f5a45ed8897f8090116a70',
-				subject: 'What strategies can I use to grow my real estate business?',
-				content: 'Build relationships, provide exceptional service, seek referrals, and continuously improve skills.',
+				subject: 'How can I grow repeat clients?',
+				content:
+					'Deliver consistent care, send brief updates, remember pet preferences, and make rebooking easy with clear next steps.',
 			},
 		],
 		membership: [
@@ -302,7 +321,7 @@ const Faq = () => {
 			},
 			{
 				id: '00f5a45ed8897f8090116a56',
-				subject: 'Do members receive discounts on property listings or services?',
+				subject: 'Do members receive discounts on listings or services?',
 				content: 'Membership discounts are not part of our current offerings.',
 			},
 			{
@@ -422,7 +441,7 @@ const Faq = () => {
 			},
 			{
 				id: '00f5a45ed8897f8090116a31',
-				subject: 'Do you host events or webinars related to real estate?',
+				subject: 'Do you host events or webinars related to pet care?',
 				content: "We're not hosting events or webinars at this time.",
 			},
 			{
@@ -440,12 +459,12 @@ const Faq = () => {
 			<Stack className={'faq-content'}>
 				<Box className={'categories'} component={'div'}>
 					<div
-						className={category === 'property' ? 'active' : ''}
+						className={category === 'listings' ? 'active' : ''}
 						onClick={() => {
-							changeCategoryHandler('property');
+							changeCategoryHandler('listings');
 						}}
 					>
-						Property
+						Care listings
 					</div>
 					<div
 						className={category === 'payment' ? 'active' : ''}
@@ -461,7 +480,7 @@ const Faq = () => {
 							changeCategoryHandler('buyers');
 						}}
 					>
-						Foy Buyers
+						For pet parents
 					</div>
 					<div
 						className={category === 'agents' ? 'active' : ''}
@@ -469,7 +488,7 @@ const Faq = () => {
 							changeCategoryHandler('agents');
 						}}
 					>
-						For Agents
+						For hosts & specialists
 					</div>
 					<div
 						className={category === 'membership' ? 'active' : ''}

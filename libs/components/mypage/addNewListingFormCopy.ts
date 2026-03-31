@@ -8,11 +8,6 @@ export function isServiceListingType(t: ListingType | string): boolean {
 	return String(t) === ListingType.SERVICE;
 }
 
-export function isRealEstateListingType(t: ListingType | string): boolean {
-	const s = String(t);
-	return s === ListingType.APARTMENT || s === ListingType.VILLA || s === ListingType.HOUSE;
-}
-
 export function listingFormTitleLabel(t: ListingType | string): string {
 	if (isProductListingType(t)) return 'Product title';
 	if (isServiceListingType(t)) return 'Service title';
@@ -40,7 +35,7 @@ export function listingFormPricePlaceholder(t: ListingType | string): string {
 export function listingFormDescriptionHeading(t: ListingType | string): string {
 	if (isProductListingType(t)) return 'Product description';
 	if (isServiceListingType(t)) return 'Service description';
-	return 'Property description';
+	return 'Description';
 }
 
 export function listingFormDescriptionLabel(t: ListingType | string): string {
@@ -52,7 +47,7 @@ export function listingFormDescriptionLabel(t: ListingType | string): string {
 export function listingFormUploadHeading(t: ListingType | string): string {
 	if (isProductListingType(t)) return 'Product photos';
 	if (isServiceListingType(t)) return 'Service photos';
-	return 'Upload photos of your property';
+	return 'Upload photos';
 }
 
 export function listingFormIntro(t: ListingType | string): string {
@@ -67,11 +62,11 @@ export function listingFormIntro(t: ListingType | string): string {
 
 export function listingFormPageTitle(isEdit: boolean, t: ListingType | string): string {
 	if (isEdit) {
-		if (isProductListingType(t)) return 'Edit product listing';
-		if (isServiceListingType(t)) return 'Edit service listing';
-		return 'Edit listing';
+		if (isProductListingType(t)) return 'Edit product';
+		if (isServiceListingType(t)) return 'Edit service';
+		return 'Edit item';
 	}
-	if (isProductListingType(t)) return 'Add product listing';
-	if (isServiceListingType(t)) return 'Add service listing';
-	return 'Add new listing';
+	if (isProductListingType(t)) return 'Add product';
+	if (isServiceListingType(t)) return 'Add service';
+	return 'Add product or service';
 }

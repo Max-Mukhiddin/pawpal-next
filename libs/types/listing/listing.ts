@@ -1,14 +1,14 @@
 import { ListingLocation, ListingStatus, ListingType } from '../../enums/listing.enum';
-import { Member } from '../member/member';
+import type { MeLiked, TotalCounter } from '../common/aggregates';
 
-export interface MeLiked {
-	memberId: string;
-	likeRefId: string;
-	myFavorite: boolean;
-}
+export type { MeLiked, TotalCounter };
 
-export interface TotalCounter {
-	total: number;
+/** Backend `Listing.memberData` preview on listing payloads. */
+export interface ListingMemberData {
+	_id: string;
+	memberNick?: string | null;
+	memberPhone?: string | null;
+	memberImage?: string | null;
 }
 
 export interface Listing {
@@ -19,25 +19,18 @@ export interface Listing {
 	listingAddress: string;
 	listingTitle: string;
 	listingPrice: number;
-	listingSquare: number;
-	listingBeds: number;
-	listingRooms: number;
 	listingViews: number;
 	listingLikes: number;
 	listingComments: number;
 	listingRank: number;
 	listingImages: string[];
 	listingDesc?: string;
-	listingBarter: boolean;
-	listingRent: boolean;
+	durationMinutes?: number | null;
 	memberId: string;
-	soldAt?: Date;
-	deletedAt?: Date;
-	constructedAt?: Date;
 	createdAt: Date;
 	updatedAt: Date;
 	meLiked?: MeLiked[];
-	memberData?: Member;
+	memberData?: ListingMemberData;
 }
 
 export interface Listings {

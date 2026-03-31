@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { useMutation } from '@apollo/client';
 import type { Service } from '../../types/services/service';
 import type { T } from '../../types/common';
@@ -121,12 +121,19 @@ const ServiceDetailBookingSection: React.FC<ServiceDetailBookingSectionProps> = 
 					disabled={!canSubmit}
 				>
 					{loading ? (
-						<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+						<span
+							style={{
+								display: 'inline-flex',
+								alignItems: 'center',
+								gap: 8,
+								justifyContent: 'center',
+							}}
+						>
 							<CircularProgress size={18} sx={{ color: 'rgba(255,255,255,0.9)' }} />
 							<Typography className={'title'} component="span">
 								Sending…
 							</Typography>
-						</Box>
+						</span>
 					) : (
 						<Typography className={'title'}>Submit booking request</Typography>
 					)}
