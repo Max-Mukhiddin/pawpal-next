@@ -11,25 +11,20 @@ export const GET_ALL_MEMBERS_BY_ADMIN = gql`
 				_id
 				memberType
 				memberStatus
-				memberAuthType
 				memberPhone
 				memberNick
 				memberFullName
 				memberImage
 				memberAddress
 				memberDesc
-				memberWarnings
-				memberBlocks
-				memberProperties
+				memberListings
 				memberRank
 				memberArticles
 				memberPoints
 				memberLikes
 				memberViews
-				deletedAt
 				createdAt
 				updatedAt
-				accessToken
 			}
 			metaCounter {
 				total
@@ -65,31 +60,25 @@ export const GET_ALL_PROPERTIES_BY_ADMIN = gql`
 				memberId
 				soldAt
 				deletedAt
-				constructedAt
 				createdAt
 				updatedAt
 				memberData {
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
+					memberListings
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {
@@ -122,24 +111,19 @@ export const GET_ALL_BOARD_ARTICLES_BY_ADMIN = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
+					memberListings
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {
@@ -169,24 +153,19 @@ export const GET_COMMENTS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
+					memberListings
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {

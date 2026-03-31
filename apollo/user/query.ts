@@ -11,24 +11,19 @@ export const GET_AGENTS = gql`
 				_id
 				memberType
 				memberStatus
-				memberAuthType
 				memberPhone
 				memberNick
 				memberFullName
 				memberImage
 				memberAddress
 				memberDesc
-				memberWarnings
-				memberBlocks
-				memberProperties
+				memberListings
 				memberRank
 				memberPoints
 				memberLikes
 				memberViews
-				deletedAt
 				createdAt
 				updatedAt
-				accessToken
 				meLiked {
 					memberId
 					likeRefId
@@ -48,14 +43,13 @@ query GetMember($input: String!) {
         _id
         memberType
         memberStatus
-        memberAuthType
         memberPhone
         memberNick
         memberFullName
         memberImage
         memberAddress
         memberDesc
-        memberProperties
+        memberListings
         memberArticles
         memberPoints
         memberLikes
@@ -63,12 +57,8 @@ query GetMember($input: String!) {
         memberFollowings
 				memberFollowers
         memberRank
-        memberWarnings
-        memberBlocks
-        deletedAt
         createdAt
         updatedAt
-        accessToken
         meFollowed {
 					followingId
 					followerId
@@ -92,41 +82,37 @@ export const GET_LISTING = gql`
 			listingAddress
 			listingTitle
 			listingPrice
-			listingSquare
-			listingBeds
-			listingRooms
 			listingViews
 			listingLikes
+			listingComments
+			listingRank
 			listingImages
 			listingDesc
-			listingBarter
-			listingRent
+			durationMinutes
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
 			createdAt
 			updatedAt
 			memberData {
 				_id
 				memberType
 				memberStatus
-				memberAuthType
 				memberPhone
 				memberNick
 				memberFullName
 				memberImage
 				memberAddress
 				memberDesc
-				memberWarnings
-				memberBlocks
+				memberListings
+				memberArticles
+				memberFollowers
+				memberFollowings
+				memberComments
+				memberRank
 				memberPoints
 				memberLikes
 				memberViews
-				deletedAt
 				createdAt
 				updatedAt
-				accessToken
 			}
 			meLiked {
 				memberId
@@ -148,41 +134,35 @@ export const GET_LISTINGS = gql`
 				listingAddress
 				listingTitle
 				listingPrice
-				listingSquare
-				listingBeds
-				listingRooms
 				listingViews
 				listingLikes
+				listingComments
 				listingRank
 				listingImages
 				listingDesc
-				listingBarter
-				listingRent
+				durationMinutes
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
 				createdAt
 				updatedAt
 				memberData {
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
+					memberListings
+					memberArticles
+					memberFollowers
+					memberFollowings
+					memberComments
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
 				}
@@ -210,19 +190,14 @@ export const GET_AGENT_LISTINGS = gql`
 				listingAddress
 				listingTitle
 				listingPrice
-				listingSquare
-				listingBeds
-				listingRooms
 				listingViews
 				listingLikes
+				listingComments
+				listingRank
 				listingImages
 				listingDesc
-				listingBarter
-				listingRent
+				durationMinutes
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
 				createdAt
 				updatedAt
 			}
@@ -244,35 +219,27 @@ export const GET_FAVORITES = gql`
 				listingAddress
 				listingTitle
 				listingPrice
-				listingSquare
-				listingBeds
-				listingRooms
 				listingViews
 				listingLikes
 				listingComments
 				listingRank
 				listingImages
 				listingDesc
-				listingBarter
-				listingRent
+				durationMinutes
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
 				createdAt
 				updatedAt
 				memberData {
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberProperties
+					memberListings
 					memberArticles
 					memberPoints
 					memberLikes
@@ -281,12 +248,8 @@ export const GET_FAVORITES = gql`
 					memberFollowings
 					memberFollowers
 					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {
@@ -307,35 +270,27 @@ export const GET_VISITED = gql`
 				listingAddress
 				listingTitle
 				listingPrice
-				listingSquare
-				listingBeds
-				listingRooms
 				listingViews
 				listingLikes
 				listingComments
 				listingRank
 				listingImages
 				listingDesc
-				listingBarter
-				listingRent
+				durationMinutes
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
 				createdAt
 				updatedAt
 				memberData {
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberProperties
+					memberListings
 					memberArticles
 					memberPoints
 					memberLikes
@@ -344,12 +299,8 @@ export const GET_VISITED = gql`
 					memberFollowings
 					memberFollowers
 					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {
@@ -389,21 +340,17 @@ export const GET_BOARD_ARTICLE = gql`
 				_id
 				memberType
 				memberStatus
-				memberAuthType
 				memberPhone
 				memberNick
 				memberFullName
 				memberImage
 				memberAddress
 				memberDesc
-				memberWarnings
-				memberBlocks
-				memberProperties
+				memberListings
 				memberRank
 				memberPoints
 				memberLikes
 				memberViews
-				deletedAt
 				createdAt
 				updatedAt
 			}
@@ -441,21 +388,17 @@ export const GET_BOARD_ARTICLES = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
+					memberListings
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
 				}
@@ -487,24 +430,19 @@ export const GET_COMMENTS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
+					memberListings
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {
@@ -670,14 +608,13 @@ export const GET_MEMBER_FOLLOWERS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberProperties
+					memberListings
 					memberArticles
 					memberPoints
 					memberLikes
@@ -686,9 +623,6 @@ export const GET_MEMBER_FOLLOWERS = gql`
 					memberFollowings
 					memberFollowers
 					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
 					createdAt
 					updatedAt
 				}
@@ -713,14 +647,13 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
 					memberPhone
 					memberNick
 					memberFullName
 					memberImage
 					memberAddress
 					memberDesc
-					memberProperties
+					memberListings
 					memberArticles
 					memberPoints
 					memberLikes
@@ -729,12 +662,8 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					memberFollowings
 					memberFollowers
 					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 				meLiked {
 					memberId

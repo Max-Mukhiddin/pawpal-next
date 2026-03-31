@@ -10,25 +10,20 @@ export const SIGN_UP = gql`
 			_id
 			memberType
 			memberStatus
-			memberAuthType
 			memberPhone
 			memberNick
 			memberFullName
 			memberImage
 			memberAddress
 			memberDesc
-			memberWarnings
-			memberBlocks
-			memberProperties
+			memberListings
 			memberRank
 			memberArticles
 			memberPoints
 			memberLikes
 			memberViews
-			deletedAt
 			createdAt
 			updatedAt
-			accessToken
 		}
 	}
 `;
@@ -39,24 +34,19 @@ export const LOGIN = gql`
 			_id
 			memberType
 			memberStatus
-			memberAuthType
 			memberPhone
 			memberNick
 			memberFullName
 			memberImage
 			memberAddress
 			memberDesc
-			memberWarnings
-			memberBlocks
-			memberProperties
+			memberListings
 			memberRank
 			memberPoints
 			memberLikes
 			memberViews
-			deletedAt
 			createdAt
 			updatedAt
-			accessToken
 		}
 	}
 `;
@@ -67,25 +57,20 @@ export const UPDATE_MEMBER = gql`
 			_id
 			memberType
 			memberStatus
-			memberAuthType
 			memberPhone
 			memberNick
 			memberFullName
 			memberImage
 			memberAddress
 			memberDesc
-			memberProperties
+			memberListings
 			memberRank
 			memberArticles
 			memberPoints
 			memberLikes
 			memberViews
-			memberWarnings
-			memberBlocks
-			deletedAt
 			createdAt
 			updatedAt
-			accessToken
 		}
 	}
 `;
@@ -96,24 +81,19 @@ export const LIKE_TARGET_MEMBER = gql`
 			_id
 			memberType
 			memberStatus
-			memberAuthType
 			memberPhone
 			memberNick
 			memberFullName
 			memberImage
 			memberAddress
 			memberDesc
-			memberWarnings
-			memberBlocks
-			memberProperties
+			memberListings
 			memberRank
 			memberPoints
 			memberLikes
 			memberViews
-			deletedAt
 			createdAt
 			updatedAt
-			accessToken
 		}
 	}
 `;
@@ -132,19 +112,14 @@ export const CREATE_LISTING = gql`
 			listingAddress
 			listingTitle
 			listingPrice
-			listingSquare
-			listingBeds
-			listingRooms
 			listingViews
 			listingLikes
+			listingComments
+			listingRank
 			listingImages
 			listingDesc
-			listingBarter
-			listingRent
+			durationMinutes
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
 			createdAt
 			updatedAt
 		}
@@ -161,19 +136,14 @@ export const UPDATE_LISTING = gql`
 			listingAddress
 			listingTitle
 			listingPrice
-			listingSquare
-			listingBeds
-			listingRooms
 			listingViews
 			listingLikes
+			listingComments
+			listingRank
 			listingImages
 			listingDesc
-			listingBarter
-			listingRent
+			durationMinutes
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
 			createdAt
 			updatedAt
 		}
@@ -190,19 +160,14 @@ export const LIKE_TARGET_LISTING = gql`
 			listingAddress
 			listingTitle
 			listingPrice
-			listingSquare
-			listingBeds
-			listingRooms
 			listingViews
 			listingLikes
+			listingComments
+			listingRank
 			listingImages
 			listingDesc
-			listingBarter
-			listingRent
+			durationMinutes
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
 			createdAt
 			updatedAt
 		}

@@ -10,25 +10,20 @@ export const UPDATE_MEMBER_BY_ADMIN = gql`
 			_id
 			memberType
 			memberStatus
-			memberAuthType
 			memberPhone
 			memberNick
 			memberFullName
 			memberImage
 			memberAddress
 			memberDesc
-			memberProperties
+			memberListings
 			memberRank
 			memberArticles
 			memberPoints
 			memberLikes
 			memberViews
-			memberWarnings
-			memberBlocks
-			deletedAt
 			createdAt
 			updatedAt
-			accessToken
 		}
 	}
 `;
@@ -59,7 +54,6 @@ export const UPDATE_PROPERTY_BY_ADMIN = gql`
 			memberId
 			soldAt
 			deletedAt
-			constructedAt
 			createdAt
 			updatedAt
 		}
@@ -88,7 +82,6 @@ export const REMOVE_PROPERTY_BY_ADMIN = gql`
 			memberId
 			soldAt
 			deletedAt
-			constructedAt
 			createdAt
 			updatedAt
 		}
