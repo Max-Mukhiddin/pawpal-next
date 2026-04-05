@@ -51,7 +51,7 @@ const MyBookings: NextPage = () => {
 	const { loading, refetch } = useQuery(GET_MY_BOOKINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input },
-		skip: !user?._id,
+		skip: !user?._id || user._id.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			const payload = data?.getMyBookings;

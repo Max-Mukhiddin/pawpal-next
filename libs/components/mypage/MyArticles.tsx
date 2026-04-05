@@ -35,6 +35,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		variables: {
 			input: searchCommunity,
 		},
+		skip: !user?._id || user._id.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			setBoardArticles(data?.getBoardArticles?.list);

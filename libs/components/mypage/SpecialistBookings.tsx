@@ -51,7 +51,7 @@ const SpecialistBookings: NextPage = () => {
 	const { loading, refetch } = useQuery(GET_AGENT_BOOKINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input },
-		skip: !user?._id || user?.memberType !== 'AGENT',
+		skip: !user?._id || user._id.length !== 24 || user?.memberType !== 'AGENT',
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			const payload = data?.getAgentBookings;

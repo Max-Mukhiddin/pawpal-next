@@ -13,7 +13,7 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLES } from '../../apollo/user/query';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import { Messages } from '../../libs/config';
+import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import Link from 'next/link';
 import { userVar } from '../../apollo/store';
 
@@ -28,12 +28,10 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const { query } = router;
-	const articleCategory = query?.articleCategory as string;
 	const [searchCommunity, setSearchCommunity] = useState<BoardArticlesInquiry>(initialInput);
 	const [searchText, setSearchText] = useState('');
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
-	if (articleCategory) initialInput.search.articleCategory = articleCategory;
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetBoardArticle] = useMutation(LIKE_TARGET_BOARD_ARTICLE);
@@ -54,6 +52,19 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 			setTotalCount(data?.getBoardArticles?.metaCounter[0]?.total);
 		},
 	});
+
+	useEffect(() => {
+		if (!router.isReady) return;
+		if (router.query.articleCategory) {
+			setSearchCommunity((prev) => ({
+				...prev,
+				search: {
+					...prev.search,
+					articleCategory: router.query.articleCategory as BoardArticleCategory,
+				},
+			}));
+		}
+	}, [router.isReady, router.query.articleCategory]);
 
 	/** LIFECYCLES **/
 	useEffect(() => {
@@ -125,30 +136,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 	} else {
 		return (
 			<Stack id="community-list-page" sx={{ bgcolor: '#f8f7f4', pb: 8 }}>
-				<Stack
-					sx={{
-						mt: 3,
-						mx: 'auto',
-						maxWidth: 1200,
-						width: 'calc(100% - 32px)',
-						height: 240,
-						borderRadius: 4,
-						overflow: 'hidden',
-						position: 'relative',
-						backgroundImage:
-							"linear-gradient(180deg, rgba(17,17,17,0.42) 0%, rgba(17,17,17,0.58) 100%), url('/img/banner/header3.svg')",
-						backgroundSize: 'cover',
-						backgroundPosition: 'center',
-						color: '#fff',
-						alignItems: 'center',
-						justifyContent: 'center',
-					}}
-				>
-					<Typography sx={{ fontSize: 42, fontWeight: 700, lineHeight: 1.1 }}>Community</Typography>
-					<Typography sx={{ mt: 1.5, fontSize: 14, opacity: 0.95 }}>Home / Community</Typography>
-				</Stack>
-
-				<Stack sx={{ mx: 'auto', maxWidth: 1200, width: 'calc(100% - 32px)', mt: 4 }}>
+				<Stack sx={{ mx: 'auto', maxWidth: 1200, width: 'calc(100% - 32px)', mt: 3 }}>
 					<Stack direction="row" gap={3} alignItems="flex-start">
 						<Stack sx={{ width: '65%', minWidth: 0 }}>
 							<Stack
@@ -160,7 +148,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 								{boardArticles?.length ? (
 									boardArticles.map((boardArticle: BoardArticle) => {
 										const imageSrc = boardArticle?.articleImage
-											? `${process.env.REACT_APP_API_URL}/${boardArticle.articleImage}`
+											? `${REACT_APP_API_URL}/${boardArticle.articleImage}`
 											: '/img/banner/header2.svg';
 										return (
 											<Stack

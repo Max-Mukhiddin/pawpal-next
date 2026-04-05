@@ -15,13 +15,14 @@ export interface ServiceCardProps {
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
-/** Single service row in the catalog; reuses `services-list-card` classes for grid styling. */
+const getBackendImage = (img?: string) =>
+	img ? `${REACT_APP_API_URL}/${String(img).replace(/^\/+/, '')}` : '';
+
+/** Babet-style image-overlay catalog card. */
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const image = service?.listingImages?.[0]
-		? `${REACT_APP_API_URL}/${service.listingImages[0]}`
-		: '/images/services/service-grooming.jpg';
+	const bgUrl = getBackendImage(service?.listingImages?.[0]);
 
 	const goDetail = async () => {
 		await router.push(`/service/detail?id=${service._id}`);
@@ -29,29 +30,55 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 
 	return (
 		<Stack className="services-list-card" onClick={goDetail}>
-			<Box className="services-list-card__media" component={'div'}>
-				<img src={image} alt={service.listingTitle} />
+			<Box
+				className="services-list-card__media"
+				component="div"
+				sx={{
+					backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
+					backgroundColor: '#2a2a2a',
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+					backgroundRepeat: 'no-repeat',
+				}}
+			>
+				<div className="services-list-card__gradient" aria-hidden />
 				{service.durationMinutes != null ? (
 					<span className="services-list-card__duration-pill">{service.durationMinutes} min</span>
 				) : null}
-				<span className="services-list-card__arrow">↗</span>
-				<div className="services-list-card__overlay">
-					<Typography className="services-list-card__title">{service.listingTitle}</Typography>
-					<Typography className="services-list-card__price">${formatterStr(service.listingPrice)}</Typography>
-				</div>
-			</Box>
-			<Stack className="services-list-card__actions" direction={'row'} alignItems={'center'}>
-				<IconButton
-					color={'default'}
-					onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-						e.stopPropagation();
-						onLike(user, service._id);
-					}}
+				<span className="services-list-card__arrow" aria-hidden>
+					↗
+				</span>
+				<Typography component="span" className="services-list-card__title">
+					{service.listingTitle}
+				</Typography>
+				<Typography component="span" className="services-list-card__price">
+					${formatterStr(service.listingPrice)}
+				</Typography>
+				<Stack
+					className="services-list-card__actions"
+					direction="row"
+					alignItems="center"
+					onClick={(e) => e.stopPropagation()}
 				>
-					{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
-				</IconButton>
-				<Typography className="view-cnt">{service.listingLikes}</Typography>
-			</Stack>
+					<IconButton
+						size="small"
+						onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+							e.stopPropagation();
+							onLike(user, service._id);
+						}}
+						aria-label="Like service"
+					>
+						{service?.meLiked && service?.meLiked[0]?.myFavorite ? (
+							<FavoriteIcon sx={{ fontSize: 20 }} htmlColor="#fff" />
+						) : (
+							<FavoriteBorderIcon sx={{ fontSize: 20 }} htmlColor="#fff" />
+						)}
+					</IconButton>
+					<Typography component="span" className="services-list-card__like-cnt">
+						{service.listingLikes ?? 0}
+					</Typography>
+				</Stack>
+			</Box>
 		</Stack>
 	);
 };

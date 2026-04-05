@@ -6,13 +6,15 @@ import CatalogBrowseCard from '../listings/CatalogBrowseCard';
 import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
 import { GET_FAVORITES } from '../../../apollo/user/query';
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import { userVar } from '../../../apollo/store';
 import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 
 const MyFavorites: NextPage = () => {
 	const device = useDeviceDetect();
+	const user = useReactiveVar(userVar);
 	const [myFavorites, setMyFavorites] = useState<Listing[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [searchFavorites, setSearchFavorites] = useState<T>({ page: 1, limit: 6 });
@@ -30,6 +32,7 @@ const MyFavorites: NextPage = () => {
 		variables: {
 			input: searchFavorites,
 		},
+		skip: !user?._id || user._id.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			setMyFavorites(data.getFavorites?.list || []);

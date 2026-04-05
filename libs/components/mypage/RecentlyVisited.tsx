@@ -6,10 +6,12 @@ import CatalogBrowseCard from '../listings/CatalogBrowseCard';
 import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
 import { GET_VISITED } from '../../../apollo/user/query';
-import { useQuery } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
+import { userVar } from '../../../apollo/store';
 
 const RecentlyVisited: NextPage = () => {
 	const device = useDeviceDetect();
+	const user = useReactiveVar(userVar);
 	const [recentlyVisited, setRecentlyVisited] = useState<Listing[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [searchVisited, setSearchVisited] = useState<T>({ page: 1, limit: 6 });
@@ -26,6 +28,7 @@ const RecentlyVisited: NextPage = () => {
 		variables: {
 			input: searchVisited,
 		},
+		skip: !user?._id || user._id.length !== 24,
 		onCompleted(data: T) {
 			setRecentlyVisited(data.getVisited?.list);
 			setTotal(data.getVisited?.metaCounter?.[0]?.total || 0);

@@ -55,6 +55,7 @@ const SpecialistCatalog: NextPage = ({ initialInput, ...props }: any) => {
 	} = useQuery(GET_AGENT_LISTINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input: searchFilter },
+		skip: !user?._id || user._id.length !== 24 || user?.memberType !== 'AGENT',
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: any) {
 			setAgentListings(data?.getAgentListings?.list);

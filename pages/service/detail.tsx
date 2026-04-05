@@ -61,13 +61,30 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 		[service?.listingLocation],
 	);
 
+	const listingId = useMemo(() => {
+		if (!router.isReady) return undefined;
+		const raw = router.query.id;
+		return typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
+	}, [router.isReady, router.query.id]);
+
+	const commentsQueryInput = useMemo(
+		() => ({
+			...commentInquiry,
+			search: {
+				...commentInquiry.search,
+				commentRefId: listingId && listingId.length === 24 ? listingId : commentInquiry.search.commentRefId,
+			},
+		}),
+		[commentInquiry, listingId],
+	);
+
 	const {
 		loading: serviceDetailLoading,
 		refetch: getServiceRefetch,
 	} = useQuery(GET_LISTING, {
 		fetchPolicy: 'network-only',
-		variables: { input: serviceId },
-		skip: !router.isReady || !serviceId,
+		variables: { input: listingId },
+		skip: !listingId || listingId.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			if (data?.getListing) setService(data.getListing);
@@ -87,8 +104,8 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 
 	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
 		fetchPolicy: 'cache-and-network',
-		variables: { input: initialComment },
-		skip: !commentInquiry.search.commentRefId,
+		variables: { input: commentsQueryInput },
+		skip: !listingId || listingId.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			if (data?.getComments?.list) setServiceComments(data?.getComments?.list);
@@ -112,7 +129,8 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 	}, [router.isReady, router.query.id]);
 
 	useEffect(() => {
-		if (commentInquiry.search.commentRefId) {
+		const refId = commentInquiry.search.commentRefId;
+		if (refId && refId.length === 24) {
 			getCommentsRefetch({ input: commentInquiry });
 		}
 	}, [commentInquiry]);

@@ -41,7 +41,12 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 		variables: {
 			input: followInquiry,
 		},
-		skip: !followInquiry?.search?.followingId,
+		skip:
+			!user?._id ||
+			user._id.length !== 24 ||
+			!followInquiry?.search?.followingId ||
+			followInquiry.search.followingId.length !== 24,
+		errorPolicy: 'all',
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			setMemberFollowers(data?.getMemberFollowers?.list);
@@ -52,12 +57,18 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (router.query.memberId)
-			setFollowInquiry({ ...followInquiry, search: { followingId: router.query.memberId as string } });
-		else setFollowInquiry({ ...followInquiry, search: { followingId: user?._id } });
-	}, [router]);
+			setFollowInquiry((prev) => ({
+				...prev,
+				search: { followingId: router.query.memberId as string },
+			}));
+		else setFollowInquiry((prev) => ({ ...prev, search: { followingId: user?._id ?? '' } }));
+	}, [router, user?._id]);
 
 	useEffect(() => {
-		getMemberFollowersRefetch({ input: followInquiry }).then();
+		const id = followInquiry?.search?.followingId;
+		if (id && id.length === 24) {
+			getMemberFollowersRefetch({ input: followInquiry }).then();
+		}
 	}, [followInquiry]);
 
 	/** HANDLERS **/
@@ -82,7 +93,7 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 						<Typography className="title-text">Details</Typography>
 						<Typography className="title-text">Subscription</Typography>
 					</Stack>
-					{memberFollowers?.length === 0 && (
+					{!getMemberFollowersLoading && (memberFollowers?.length === 0 || getMemberFollowersError) && (
 						<div className={'no-data'}>
 							<img src="/img/icons/icoAlert.svg" alt="" />
 							<p>No Followers yet!</p>

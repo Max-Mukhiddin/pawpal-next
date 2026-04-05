@@ -91,7 +91,21 @@ function createIsomorphicLink() {
 			if (graphQLErrors) {
 				graphQLErrors.map(({ message, locations, path, extensions }) => {
 					console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`);
-					if (message.includes('input')) sweetErrorAlert(message);
+					const isGetCommentsError = Array.isArray(path) && path[0] === 'getComments';
+					const isMemberFollowsError =
+						Array.isArray(path) &&
+						(path[0] === 'getMemberFollowers' || path[0] === 'getMemberFollowings');
+					const isBsonInputError =
+						/24\s*character\s*hex/i.test(message) ||
+						/\bBSON\b/i.test(message) ||
+						/objectid/i.test(message);
+					if (
+						message.includes('input') &&
+						!isGetCommentsError &&
+						!isMemberFollowsError &&
+						!isBsonInputError
+					)
+						sweetErrorAlert(message);
 				});
 			}
 			if (networkError) console.log(`[Network error]: ${networkError}`);

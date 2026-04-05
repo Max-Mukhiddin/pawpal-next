@@ -1,9 +1,8 @@
-import React, { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, MouseEvent, useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Stack, Pagination, Typography } from '@mui/material';
-import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Member } from '../../libs/types/member/member';
 import { AgentsInquiry } from '../../libs/types/member/member.input';
@@ -28,14 +27,11 @@ export const getStaticProps = async ({ locale }: any) => ({
 
 const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 	const device = useDeviceDetect();
-	const router = useRouter();
 	const [directoryHero] = useState<SpecialistsHeroContent>(() => SPECIALISTS_PAGE_MOCK.hero);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [filterSortName, setFilterSortName] = useState('Newest first');
 	const [sortingOpen, setSortingOpen] = useState(false);
-	const [specialistDirectoryInquiry, setSpecialistDirectoryInquiry] = useState<AgentsInquiry>(() =>
-		router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
-	);
+	const [specialistDirectoryInquiry, setSpecialistDirectoryInquiry] = useState<AgentsInquiry>(initialInput);
 	const [agents, setAgents] = useState<Member[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [currentPage, setCurrentPage] = useState<number>(1);
@@ -53,21 +49,6 @@ const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 			setTotal(data?.getAgents?.metaCounter[0]?.total);
 		},
 	});
-
-	/** LIFECYCLES **/
-	useEffect(() => {
-		if (router.query.input) {
-			const inputObj = JSON.parse(router?.query?.input as string);
-			setSpecialistDirectoryInquiry(inputObj);
-		} else {
-			router.replace(
-				`/specialist?input=${JSON.stringify(specialistDirectoryInquiry)}`,
-				`/specialist?input=${JSON.stringify(specialistDirectoryInquiry)}`,
-			);
-		}
-
-		setCurrentPage(specialistDirectoryInquiry.page === undefined ? 1 : specialistDirectoryInquiry.page);
-	}, [router]);
 
 	/** HANDLERS **/
 	const sortingClickHandler = (e: MouseEvent<HTMLElement>) => {
@@ -111,14 +92,7 @@ const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 	};
 
 	const paginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		specialistDirectoryInquiry.page = value;
-		await router.push(
-			`/specialist?input=${JSON.stringify(specialistDirectoryInquiry)}`,
-			`/specialist?input=${JSON.stringify(specialistDirectoryInquiry)}`,
-			{
-				scroll: false,
-			},
-		);
+		setSpecialistDirectoryInquiry((prev) => ({ ...prev, page: value }));
 		setCurrentPage(value);
 	};
 

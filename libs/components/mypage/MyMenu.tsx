@@ -5,11 +5,16 @@ import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Link from 'next/link';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import PortraitIcon from '@mui/icons-material/Portrait';
-import IconButton from '@mui/material/IconButton';
 import { REACT_APP_API_URL } from '../../config';
 import { logOut } from '../../auth';
-import { sweetConfirmAlert, sweetMixinErrorAlert } from '../../sweetAlert';
+import { sweetConfirmAlert } from '../../sweetAlert';
+
+const getBackendImage = (img?: string | null) => {
+	if (!img) return '';
+	if (img.startsWith('http://') || img.startsWith('https://')) return img;
+	if (img.startsWith('/')) return img;
+	return `${REACT_APP_API_URL}/${String(img).replace(/^\/+/, '')}`;
+};
 
 const MyMenu = () => {
 	const device = useDeviceDetect();
@@ -31,31 +36,41 @@ const MyMenu = () => {
 		return <div>MY MENU</div>;
 	} else {
 		return (
-			<Stack width={'100%'} padding={'30px 24px'}>
+			<Stack width="100%" sx={{ p: 0 }}>
 				<Stack className={'profile'}>
 					<Box component={'div'} className={'profile-img'}>
 						<img
-							src={user?.memberImage ? `${REACT_APP_API_URL}/${user?.memberImage}` : '/img/profile/defaultUser.svg'}
-							alt={'member-photo'}
+							src={getBackendImage(user?.memberImage) || '/img/profile/defaultUser.svg'}
+							alt=""
 						/>
 					</Box>
 					<Stack className={'user-info'}>
-						<Typography className={'user-name'}>{user?.memberNick}</Typography>
+						<Typography className={'user-name'} component="div">
+							{user?.memberNick ?? '—'}
+						</Typography>
 						<Box component={'div'} className={'user-phone'}>
-							<img src={'/img/icons/call.svg'} alt={'icon'} />
-							<Typography className={'p-number'}>{user?.memberPhone}</Typography>
+							<img src={'/img/icons/call.svg'} alt="" />
+							<Typography className={'p-number'} component="span">
+								{user?.memberPhone ?? '—'}
+							</Typography>
 						</Box>
 						{user?.memberType === 'ADMIN' ? (
-							<a href="/_admin/users" target={'_blank'}>
-								<Typography className={'view-list'}>{user?.memberType}</Typography>
+							<a href="/_admin/users" target="_blank" rel="noreferrer" className="member-type-badge member-type-badge--admin">
+								{user.memberType}
 							</a>
 						) : (
-							<Typography className={'view-list'}>{user?.memberType}</Typography>
+							<span
+								className={`member-type-badge ${
+									user?.memberType === 'AGENT' ? 'member-type-badge--agent' : 'member-type-badge--user'
+								}`}
+							>
+								{user?.memberType ?? '—'}
+							</span>
 						)}
 					</Stack>
 				</Stack>
 				<Stack className={'sections'}>
-					<Stack className={'section'} style={{ height: user.memberType === 'AGENT' ? '480px' : '266px' }}>
+					<Stack className={'section'}>
 						<Typography className="title" variant={'h5'}>
 							PRODUCTS &amp; SERVICES
 						</Typography>
@@ -79,9 +94,6 @@ const MyMenu = () => {
 												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
 													Add product or service
 												</Typography>
-												<IconButton aria-label="delete" sx={{ ml: '40px' }}>
-													<PortraitIcon style={{ color: 'red' }} />
-												</IconButton>
 											</div>
 										</Link>
 									</ListItem>
@@ -102,9 +114,6 @@ const MyMenu = () => {
 												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
 													My products
 												</Typography>
-												<IconButton aria-label="delete" sx={{ ml: '36px' }}>
-													<PortraitIcon style={{ color: 'red' }} />
-												</IconButton>
 											</div>
 										</Link>
 									</ListItem>
@@ -129,9 +138,6 @@ const MyMenu = () => {
 												<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
 													My services
 												</Typography>
-												<IconButton aria-label="delete" sx={{ ml: '36px' }}>
-													<PortraitIcon style={{ color: 'red' }} />
-												</IconButton>
 											</div>
 										</Link>
 									</ListItem>

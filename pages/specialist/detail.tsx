@@ -59,7 +59,7 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 	const { loading: getMemberLoading } = useQuery(GET_MEMBER, {
 		fetchPolicy: 'network-only',
 		variables: { input: specialistId },
-		skip: !specialistId,
+		skip: !specialistId || specialistId.length !== 24,
 		onCompleted: (data: T) => {
 			setSpecialist(data?.getMember);
 			setSelectedListing(null);
@@ -99,7 +99,9 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
 		fetchPolicy: 'network-only',
 		variables: { input: commentInquiry },
-		skip: !commentInquiry.search.commentRefId,
+		skip:
+			!commentInquiry.search.commentRefId ||
+			commentInquiry.search.commentRefId.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			setSpecialistReviews(data?.getComments?.list);

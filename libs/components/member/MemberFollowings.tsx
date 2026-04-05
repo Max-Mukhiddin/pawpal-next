@@ -39,7 +39,12 @@ const MemberFollowings = (props: MemberFollowingsProps) => {
 	} = useQuery(GET_MEMBER_FOLLOWINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input: followInquiry },
-		skip: !followInquiry?.search?.followerId,
+		skip:
+			!user?._id ||
+			user._id.length !== 24 ||
+			!followInquiry?.search?.followerId ||
+			followInquiry.search.followerId.length !== 24,
+		errorPolicy: 'all',
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			setMemberFollowings(data?.getMemberFollowings?.list);
@@ -50,12 +55,18 @@ const MemberFollowings = (props: MemberFollowingsProps) => {
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (router.query.memberId)
-			setFollowInquiry({ ...followInquiry, search: { followerId: router.query.memberId as string } });
-		else setFollowInquiry({ ...followInquiry, search: { followerId: user?._id } });
-	}, [router]);
+			setFollowInquiry((prev) => ({
+				...prev,
+				search: { followerId: router.query.memberId as string },
+			}));
+		else setFollowInquiry((prev) => ({ ...prev, search: { followerId: user?._id ?? '' } }));
+	}, [router, user?._id]);
 
 	useEffect(() => {
-		getMemberFollowingsRefetch({ input: followInquiry }).then();
+		const id = followInquiry?.search?.followerId;
+		if (id && id.length === 24) {
+			getMemberFollowingsRefetch({ input: followInquiry }).then();
+		}
 	}, [followInquiry]);
 
 	/** HANDLERS **/
@@ -80,7 +91,7 @@ const MemberFollowings = (props: MemberFollowingsProps) => {
 						<Typography className="title-text">Details</Typography>
 						<Typography className="title-text">Subscription</Typography>
 					</Stack>
-					{memberFollowings?.length === 0 && (
+					{!getMemberFollowingsLoading && (memberFollowings?.length === 0 || getMemberFollowingsError) && (
 						<div className={'no-data'}>
 							<img src="/img/icons/icoAlert.svg" alt="" />
 							<p>No Followings yet!</p>

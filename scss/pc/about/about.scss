@@ -51,7 +51,7 @@
     height: 270px;
     border-radius: 20px;
     overflow: hidden;
-    background-image: linear-gradient(180deg, rgba(12, 12, 12, 0.45), rgba(12, 12, 12, 0.68)), url('/img/banner/header2.svg');
+    background-image: linear-gradient(180deg, rgba(12, 12, 12, 0.45), rgba(12, 12, 12, 0.68)), url('/images/hero/pawpal-hero.jpg');
     background-size: cover;
     background-position: center;
 
@@ -302,6 +302,20 @@
 
   .about-page__team {
     margin-top: 72px;
+
+    .section-head {
+      align-items: flex-start;
+      gap: 16px;
+
+      h2 {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .pill-btn {
+        flex-shrink: 0;
+      }
+    }
 
     .team-layout {
       display: grid;

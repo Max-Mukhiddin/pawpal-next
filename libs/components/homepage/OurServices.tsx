@@ -82,13 +82,17 @@ export default function OurServices() {
 
 	const cards =
 		listings.length > 0
-			? listings.map((listing) => ({
-					slug: listing._id,
-					title: listing.listingTitle,
-					description: `$${listing.listingPrice ?? 0}`,
-					image: getBackendImage(listing.listingImages?.[0]) || '/images/services/service-grooming.jpg',
-					href: `/service/detail?id=${listing._id}`,
-				}))
+			? listings.map((listing) => {
+					const raw = listing.listingImages?.[0];
+					const imageUrl = raw ? getBackendImage(raw) : '';
+					return {
+						slug: listing._id,
+						title: listing.listingTitle,
+						description: `$${listing.listingPrice ?? 0}`,
+						image: imageUrl,
+						href: `/service/detail?id=${listing._id}`,
+					};
+				})
 			: CARDS;
 
 	return (
@@ -125,16 +129,12 @@ export default function OurServices() {
 							grabCursor
 							watchOverflow
 							breakpoints={{
-								540: {
+								640: {
 									slidesPerView: 2,
 									spaceBetween: 24,
 								},
-								900: {
+								1024: {
 									slidesPerView: 3,
-									spaceBetween: 24,
-								},
-								1200: {
-									slidesPerView: 4,
 									spaceBetween: 24,
 								},
 							}}
@@ -147,26 +147,56 @@ export default function OurServices() {
 								clickable: true,
 							}}
 						>
-							{cards.map((card) => (
-								<SwiperSlide key={card.slug} className="our-services__slide">
-									<Link href={card.href} className="our-services__card">
-										<div className="our-services__card-media">
-											<img
-												className="our-services__card-img"
-												src={card.image}
-												alt=""
-											/>
-											<span className="our-services__card-action" aria-hidden>
-												<NorthEastOutlinedIcon className="our-services__card-action-icon" />
-											</span>
-											<div className="our-services__card-overlay">
-												<h3 className="our-services__card-title">{card.title}</h3>
-												<p className="our-services__card-text">{card.description}</p>
+							{cards.map((card) => {
+								const hasImage = Boolean(card.image && String(card.image).trim() !== '');
+								return (
+									<SwiperSlide key={card.slug} className="our-services__slide">
+										<Link href={card.href} className="our-services__card">
+											<div
+												className="our-services__card-media"
+												style={{
+													backgroundImage: hasImage
+														? `url(${card.image})`
+														: 'linear-gradient(135deg, #E07B3A 0%, #c9622a 100%)',
+													backgroundSize: 'cover',
+													backgroundPosition: 'center',
+													backgroundRepeat: 'no-repeat',
+												}}
+											>
+												<span className="our-services__card-action" aria-hidden>
+													<NorthEastOutlinedIcon className="our-services__card-action-icon" />
+												</span>
+												<div
+													className={
+														hasImage
+															? 'our-services__card-overlay'
+															: 'our-services__card-overlay our-services__card-overlay--gradient'
+													}
+												>
+													<h3
+														className={
+															hasImage
+																? 'our-services__card-title'
+																: 'our-services__card-title our-services__card-title--prominent'
+														}
+													>
+														{card.title}
+													</h3>
+													<p
+														className={
+															hasImage
+																? 'our-services__card-text'
+																: 'our-services__card-text our-services__card-text--on-gradient'
+														}
+													>
+														{card.description}
+													</p>
+												</div>
 											</div>
-										</div>
-									</Link>
-								</SwiperSlide>
-							))}
+										</Link>
+									</SwiperSlide>
+								);
+							})}
 						</Swiper>
 					</div>
 

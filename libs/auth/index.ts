@@ -26,7 +26,6 @@ export const logIn = async (nick: string, password: string): Promise<void> => {
 	} catch (err) {
 		console.warn('login err', err);
 		logOut();
-		// throw new Error('Login Err');
 	}
 };
 
@@ -74,7 +73,6 @@ export const signUp = async (nick: string, password: string, phone: string, type
 	} catch (err) {
 		console.warn('login err', err);
 		logOut();
-		// throw new Error('Login Err');
 	}
 };
 
@@ -126,6 +124,12 @@ export const updateUserInfo = (jwtToken: any) => {
 	if (!jwtToken) return false;
 
 	const claims = decodeJWT<CustomJwtPayload>(jwtToken);
+	const c = claims as CustomJwtPayload & {
+		memberFollowers?: number;
+		memberFollowings?: number;
+		memberComments?: number;
+	};
+
 	userVar({
 		_id: claims._id ?? '',
 		memberType: claims.memberType ?? '',
@@ -140,7 +144,10 @@ export const updateUserInfo = (jwtToken: any) => {
 				: `${claims.memberImage}`,
 		memberAddress: claims.memberAddress ?? '',
 		memberDesc: claims.memberDesc ?? '',
-		memberListings: claims.memberListings,
+		memberListings: claims.memberListings ?? 0,
+		memberFollowers: c.memberFollowers ?? 0,
+		memberFollowings: c.memberFollowings ?? 0,
+		memberComments: c.memberComments ?? 0,
 		memberRank: claims.memberRank,
 		memberArticles: claims.memberArticles,
 		memberPoints: claims.memberPoints,
@@ -148,7 +155,7 @@ export const updateUserInfo = (jwtToken: any) => {
 		memberViews: claims.memberViews,
 		memberWarnings: claims.memberWarnings,
 		memberBlocks: claims.memberBlocks,
-	});
+	} as any);
 };
 
 export const logOut = () => {
@@ -175,6 +182,9 @@ const deleteUserInfo = () => {
 		memberAddress: '',
 		memberDesc: '',
 		memberListings: 0,
+		memberFollowers: 0,
+		memberFollowings: 0,
+		memberComments: 0,
 		memberRank: 0,
 		memberArticles: 0,
 		memberPoints: 0,
@@ -182,5 +192,5 @@ const deleteUserInfo = () => {
 		memberViews: 0,
 		memberWarnings: 0,
 		memberBlocks: 0,
-	});
+	} as any);
 };

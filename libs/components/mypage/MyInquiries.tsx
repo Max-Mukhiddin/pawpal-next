@@ -45,7 +45,7 @@ const MyInquiries: NextPage = () => {
 	const { loading } = useQuery(GET_MY_INQUIRIES, {
 		fetchPolicy: 'network-only',
 		variables: { input },
-		skip: !user?._id,
+		skip: !user?._id || user._id.length !== 24,
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			const payload = data?.getMyInquiries;

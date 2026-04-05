@@ -29,9 +29,7 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const [serviceInquiry, setServiceInquiry] = useState<ServicesInquiry>(() =>
-		withServicesListingTypeFilter(
-			router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
-		),
+		withServicesListingTypeFilter(initialInput),
 	);
 	const [services, setServices] = useState<Service[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -65,25 +63,19 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (!router.isReady) return;
-		if (!router.query.input) return;
-		try {
-			const inputObj = JSON.parse(router.query.input as string);
-			const normalized = withServicesListingTypeFilter(inputObj);
-			setServiceInquiry(normalized);
-			setCurrentPage(normalized.page === undefined ? 1 : normalized.page);
-		} catch {
-			// ignore malformed ?input=
-		}
-	}, [router.isReady, router.query.input]);
+		const page = Number(router.query.page) || 1;
+		setServiceInquiry((prev) =>
+			prev.page === page ? prev : withServicesListingTypeFilter({ ...prev, page }),
+		);
+		setCurrentPage(page);
+	}, [router.isReady, router.query.page]);
 
 	/** HANDLERS **/
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
 		const next = withServicesListingTypeFilter({ ...serviceInquiry, page: value });
 		setServiceInquiry(next);
 		setCurrentPage(value);
-		await router.push(`/service?input=${JSON.stringify(next)}`, `/service?input=${JSON.stringify(next)}`, {
-			scroll: false,
-		});
+		await router.push(`/service?page=${next.page}`, undefined, { shallow: true });
 	};
 
 	const likeServiceHandler = async (user: T, id: string) => {

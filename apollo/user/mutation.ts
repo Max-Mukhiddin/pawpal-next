@@ -56,6 +56,7 @@ export const LOGIN = gql`
 export const UPDATE_MEMBER = gql`
 	mutation UpdateMember($input: MemberUpdate!) {
 		updateMember(input: $input) {
+			accessToken
 			_id
 			memberType
 			memberStatus

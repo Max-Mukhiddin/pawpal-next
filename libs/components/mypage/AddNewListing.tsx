@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { Button, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { ListingLocation, ListingType } from '../../enums/listing.enum';
-import { REACT_APP_API_URL } from '../../config';
+import { REACT_APP_API_GRAPHQL_URL, REACT_APP_API_URL } from '../../config';
 import type { ListingInput } from '../../types/listing/listing.input';
 import axios from 'axios';
 import { getJwtToken } from '../../auth';
@@ -65,7 +65,11 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 		variables: {
 			input: router.query.listingId,
 		},
-		skip: !router.query.listingId,
+		skip: (() => {
+			const raw = router.query.listingId;
+			const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
+			return !id || id.length !== 24;
+		})(),
 	});
 
 	/** LIFECYCLES **/
@@ -121,7 +125,7 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 				if (/^\d+$/.test(key)) formData.append(`${key}`, selectedFiles[key]);
 			}
 
-			const response = await axios.post(`${process.env.REACT_APP_API_GRAPHQL_URL}`, formData, {
+			const response = await axios.post(REACT_APP_API_GRAPHQL_URL, formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 					'apollo-require-preflight': true,
@@ -129,9 +133,12 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 				},
 			});
 
-			const responseImages = response.data.data.imagesUploader;
+			const responseImages = response.data.data.imagesUploader as string[];
+			const normalized = Array.isArray(responseImages)
+				? responseImages.map((p) => String(p ?? '').replace(/^\/+/, ''))
+				: [];
 
-			setInsertListingData((prev) => ({ ...prev, listingImages: responseImages }));
+			setInsertListingData((prev) => ({ ...prev, listingImages: normalized }));
 		} catch (err: any) {
 			console.error('err: ', err.message);
 			await sweetMixinErrorAlert(err.message);
@@ -484,7 +491,7 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 							</Stack>
 							<Stack className="gallery-box">
 								{insertListingData?.listingImages.map((image: string) => {
-									const imagePath: string = `${REACT_APP_API_URL}/${image}`;
+									const imagePath: string = `${REACT_APP_API_URL}/${String(image).replace(/^\/+/, '')}`;
 									return (
 										<Stack className="image-box" key={image}>
 											<img src={imagePath} alt="" />

@@ -29,9 +29,7 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const [productInquiry, setProductInquiry] = useState<ProductsInquiry>(() =>
-		withProductsListingTypeFilter(
-			router?.query?.input ? JSON.parse(router?.query?.input as string) : initialInput,
-		),
+		withProductsListingTypeFilter(initialInput),
 	);
 	const [products, setProducts] = useState<Product[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -65,25 +63,19 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (!router.isReady) return;
-		if (!router.query.input) return;
-		try {
-			const inputObj = JSON.parse(router.query.input as string);
-			const normalized = withProductsListingTypeFilter(inputObj);
-			setProductInquiry(normalized);
-			setCurrentPage(normalized.page === undefined ? 1 : normalized.page);
-		} catch {
-			// ignore malformed ?input=
-		}
-	}, [router.isReady, router.query.input]);
+		const page = Number(router.query.page) || 1;
+		setProductInquiry((prev) =>
+			prev.page === page ? prev : withProductsListingTypeFilter({ ...prev, page }),
+		);
+		setCurrentPage(page);
+	}, [router.isReady, router.query.page]);
 
 	/** HANDLERS **/
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
 		const next = withProductsListingTypeFilter({ ...productInquiry, page: value });
 		setProductInquiry(next);
 		setCurrentPage(value);
-		await router.push(`/product?input=${JSON.stringify(next)}`, `/product?input=${JSON.stringify(next)}`, {
-			scroll: false,
-		});
+		await router.push(`/product?page=${next.page}`, undefined, { shallow: true });
 	};
 
 	const likeProductHandler = async (user: T, id: string) => {

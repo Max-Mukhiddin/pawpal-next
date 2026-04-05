@@ -1,4 +1,7 @@
-export const REACT_APP_API_URL = `${process.env.REACT_APP_API_URL}`;
+export const REACT_APP_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5007';
+
+export const REACT_APP_API_GRAPHQL_URL =
+	process.env.NEXT_PUBLIC_API_GRAPHQL_URL || 'http://localhost:5007/graphql';
 
 export const Messages = {
 	error1: 'Something went wrong!',

@@ -3,7 +3,7 @@ import { Box, Button, FormControl, MenuItem, Stack, Typography, Select, TextFiel
 import { BoardArticleCategory } from '../../enums/board-article.enum';
 import { Editor } from '@toast-ui/react-editor';
 import { getJwtToken } from '../../auth';
-import { Messages, REACT_APP_API_URL } from '../../config';
+import { Messages, REACT_APP_API_GRAPHQL_URL, REACT_APP_API_URL } from '../../config';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { T } from '../../types/common';
@@ -55,7 +55,7 @@ const TuiEditor = () => {
 			);
 			formData.append('0', image);
 
-			const response = await axios.post(`${process.env.REACT_APP_API_GRAPHQL_URL}`, formData, {
+			const response = await axios.post(REACT_APP_API_GRAPHQL_URL, formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 					'apollo-require-preflight': true,
@@ -63,11 +63,12 @@ const TuiEditor = () => {
 				},
 			});
 
-			const responseImage = response.data.data.imageUploader;
+			const responseImage = response.data.data.imageUploader as string;
+			const path = String(responseImage ?? '').replace(/^\/+/, '');
 			console.log('=responseImage: ', responseImage);
-			memoizedValues.articleImage = responseImage;
+			memoizedValues.articleImage = path;
 
-			return `${REACT_APP_API_URL}/${responseImage}`;
+			return `${REACT_APP_API_URL}/${path}`;
 		} catch (err) {
 			console.log('Error, uploadImage:', err);
 		}
