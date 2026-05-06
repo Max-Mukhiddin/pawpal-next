@@ -1,0 +1,219 @@
+/**
+ * PawpalCtaBand — shared editorial CTA card
+ * Namespace: .ppctaband
+ *
+ * Floating cream card with pet image on the right.
+ * Used on /blog, /blog/detail, /about, and other public pages.
+ */
+
+#pc-wrap {
+	/* ── outer section — full-width, controls max-width + padding ── */
+	.ppctaband {
+		max-width: 1280px;
+		margin: 0 auto;
+		padding: 0 32px 0;
+
+		&__card {
+			display: flex;
+			align-items: stretch;
+			background: #fffaf5;
+			border: 1px solid rgba(224, 123, 58, 0.14);
+			border-radius: 28px;
+			overflow: hidden;
+			box-shadow:
+				0 4px 16px rgba(42, 36, 30, 0.05),
+				0 20px 56px rgba(42, 36, 30, 0.08);
+			min-height: 220px;
+			position: relative;
+		}
+
+		/* ── left: copy ── */
+		&__copy {
+			flex: 1;
+			padding: 52px 56px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			z-index: 1;
+		}
+
+		&__eyebrow {
+			display: block;
+			font-family: $font;
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 0.15em;
+			text-transform: uppercase;
+			color: #e07b3a;
+			margin-bottom: 12px;
+		}
+
+		&__title {
+			margin: 0 0 12px;
+			font-family: $font;
+			font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+			font-weight: 800;
+			line-height: 1.15;
+			letter-spacing: -0.025em;
+			color: #181a20;
+		}
+
+		&__sub {
+			margin: 0 0 28px;
+			font-family: $font;
+			font-size: 15px;
+			color: #6b6560;
+			line-height: 1.6;
+			max-width: 440px;
+		}
+
+		&__btns {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+
+		&__btn {
+			display: inline-flex;
+			align-items: center;
+			padding: 12px 28px;
+			border-radius: 999px;
+			font-family: $font;
+			font-size: 14px;
+			font-weight: 700;
+			text-decoration: none;
+			transition: all 0.2s;
+			white-space: nowrap;
+			cursor: pointer;
+
+			&--primary {
+				background: #e07b3a;
+				color: #fff;
+				border: 2px solid transparent;
+
+				&:hover {
+					background: #c96a32;
+				}
+			}
+
+			&--outline {
+				background: transparent;
+				color: #181a20;
+				border: 2px solid rgba(0, 0, 0, 0.18);
+
+				&:hover {
+					border-color: #e07b3a;
+					color: #e07b3a;
+				}
+			}
+		}
+
+		/* ── right: pet image panel ── */
+		&__visual {
+			width: 380px;
+			flex-shrink: 0;
+			position: relative;
+			overflow: hidden;
+
+			/* subtle warm gradient fade on the left edge */
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: linear-gradient(90deg, #fffaf5 0%, transparent 30%);
+				z-index: 1;
+				pointer-events: none;
+			}
+		}
+
+		&__img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+			object-position: center 30%;
+		}
+
+		/* ── decorative paw accents ── */
+		&__paw {
+			position: absolute;
+			z-index: 2;
+			font-size: 20px;
+			opacity: 0.35;
+			pointer-events: none;
+			user-select: none;
+
+			&--1 {
+				top: 20px;
+				right: 20px;
+				font-size: 28px;
+				opacity: 0.22;
+				transform: rotate(20deg);
+			}
+
+			&--2 {
+				bottom: 24px;
+				right: 48px;
+				font-size: 18px;
+				opacity: 0.18;
+				transform: rotate(-15deg);
+			}
+		}
+
+		/* ─── responsive ── */
+		@media (max-width: 1100px) {
+			&__visual {
+				width: 300px;
+			}
+
+			&__copy {
+				padding: 44px 44px;
+			}
+		}
+
+		@media (max-width: 860px) {
+			&__card {
+				flex-direction: column-reverse;
+			}
+
+			&__visual {
+				width: 100%;
+				height: 200px;
+
+				&::before {
+					background: linear-gradient(0deg, #fffaf5 0%, transparent 40%);
+				}
+			}
+
+			&__img {
+				object-position: center 20%;
+			}
+
+			&__copy {
+				padding: 36px 32px;
+			}
+		}
+
+		@media (max-width: 520px) {
+			padding: 0 16px;
+
+			&__copy {
+				padding: 28px 24px 32px;
+			}
+
+			&__title {
+				font-size: 1.4rem;
+			}
+
+			&__btns {
+				flex-direction: column;
+				align-items: stretch;
+			}
+
+			&__btn {
+				justify-content: center;
+			}
+		}
+	}
+}
