@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NextPage } from 'next';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
+import Link from 'next/link';
 import CatalogBrowseCard from '../listings/CatalogBrowseCard';
 import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
@@ -13,7 +13,6 @@ import { Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 
 const MyFavorites: NextPage = () => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const [myFavorites, setMyFavorites] = useState<Listing[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -63,11 +62,8 @@ const MyFavorites: NextPage = () => {
 		}
 	};
 
-	if (device === 'mobile') {
-		return <div>pawpal MY FAVORITES MOBILE</div>;
-	} else {
-		return (
-			<div id="my-favorites-page">
+	return (
+		<div id="my-favorites-page">
 				<Stack className="main-title-box">
 					<Stack className="right-box">
 						<Typography className="main-title">My Favorites</Typography>
@@ -88,8 +84,13 @@ const MyFavorites: NextPage = () => {
 						})
 					) : (
 						<div className={'no-data'}>
-							<img src="/img/icons/icoAlert.svg" alt="" />
-							<p>No Favorites found!</p>
+							<span className="mypage-empty-icon" aria-hidden>
+								🐾
+							</span>
+							<p>No favorites yet</p>
+							<Link href="/service" className="mypage-empty-cta">
+								Browse services
+							</Link>
 						</div>
 					)}
 				</Stack>
@@ -111,9 +112,8 @@ const MyFavorites: NextPage = () => {
 						</Stack>
 					</Stack>
 				) : null}
-			</div>
-		);
-	}
+		</div>
+	);
 };
 
 export default MyFavorites;

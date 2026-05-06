@@ -1,13 +1,44 @@
 #pc-wrap {
 	.specialist-detail-page {
 		position: relative;
-		padding: 133px 0 75px;
+		padding: 0 0 75px;
 		width: 100%;
 		height: auto;
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
 		justify-content: center;
+
+		&__hero {
+			width: 100%;
+			min-height: 300px;
+			display: flex;
+			align-items: center;
+			background-color: #1a1a1a;
+		}
+
+		&__hero-inner {
+			width: min(1200px, calc(100% - 32px));
+			margin: 0 auto;
+			color: #fff;
+
+			h1 {
+				margin: 0;
+				font-family: $font;
+				font-size: 36px;
+				font-weight: 700;
+				line-height: 1.2;
+			}
+
+			p {
+				margin-top: 10px;
+				font-family: $font;
+				font-size: 14px;
+				opacity: 0.9;
+			}
+		}
+
 		.container {
+			margin-top: 24px;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -29,7 +60,7 @@
 					display: flex;
 					flex-direction: column;
 					strong {
-						color: #181a20;
+						color: var(--color-text-primary);
 						font-family: $font;
 						font-size: 24px;
 						font-style: normal;
@@ -49,7 +80,7 @@
 							height: 16px;
 						}
 						span {
-							color: #181a20;
+							color: var(--color-text-primary);
 							font-family: $font;
 							font-size: 20px;
 							font-style: normal;
@@ -67,7 +98,7 @@
 				display: flex;
 				flex-direction: column;
 				border-radius: 12px;
-				background: #fff;
+				background: var(--color-bg-card);
 				box-shadow: 0px 1px 4px 0px rgba(24, 26, 32, 0.07);
 				.card-wrap {
 					position: relative;
@@ -116,7 +147,7 @@
 							display: flex;
 							flex-direction: column;
 							strong {
-								color: #181a20;
+								color: var(--color-text-primary);
 								font-family: $font;
 								font-size: 15px;
 								font-style: normal;
@@ -125,7 +156,7 @@
 								cursor: pointer;
 							}
 							span {
-								color: #181a20;
+								color: var(--color-text-primary);
 								font-family: $font;
 								font-size: 15px;
 								font-style: normal;
@@ -141,7 +172,7 @@
 					align-items: center;
 					span {
 						margin-top: 20px;
-						color: #181a20;
+						color: var(--color-text-primary);
 						font-family: $font;
 						font-size: 14px;
 						font-style: normal;
@@ -157,12 +188,12 @@
 				width: 95%;
 				height: auto;
 				border-radius: 24px;
-				background: #f6f6f6;
+				background: var(--color-bg-card);
 				.main-intro {
 					display: flex;
 					flex-direction: column;
 					span {
-						color: #181a20;
+						color: var(--color-text-primary);
 						font-family: $font;
 						font-size: 30px;
 						font-style: normal;
@@ -172,7 +203,7 @@
 						text-transform: capitalize;
 					}
 					p {
-						color: #181a20;
+						color: var(--color-text-primary);
 						font-family: $font;
 						font-size: 14px;
 						font-style: normal;
@@ -186,7 +217,7 @@
 					display: flex;
 					flex-direction: column;
 					border-radius: 12px;
-					background: #fff;
+					background: var(--color-bg-card);
 					box-shadow: 0px 1px 4px 0px rgba(24, 26, 32, 0.07);
 					.title-box {
 						svg {
@@ -195,7 +226,7 @@
 						}
 						span {
 							margin-left: 8px;
-							color: #181a20;
+							color: var(--color-text-primary);
 							font-family: $font;
 							font-size: 17px;
 							font-style: normal;
@@ -227,7 +258,7 @@
 									display: flex;
 									flex-direction: column;
 									strong {
-										color: #181a20;
+										color: var(--color-text-primary);
 										font-family: $font;
 										font-size: 15px;
 										font-style: normal;
@@ -236,7 +267,7 @@
 									}
 									span {
 										margin-top: 4px;
-										color: #181a20;
+										color: var(--color-text-primary);
 										font-family: $font;
 										font-size: 13px;
 										font-style: normal;
@@ -255,7 +286,7 @@
 						}
 						p {
 							margin-top: 10px;
-							color: #181a20;
+							color: var(--color-text-primary);
 							font-family: $font;
 							font-size: 14px;
 							font-style: normal;
@@ -274,11 +305,11 @@
 				.leave-review-config {
 					margin-top: 15px;
 					border-radius: 12px;
-					background: #fff;
+					background: var(--color-bg-card);
 					box-shadow: 0px 1px 4px 0px rgba(24, 26, 32, 0.07);
 					padding: 30px 38px;
 					.main-title {
-						color: #181a20;
+						color: var(--color-text-primary);
 						font-family: $font;
 						font-size: 17px;
 						font-style: normal;
@@ -287,7 +318,7 @@
 					}
 					.review-title {
 						margin-top: 20px;
-						color: #181a20;
+						color: var(--color-text-primary);
 						font-family: $font;
 						font-size: 14px;
 						font-style: normal;
@@ -301,7 +332,7 @@
 						padding: 20px;
 						border-radius: 8px;
 						border: 1px solid #ddd;
-						color: #717171;
+						color: var(--color-text-secondary);
 						font-family: $font;
 						font-size: 14px;
 						font-style: normal;
@@ -327,7 +358,7 @@
 							border: 1px solid #c4c4c4;
 							cursor: pointer;
 							.title {
-								color: #181a20;
+								color: var(--color-text-primary);
 								font-family: $font;
 								font-size: 15px;
 								font-style: normal;
@@ -337,6 +368,142 @@
 						}
 					}
 				}
+			}
+		}
+	}
+
+	@media (max-width: 1023px) {
+		.specialist-detail-page {
+			padding: 0 0 56px;
+
+			&__hero {
+				min-height: 250px;
+			}
+
+			.container .specialist-info {
+				flex-direction: column;
+				align-items: center;
+				text-align: center;
+				margin-left: 0;
+
+				img {
+					margin-right: 0;
+				}
+
+				.info div {
+					justify-content: center;
+				}
+			}
+
+			.specialist-home-list .card-wrap {
+				justify-content: center;
+
+				.wrap-main {
+					width: 100%;
+					justify-content: center;
+				}
+			}
+
+			.review-box {
+				width: 100%;
+				max-width: 100%;
+				box-sizing: border-box;
+			}
+		}
+	}
+
+	@media (max-width: 767px) {
+		.specialist-detail-page {
+			padding: 0 0 40px;
+
+			&__hero {
+				min-height: 220px;
+			}
+
+			&__hero-inner h1 {
+				font-size: clamp(26px, 7vw, 34px);
+			}
+
+			.container .specialist-info {
+				img {
+					width: min(135px, 40vw);
+					height: min(135px, 40vw);
+				}
+
+				.info strong {
+					font-size: clamp(20px, 5vw, 24px);
+				}
+			}
+
+			.specialist-home-list {
+				.wrap-main {
+					flex-direction: column;
+					align-items: stretch;
+				}
+
+				.specialist-card .specialist-img {
+					width: 100%;
+					max-width: 320px;
+					height: auto;
+					aspect-ratio: 233 / 273;
+					margin: 0 auto;
+				}
+			}
+
+			.leave-review-config .submit-btn .submit-review {
+				width: 100%;
+				max-width: none;
+				box-sizing: border-box;
+			}
+		}
+	}
+}
+
+/* ── Dark mode: specialist detail page ──────────────────────────────────── */
+:root[data-theme='dark'] {
+	#pc-wrap {
+		.specialist-detail-page {
+			background-color: #1a1a1a !important;
+
+			.container {
+				background-color: transparent !important;
+			}
+
+			h1, h2, h3, h4, h5, h6 {
+				color: #f0f0f0 !important;
+				background-color: transparent !important;
+			}
+
+			p, span:not(.MuiBadge-badge) {
+				color: #f0f0f0 !important;
+				background-color: transparent !important;
+			}
+
+			.specialist-info strong,
+			.specialist-info span {
+				color: #f0f0f0 !important;
+			}
+
+			.specialist-home-list,
+			.review-box,
+			.leave-review-config {
+				background-color: #2a2a2a !important;
+
+				.main-intro span,
+				.main-intro p,
+				.title-box span {
+					color: #f0f0f0 !important;
+				}
+			}
+
+			.leave-review-config textarea {
+				background-color: #1a1a1a !important;
+				color: #f0f0f0 !important;
+				border-color: rgba(255, 255, 255, 0.15) !important;
+			}
+
+			.no-data p {
+				color: #f0f0f0 !important;
 			}
 		}
 	}

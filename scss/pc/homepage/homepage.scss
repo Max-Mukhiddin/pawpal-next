@@ -110,7 +110,7 @@
 						}
 						&.active {
 							border: 1px solid #181a20;
-							background: #fff;
+							background: var(--color-bg-card);
 							color: #181a20;
 							font-family: $font;
 							font-size: 14px;
@@ -142,12 +142,12 @@
 						justify-content: center;
 						align-items: center;
 					}
-					.trend-property-swiper {
+					.trend-listing-swiper {
 						width: 100%;
 						height: 400px;
 						display: flex;
 						flex-direction: row;
-						.trend-property-slide {
+						.trend-listing-slide {
 							width: auto;
 							height: auto;
 							display: flex;
@@ -178,7 +178,7 @@
 								left: 12px;
 								bottom: 12px;
 								border-radius: 6px;
-								background: #fff;
+								background: var(--color-bg-card);
 								color: #181a20;
 								font-family: $font;
 								font-size: 15px;
@@ -195,7 +195,7 @@
 							border-radius: 0px 0px 12px 12px;
 							border: 1px solid rgba(196, 196, 196, 0.71);
 							border-top: none;
-							background: #fff;
+							background: var(--color-bg-card);
 							box-shadow: 0px 1px 4px 0px rgba(24, 26, 32, 0.07);
 							.title {
 								overflow: hidden;
@@ -303,12 +303,12 @@
 					display: flex;
 					flex-direction: row;
 					justify-content: space-between;
-					.popular-property-swiper {
+					.popular-listing-swiper {
 						width: 100%;
 						height: 425px;
 						display: flex;
 						flex-direction: row;
-						.popular-property-slide {
+						.popular-listing-slide {
 							width: auto;
 							height: auto;
 							display: flex;
@@ -363,7 +363,7 @@
 								left: 20px;
 								bottom: 20px;
 								border-radius: 6px;
-								background: #fff;
+								background: var(--color-bg-card);
 								color: #181a20;
 								font-family: $font;
 								font-size: 15px;
@@ -380,7 +380,7 @@
 							border-radius: 0px 0px 12px 12px;
 							border: 1px solid rgba(196, 196, 196, 0.71);
 							border-top: none;
-							background: #fff;
+							background: var(--color-bg-card);
 							box-shadow: 0px 1px 4px 0px rgba(24, 26, 32, 0.07);
 							.title {
 								overflow: hidden;
@@ -508,12 +508,12 @@
 					margin-top: 64px;
 					display: flex;
 					flex-direction: row;
-					.top-property-swiper {
+					.top-listing-swiper {
 						width: 100%;
 						height: 400px;
 						display: flex;
 						flex-direction: row;
-						.top-property-slide {
+						.top-listing-slide {
 							width: auto;
 							height: auto;
 							display: flex;
@@ -544,7 +544,7 @@
 								left: 12px;
 								bottom: 12px;
 								border-radius: 6px;
-								background: #fff;
+								background: var(--color-bg-card);
 								color: #181a20;
 								font-family: $font;
 								font-size: 15px;
@@ -561,7 +561,7 @@
 							border-radius: 0px 0px 12px 12px;
 							border: 1px solid rgba(196, 196, 196, 0.71);
 							border-top: none;
-							background: #fff;
+							background: var(--color-bg-card);
 							box-shadow: 0px 1px 4px 0px rgba(24, 26, 32, 0.07);
 							.title {
 								overflow: hidden;
@@ -678,7 +678,7 @@
 						align-items: center;
 						justify-content: center;
 						border-radius: 50%;
-						background: #ffffff;
+						background: var(--color-bg-card);
 						filter: drop-shadow(0px 10px 35px rgba(5, 16, 54, 0.1));
 						cursor: pointer;
 						svg {

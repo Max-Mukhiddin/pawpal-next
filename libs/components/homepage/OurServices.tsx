@@ -57,6 +57,25 @@ const CARDS = [
 	},
 ] as const;
 
+const API_BASE = REACT_APP_API_URL || 'http://localhost:5007';
+
+const getImageUrl = (imagePath: string | undefined): string => {
+	if (!imagePath) return '/img/banner/listing_default.jpg';
+	if (imagePath.startsWith('http')) return imagePath;
+	if (
+		imagePath.startsWith('/images/') ||
+		imagePath.startsWith('/img/') ||
+		imagePath.startsWith('/public/')
+	) {
+		return imagePath;
+	}
+	const clean = imagePath.replace(/^\/+/, '');
+	if (clean.startsWith('uploads/')) {
+		return `${API_BASE}/${clean}`;
+	}
+	return `${API_BASE}/uploads/listing/${clean}`;
+};
+
 export default function OurServices() {
 	const variables = useMemo(
 		() => ({
@@ -78,26 +97,26 @@ export default function OurServices() {
 
 	const listings: Listing[] = data?.getListings?.list ?? [];
 
-	const getBackendImage = (img?: string) => (img ? `${REACT_APP_API_URL}/${img}` : '');
-
 	const cards =
 		listings.length > 0
 			? listings.map((listing) => {
-					const raw = listing.listingImages?.[0];
-					const imageUrl = raw ? getBackendImage(raw) : '';
 					return {
 						slug: listing._id,
 						title: listing.listingTitle,
 						description: `$${listing.listingPrice ?? 0}`,
-						image: imageUrl,
+						image: listing.listingImages?.[0] ?? '',
 						href: `/service/detail?id=${listing._id}`,
 					};
 				})
 			: CARDS;
 
+	const showArrows = cards.length > 2;
+	const isSingleCard = cards.length === 1;
+	const isTwoCards = cards.length === 2;
+
 	return (
 		<section
-			className="pawpal-home-section our-services"
+			className="pawpal-home-section our-services animate-on-scroll"
 			aria-labelledby="our-services-title"
 		>
 			<div className="pawpal-home-section__inner our-services__inner">
@@ -118,14 +137,16 @@ export default function OurServices() {
 				</header>
 
 				<div className="our-services__surface">
-					<div className="our-services__slider">
+					<div
+						className={`our-services__slider${isSingleCard ? ' our-services__slider--center-slides' : ''}${isTwoCards ? ' our-services__slider--two-up' : ''}`}
+					>
 						<Swiper
 							className="our-services-swiper"
-							modules={[Navigation, Pagination]}
+							modules={showArrows ? [Navigation, Pagination] : [Pagination]}
 							speed={480}
 							spaceBetween={24}
 							slidesPerView={1}
-							centeredSlides={false}
+							centeredSlides={isSingleCard}
 							grabCursor
 							watchOverflow
 							breakpoints={{
@@ -134,35 +155,40 @@ export default function OurServices() {
 									spaceBetween: 24,
 								},
 								1024: {
-									slidesPerView: 3,
+									slidesPerView: isTwoCards ? 2 : 3,
 									spaceBetween: 24,
 								},
 							}}
-							navigation={{
-								prevEl: '.our-services-swiper-prev',
-								nextEl: '.our-services-swiper-next',
-							}}
+							navigation={
+								showArrows
+									? {
+											prevEl: '.our-services-swiper-prev',
+											nextEl: '.our-services-swiper-next',
+										}
+									: false
+							}
 							pagination={{
 								el: '.our-services-swiper-pagination',
 								clickable: true,
 							}}
 						>
 							{cards.map((card) => {
-								const hasImage = Boolean(card.image && String(card.image).trim() !== '');
+								const imageUrl = getImageUrl(card.image);
+								const hasImage = Boolean(imageUrl);
 								return (
 									<SwiperSlide key={card.slug} className="our-services__slide">
 										<Link href={card.href} className="our-services__card">
-											<div
-												className="our-services__card-media"
-												style={{
-													backgroundImage: hasImage
-														? `url(${card.image})`
-														: 'linear-gradient(135deg, #E07B3A 0%, #c9622a 100%)',
-													backgroundSize: 'cover',
-													backgroundPosition: 'center',
-													backgroundRepeat: 'no-repeat',
-												}}
-											>
+											<div className="our-services__card-media">
+												{hasImage ? (
+													<img
+														src={imageUrl ?? ''}
+														alt={card.title}
+														className="our-services__card-img"
+														loading="lazy"
+													/>
+												) : (
+													<div className="our-services__card-fallback" aria-hidden />
+												)}
 												<span className="our-services__card-action" aria-hidden>
 													<NorthEastOutlinedIcon className="our-services__card-action-icon" />
 												</span>
@@ -201,21 +227,25 @@ export default function OurServices() {
 					</div>
 
 					<div className="our-services__controls" aria-label="Service carousel controls">
-						<button
-							type="button"
-							className="our-services__nav-btn our-services-swiper-prev"
-							aria-label="Previous services"
-						>
-							<WestIcon className="our-services__nav-icon" aria-hidden />
-						</button>
+						{showArrows && (
+							<button
+								type="button"
+								className="our-services__nav-btn our-services-swiper-prev"
+								aria-label="Previous services"
+							>
+								<WestIcon className="our-services__nav-icon" aria-hidden />
+							</button>
+						)}
 						<div className="our-services-swiper-pagination" />
-						<button
-							type="button"
-							className="our-services__nav-btn our-services-swiper-next"
-							aria-label="Next services"
-						>
-							<EastIcon className="our-services__nav-icon" aria-hidden />
-						</button>
+						{showArrows && (
+							<button
+								type="button"
+								className="our-services__nav-btn our-services-swiper-next"
+								aria-label="Next services"
+							>
+								<EastIcon className="our-services__nav-icon" aria-hidden />
+							</button>
+						)}
 					</div>
 				</div>
 			</div>

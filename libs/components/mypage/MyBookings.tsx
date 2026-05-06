@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { NextPage } from 'next';
 import { Button, Chip, Pagination, Stack, Typography } from '@mui/material';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { userVar } from '../../../apollo/store';
 import { GET_MY_BOOKINGS } from '../../../apollo/user/query';
 import { CANCEL_MY_BOOKING } from '../../../apollo/user/mutation';
@@ -19,6 +18,7 @@ import { inboxListingHeadline } from '../../utils/inboxListingContext';
 import { inboxActionsBlockSx, inboxEmptyHintSx, inboxListCardSx, inboxSectionLabelSx } from '../../utils/mypageInboxUi';
 import InboxEmptyCta from './InboxEmptyCta';
 import InboxOpenListingLink from './InboxOpenListingLink';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 const defaultInput: BookingsInquiry = {
 	page: 1,
@@ -39,7 +39,6 @@ const fieldLabelSx = {
 };
 
 const MyBookings: NextPage = () => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const [rows, setRows] = useState<BookingListItem[]>([]);
 	const [total, setTotal] = useState(0);
@@ -81,10 +80,6 @@ const MyBookings: NextPage = () => {
 			setBusyId(null);
 		}
 	};
-
-	if (device === 'mobile') {
-		return <div>pawpal MY BOOKINGS MOBILE</div>;
-	}
 
 	return (
 		<div id="my-bookings-page">
@@ -150,7 +145,7 @@ const MyBookings: NextPage = () => {
 									>
 										{agentImage ? (
 											<img
-												src={`${process.env.REACT_APP_API_URL}/${agentImage}`}
+												src={resolveMemberImageUrl(agentImage, '/img/profile/defaultUser.svg')}
 												alt="specialist avatar"
 												style={{ width: '100%', height: '100%', objectFit: 'cover' }}
 											/>

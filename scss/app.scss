@@ -6,7 +6,7 @@
 a {
 	white-space: nowrap;
 	text-decoration: none;
-	color: #212121;
+	color: var(--color-text-primary);
 }
 button {
 	text-transform: none;
@@ -25,6 +25,8 @@ p {
 }
 body {
 	font-family: $font;
+	background: var(--color-bg);
+	color: var(--color-text-primary);
 	&::-webkit-scrollbar {
 		width: 9px;
 	}
@@ -55,9 +57,23 @@ hr {
 
 	.container {
 		position: relative;
-		width: 1300px;
+		width: 100%;
+		max-width: 1300px;
 		margin: 0 auto;
 		display: flex;
+		box-sizing: border-box;
+		padding-left: clamp(40px, 5vw, 60px);
+		padding-right: clamp(40px, 5vw, 60px);
+
+		@media (max-width: $bp-tablet-max) {
+			padding-left: 24px;
+			padding-right: 24px;
+		}
+
+		@media (max-width: $bp-mobile-max) {
+			padding-left: 16px;
+			padding-right: 16px;
+		}
 	}
 }
 

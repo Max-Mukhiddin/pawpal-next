@@ -7,6 +7,8 @@ export interface MemberInput {
 	memberPhone: string;
 	memberType?: MemberType;
 	memberAuthType?: MemberAuthType;
+	memberDesc?: string;
+	isPendingSpecialist?: boolean;
 }
 
 export interface LoginInput {
@@ -30,6 +32,8 @@ interface MISearch {
 	memberStatus?: MemberStatus;
 	memberType?: MemberType;
 	text?: string;
+	/** Admin: filter members awaiting specialist approval */
+	isPendingSpecialist?: boolean;
 }
 
 export interface MembersInquiry {

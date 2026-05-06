@@ -1,18 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { NextPage } from 'next';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Button, Stack, Typography } from '@mui/material';
 import axios from 'axios';
-import { Messages, REACT_APP_API_GRAPHQL_URL, REACT_APP_API_URL } from '../../config';
+import { Messages, REACT_APP_API_GRAPHQL_URL } from '../../config';
 import { getJwtToken, updateStorage, updateUserInfo } from '../../auth';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { MemberUpdate } from '../../types/member/member.update';
 import { UPDATE_MEMBER } from '../../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinSuccessAlert } from '../../sweetAlert';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
-	const device = useDeviceDetect();
 	const token = getJwtToken();
 	const user = useReactiveVar(userVar);
 	const [updateData, setUpdateData] = useState<MemberUpdate>(initialValues);
@@ -101,30 +100,42 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 		}
 	};
 
-	if (device === 'mobile') {
-		return <>MY PROFILE PAGE MOBILE</>;
-	} else
-		return (
-			<div id="my-profile-page">
-				<Stack className="main-title-box">
-					<Stack className="right-box">
-						<Typography className="main-title">My Profile</Typography>
-						<Typography className="sub-title">We are glad to see you again!</Typography>
-					</Stack>
+	return (
+		<div id="my-profile-page">
+			<Stack className="main-title-box">
+				<Stack className="right-box">
+					<Typography className="main-title">My Profile</Typography>
+					<Typography className="sub-title">Welcome back, {user?.memberNick || 'friend'}! 🐾</Typography>
 				</Stack>
+				<span className="mypage-profile-watermark" aria-hidden>
+					🐾
+				</span>
+			</Stack>
 				<Stack className="top-box">
 					<Stack className="photo-box">
-						<Typography className="title">Photo</Typography>
+						<Typography className="title">Profile photo</Typography>
 						<Stack className="image-big-box">
-							<Stack className="image-box">
+							<Stack className="image-box image-box--upload">
 								<img
 									src={
-										updateData?.memberImage
-											? `${REACT_APP_API_URL}/${String(updateData.memberImage).replace(/^\/+/, '')}`
-											: '/img/profile/defaultUser.svg'
+										resolveMemberImageUrl(updateData?.memberImage, '/img/profile/defaultUser.svg')
 									}
+									onError={(e) => {
+										const img = e.currentTarget;
+										if (img.src.includes('/img/profile/defaultUser.svg')) {
+											img.src = '/images/hero/pawpal-hero.jpg';
+											return;
+										}
+										img.src = '/img/profile/defaultUser.svg';
+									}}
 									alt=""
 								/>
+								<label htmlFor="hidden-input" className="avatar-overlay" aria-label="Upload photo">
+									<span className="avatar-overlay__icon" aria-hidden>
+										📷
+									</span>
+									<span className="avatar-overlay__text">Upload photo</span>
+								</label>
 							</Stack>
 							<Stack className="upload-big-box">
 								<input
@@ -135,7 +146,7 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 									accept="image/jpg, image/jpeg, image/png"
 								/>
 								<label htmlFor="hidden-input" className="labeler">
-									<Typography>Upload Profile Image</Typography>
+									<Typography>Choose Image</Typography>
 								</label>
 								<Typography className="upload-text">A photo must be in JPG, JPEG or PNG format!</Typography>
 							</Stack>
@@ -189,8 +200,8 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 						</Button>
 					</Stack>
 				</Stack>
-			</div>
-		);
+		</div>
+	);
 };
 
 MyProfile.defaultProps = {

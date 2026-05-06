@@ -1,23 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Stack, Typography, Box, List, ListItem } from '@mui/material';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Link from 'next/link';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { REACT_APP_API_URL } from '../../config';
 import { logOut } from '../../auth';
 import { sweetConfirmAlert } from '../../sweetAlert';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
-const getBackendImage = (img?: string | null) => {
-	if (!img) return '';
-	if (img.startsWith('http://') || img.startsWith('https://')) return img;
-	if (img.startsWith('/')) return img;
-	return `${REACT_APP_API_URL}/${String(img).replace(/^\/+/, '')}`;
-};
+const getBackendImage = (img?: string | null) => resolveMemberImageUrl(img, '');
 
 const MyMenu = () => {
-	const device = useDeviceDetect();
 	const router = useRouter();
 	const pathname = router.query.category ?? 'myProfile';
 	const category: any = router.query?.category ?? 'myProfile';
@@ -32,11 +25,8 @@ const MyMenu = () => {
 		}
 	};
 
-	if (device === 'mobile') {
-		return <div>MY MENU</div>;
-	} else {
-		return (
-			<Stack width="100%" sx={{ p: 0 }}>
+	return (
+		<Stack width="100%" sx={{ p: 0 }}>
 				<Stack className={'profile'}>
 					<Box component={'div'} className={'profile-img'}>
 						<img
@@ -69,13 +59,24 @@ const MyMenu = () => {
 						)}
 					</Stack>
 				</Stack>
+				{user?.isPendingSpecialist && (
+					<div className="mypage-review-banner" role="status" aria-live="polite">
+						<span className="mypage-review-banner__icon" aria-hidden>
+							⏳
+						</span>
+						<div className="mypage-review-banner__copy">
+							<strong>Application under review</strong>
+							<p>We are reviewing your specialist profile and will notify you once approved.</p>
+						</div>
+					</div>
+				)}
 				<Stack className={'sections'}>
 					<Stack className={'section'}>
 						<Typography className="title" variant={'h5'}>
 							PRODUCTS &amp; SERVICES
 						</Typography>
 						<List className={'sub-section'}>
-							{user.memberType === 'AGENT' && (
+							{user.memberType === 'AGENT' && !user.isPendingSpecialist && (
 								<>
 									<ListItem className={pathname === 'addListing' ? 'focus' : ''}>
 										<Link
@@ -452,9 +453,8 @@ const MyMenu = () => {
 						</List>
 					</Stack>
 				</Stack>
-			</Stack>
-		);
-	}
+		</Stack>
+	);
 };
 
 export default MyMenu;

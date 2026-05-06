@@ -1,6 +1,9 @@
 export default function BrandShowcase() {
 	return (
-		<section className="pawpal-home-section pawpal-home-section--brand" aria-labelledby="pawpal-home-brand-title">
+		<section
+			className="pawpal-home-section pawpal-home-section--brand animate-on-scroll"
+			aria-labelledby="pawpal-home-brand-title"
+		>
 			<div className="pawpal-home-section__inner">
 				<h2 id="pawpal-home-brand-title" className="pawpal-home-section__title">
 					PawPal in motion

@@ -1,17 +1,15 @@
 import React from 'react';
 import { Stack, Typography } from '@mui/material';
 import { Comment } from '../../types/comment/comment';
-import { REACT_APP_API_URL } from '../../config';
 import Moment from 'react-moment';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 export interface ServiceReviewCardProps {
 	comment: Comment;
 }
 
 const ServiceReviewCard: React.FC<ServiceReviewCardProps> = ({ comment }) => {
-	const imagePath: string = comment?.memberData?.memberImage
-		? `${REACT_APP_API_URL}/${comment.memberData.memberImage}`
-		: '/img/profile/defaultUser.svg';
+	const imagePath: string = resolveMemberImageUrl(comment?.memberData?.memberImage, '/img/profile/defaultUser.svg');
 
 	return (
 		<Stack className={'service-review-card'}>

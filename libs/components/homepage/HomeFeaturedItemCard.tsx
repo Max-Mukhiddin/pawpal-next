@@ -12,9 +12,21 @@ export interface HomeFeaturedItemCardProps {
 
 /** Homepage featured strip tile; matches `.featured-products-pawpal__*` BEM from featured-products.scss */
 export default function HomeFeaturedItemCard({ listing, detailBasePath, viewLabel }: HomeFeaturedItemCardProps) {
+	const apiBase = REACT_APP_API_URL || 'http://localhost:5007';
+	const getImageUrl = (imagePath: string | undefined): string => {
+		if (!imagePath) return '/img/banner/listing_default.jpg';
+		if (imagePath.startsWith('http')) return imagePath;
+		if (imagePath.startsWith('/images/') || imagePath.startsWith('/img/') || imagePath.startsWith('/public/')) {
+			return imagePath;
+		}
+		const clean = imagePath.replace(/^\/+/, '');
+		if (clean.startsWith('uploads/')) return `${apiBase}/${clean}`;
+		return `${apiBase}/uploads/listing/${clean}`;
+	};
+
 	const raw = listing.listingImages?.[0];
 	const hasImage = Boolean(raw && String(raw).trim() !== '');
-	const imageUrl = hasImage ? `${REACT_APP_API_URL}/${String(raw).replace(/^\/+/, '')}` : null;
+	const imageUrl = hasImage ? getImageUrl(String(raw)) : null;
 	const href = `${detailBasePath}?id=${listing._id}`;
 	const priceText =
 		listing.listingPrice != null && Number(listing.listingPrice) > 0

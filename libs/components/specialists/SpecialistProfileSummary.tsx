@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Stack, Typography } from '@mui/material';
 import { Member } from '../../types/member/member';
-import { REACT_APP_API_URL } from '../../config';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 export interface SpecialistProfileSummaryProps {
 	specialist: Member | null;
@@ -22,7 +22,7 @@ const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({
 	return (
 		<Stack className={'specialist-info'}>
 			<img
-				src={specialist?.memberImage ? `${REACT_APP_API_URL}/${specialist.memberImage}` : '/img/profile/defaultUser.svg'}
+				src={resolveMemberImageUrl(specialist?.memberImage, '/img/profile/defaultUser.svg')}
 				alt=""
 				onClick={() => onOpenMemberProfile(specialist._id)}
 				style={{ cursor: 'pointer' }}

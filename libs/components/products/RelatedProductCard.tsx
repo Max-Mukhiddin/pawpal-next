@@ -6,10 +6,10 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { REACT_APP_API_URL } from '../../config';
 import type { Product } from '../../types/products/product';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface RelatedProductCardProps {
 	product: Product;
@@ -20,18 +20,22 @@ export interface RelatedProductCardProps {
 const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, onLike }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const image = product?.listingImages?.[0]
-		? `${REACT_APP_API_URL}/${product.listingImages[0]}`
-		: '/img/icons/icoAlert.svg';
+	const image = resolveListingImageUrl(product?.listingImages?.[0], '/images/hero/pawpal-hero.jpg');
 
 	const raw = (product?.listingDesc || product?.listingAddress || '').trim();
 	const blurb =
 		raw.length > 72 ? `${raw.slice(0, 72)}…` : raw || 'Popular with PawPal shoppers.';
 
 	return (
-		<Stack className="related-product-card" onClick={() => router.push(`/products/detail?id=${product._id}`)}>
+		<Stack className="related-product-card" onClick={() => router.push(`/product/detail?id=${product._id}`)}>
 			<Box className="related-product-card__image" component={'div'}>
-				<img src={image} alt={product.listingTitle} />
+				<img
+					src={image}
+					onError={(e) => {
+						e.currentTarget.src = '/images/hero/pawpal-hero.jpg';
+					}}
+					alt={product.listingTitle}
+				/>
 			</Box>
 			<Stack className="related-product-card__body">
 				<Typography className="related-product-card__title">{product.listingTitle}</Typography>

@@ -14,6 +14,7 @@ export interface Member {
 	memberImage?: string;
 	memberAddress?: string;
 	memberDesc?: string;
+	isPendingSpecialist?: boolean;
 	memberListings?: number;
 	memberRank: number;
 	memberArticles: number;

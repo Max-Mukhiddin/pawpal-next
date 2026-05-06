@@ -73,7 +73,7 @@ const CommunityBoards = () => {
 					<Stack className="community-main">
 						<Stack className={'community-left'}>
 							<Stack className={'content-top'}>
-								<Link href={'/community?articleCategory=NEWS'}>
+								<Link href={'/blog?articleCategory=NEWS'}>
 									<span>News</span>
 								</Link>
 								<img src="/img/icons/arrowBig.svg" alt="" />
@@ -86,7 +86,7 @@ const CommunityBoards = () => {
 						</Stack>
 						<Stack className={'community-right'}>
 							<Stack className={'content-top'}>
-								<Link href={'/community?articleCategory=FREE'}>
+								<Link href={'/blog?articleCategory=FREE'}>
 									<span>Free</span>
 								</Link>
 								<img src="/img/icons/arrowBig.svg" alt="" />

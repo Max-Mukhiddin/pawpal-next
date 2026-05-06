@@ -60,7 +60,7 @@ const MemberAgentListings: NextPage = ({ initialInput, ...props }: any) => {
 			<div id="member-properties-page">
 				<Stack className="main-title-box">
 					<Stack className="right-box">
-						<Typography className="main-title">Listings</Typography>
+						<Typography className="main-title">Care Listings</Typography>
 					</Stack>
 				</Stack>
 				<Stack className="properties-list-box">

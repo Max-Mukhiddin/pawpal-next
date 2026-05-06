@@ -16,6 +16,7 @@ export const UPDATE_MEMBER_BY_ADMIN = gql`
 			memberImage
 			memberAddress
 			memberDesc
+			isPendingSpecialist
 			memberListings
 			memberRank
 			memberArticles

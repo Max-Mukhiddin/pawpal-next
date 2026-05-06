@@ -121,6 +121,13 @@ img {
     border-radius: 10px;
   }
 }
+
+/* Fluid images inside app shells — nested rules (avatars, icons) may override dimensions */
+#pc-wrap img,
+#mobile-wrap img {
+  max-width: 100%;
+  height: auto;
+}
 blockquote,
 q {
   quotes: none;

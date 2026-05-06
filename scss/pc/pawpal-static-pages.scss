@@ -123,7 +123,7 @@
 			gap: 8px;
 			padding: 16px;
 			border-radius: 16px;
-			background: #fff;
+			background: var(--color-bg-card);
 			border: 1px solid rgba(42, 36, 30, 0.08);
 			transition:
 				transform 0.3s ease,
@@ -259,7 +259,7 @@
 			gap: 12px;
 			padding: 14px 16px;
 			border-radius: 14px;
-			background: #fff;
+			background: var(--color-bg-card);
 			border: 1px solid rgba(42, 36, 30, 0.08);
 
 			h3 {
@@ -318,7 +318,7 @@
 				padding: 10px 16px;
 				border: 0;
 				border-radius: 999px;
-				background: #fff;
+				background: var(--color-bg-card);
 				font-family: $font;
 				font-size: 13px;
 				font-weight: 600;
@@ -548,7 +548,7 @@
 			.pawpal-static-page__package {
 				border-radius: 22px;
 				overflow: hidden;
-				background: #fff;
+				background: var(--color-bg-card);
 				border: 1px solid rgba(42, 36, 30, 0.08);
 				box-shadow:
 					0 8px 16px rgba(42, 36, 30, 0.06),
@@ -651,7 +651,7 @@
 			.pawpal-static-page__faq-item {
 				padding: 12px 14px;
 				border-radius: 14px;
-				background: #fff;
+				background: var(--color-bg-card);
 				border: 1px solid rgba(42, 36, 30, 0.1);
 				transition:
 					border-color 0.2s ease,
@@ -1563,7 +1563,7 @@
 					border: 0;
 					border-radius: 999px;
 					padding: 10px 16px;
-					background: #fff;
+					background: var(--color-bg-card);
 					color: #14131b;
 					font-family: $font;
 					font-size: 13px;
@@ -1751,6 +1751,151 @@
 	}
 }
 
+/* Service/Product catalog image hero — full-viewport width, same style as header-basic */
+#pc-wrap,
+#mobile-wrap {
+	.catalog-image-hero {
+		position: relative;
+		width: 100%;
+		max-width: 100%;
+		height: 400px;
+		min-height: 400px;
+		margin: 0;
+		border-radius: 20px;
+		overflow: hidden;
+		box-sizing: border-box;
+		box-shadow: 0 28px 64px rgba(10, 10, 12, 0.18);
+
+		/* bg: image only — overlay lives in ::after, same as header-basic */
+		&__bg {
+			position: absolute;
+			inset: 0;
+			background-image: url('/images/hero/pawpal-hero.jpg');
+			background-size: cover;
+			background-position: center 30%;
+			background-color: #1a1a1a;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: linear-gradient(
+					180deg,
+					rgba(0, 0, 0, 0.4) 0%,
+					rgba(0, 0, 0, 0.5) 100%
+				);
+			}
+		}
+
+		&__content {
+			position: relative;
+			z-index: 1;
+			height: 400px;
+			min-height: 400px;
+			padding: 56px 24px;
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+		}
+
+		/* title — identical to header-basic strong */
+		&__title {
+			margin: 0;
+			font-family: $font;
+			font-size: 48px;
+			font-weight: 700;
+			line-height: 1.1;
+			letter-spacing: -0.02em;
+			color: #fff;
+			text-transform: capitalize;
+			text-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+			background-color: transparent;
+		}
+
+		/* breadcrumb — identical to header-basic span */
+		&__crumb {
+			color: rgba(255, 255, 255, 0.78);
+			font-family: $font;
+			font-size: 15px;
+			font-weight: 400;
+			line-height: 1.5;
+			margin-top: 12px;
+			background: rgba(0, 0, 0, 0.22);
+			padding: 6px 20px;
+			border-radius: 999px;
+			backdrop-filter: blur(4px);
+		}
+
+		@media (max-width: 1023px) {
+			height: 340px;
+			min-height: 340px;
+			width: 100%;
+			margin: 0;
+
+			&__content {
+				height: 340px;
+				min-height: 340px;
+				padding: 20px;
+			}
+
+			&__title {
+				font-size: clamp(32px, 5.5vw, 42px);
+			}
+		}
+
+		@media (max-width: 767px) {
+			height: 280px;
+			min-height: 280px;
+			border-radius: 12px;
+
+			&__content {
+				height: 280px;
+				min-height: 280px;
+				padding: 32px 16px;
+			}
+
+			&__title {
+				font-size: clamp(26px, 7vw, 34px);
+			}
+		}
+	}
+}
+
+/* Dark mode: preserve catalog-image-hero background-image (image-only, overlay in ::after) */
+:root[data-theme='dark'] {
+	#pc-wrap,
+	#mobile-wrap {
+		.catalog-image-hero__bg {
+			background-color: #1a1a1a !important;
+			background-image: url('/images/hero/pawpal-hero.jpg') !important;
+			background-size: cover !important;
+			background-position: center 30% !important;
+
+			&::after {
+				background: linear-gradient(
+					180deg,
+					rgba(0, 0, 0, 0.4) 0%,
+					rgba(0, 0, 0, 0.5) 100%
+				) !important;
+			}
+		}
+
+		.catalog-image-hero__title {
+			background-color: transparent !important;
+			background-image: none !important;
+			color: #ffffff !important;
+		}
+
+		.catalog-image-hero__crumb {
+			color: rgba(255, 255, 255, 0.78) !important;
+			background: rgba(0, 0, 0, 0.22) !important;
+		}
+	}
+}
+
 #pc-wrap {
 	.pawpal-static-page {
 		.container {
@@ -1759,7 +1904,7 @@
 	}
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1023px) {
 	#pc-wrap,
 	#mobile-wrap {
 		.pawpal-static-page {
@@ -1932,7 +2077,7 @@
 	}
 }
 
-@media (max-width: 680px) {
+@media (max-width: 767px) {
 	#pc-wrap,
 	#mobile-wrap {
 		.pawpal-static-page {
@@ -2273,11 +2418,131 @@
 			max-width: 100%;
 		}
 
-		> .container {
-			width: 100%;
-			max-width: 100%;
-			min-width: 0;
-			box-sizing: border-box;
+	> .container {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+	}
+}
+}
+
+/* ─── Dark mode overrides for all pawpal-static-page backgrounds ─────────── */
+:root[data-theme='dark'] {
+	#pc-wrap,
+	#mobile-wrap {
+		.pawpal-static-page {
+			background-color: #1a1a1a;
+
+			&__hero {
+				background: linear-gradient(135deg, #2a2826, #242424) !important;
+				border-color: rgba(255, 255, 255, 0.07) !important;
+			}
+
+			&__block {
+				background: #242424 !important;
+				border-color: rgba(255, 255, 255, 0.08) !important;
+			}
+
+			&__block--soft {
+				background: rgba(40, 38, 36, 0.82) !important;
+			}
+
+			&__chip {
+				background: rgba(42, 40, 38, 0.9) !important;
+				border-color: rgba(255, 255, 255, 0.1) !important;
+				color: #f0f0f0 !important;
+			}
+
+			&__benefit {
+				background: #242424 !important;
+				border-color: rgba(255, 255, 255, 0.08) !important;
+			}
+
+			&--services {
+				.pawpal-static-page__hero {
+					background: linear-gradient(125deg, #2a2826, #242424) !important;
+				}
+
+				.pawpal-static-page__packages {
+					background: #242424 !important;
+				}
+
+				.pawpal-static-page__faq {
+					background: #242424 !important;
+				}
+
+				.pawpal-static-page__benefits {
+					background: #242424 !important;
+				}
+
+				.pawpal-static-page__chip {
+					background: rgba(42, 40, 38, 0.86) !important;
+				}
+
+				.pawpal-static-page__faq-item {
+					background: #2a2a2a !important;
+					border-color: rgba(255, 255, 255, 0.1) !important;
+				}
+			}
+
+			&--products {
+				.pawpal-static-page__hero {
+					background: linear-gradient(125deg, #2a2826, #242424) !important;
+				}
+
+				.pawpal-static-page__promo-banner {
+					background: linear-gradient(145deg, #2a2826, #242424) !important;
+				}
+
+				.pawpal-products__promo-card {
+					background: #2a2a2a !important;
+					border-color: rgba(255, 255, 255, 0.08) !important;
+
+					&--green {
+						background: linear-gradient(145deg, rgba(40, 70, 50, 0.3), #242424) !important;
+					}
+
+					&--warm {
+						background: linear-gradient(145deg, rgba(70, 40, 20, 0.3), #242424) !important;
+					}
+				}
+
+				.pawpal-products__feature-banner {
+					background: linear-gradient(145deg, #2a2826, #242424) !important;
+				}
+
+				.pawpal-static-page__product-card {
+					background: #2a2a2a !important;
+				}
+
+				.pawpal-products__review-card {
+					background: #2a2a2a !important;
+					border-color: rgba(255, 255, 255, 0.08) !important;
+				}
+
+				.pawpal-products__brand-bubble {
+					background: rgba(42, 42, 42, 0.74) !important;
+					border-color: rgba(255, 255, 255, 0.1) !important;
+				}
+
+				.pawpal-products__trust-item {
+					background: rgba(42, 42, 42, 0.72) !important;
+					border-color: rgba(255, 255, 255, 0.08) !important;
+				}
+
+				.pawpal-products__collection-view {
+					background: rgba(42, 42, 42, 0.6) !important;
+					border-color: rgba(255, 255, 255, 0.14) !important;
+					color: #f0f0f0 !important;
+				}
+			}
+
+			&--specialists {
+				.pawpal-static-page__hero {
+					background: linear-gradient(152deg, #2a2826, #242424) !important;
+				}
+			}
 		}
 	}
 }

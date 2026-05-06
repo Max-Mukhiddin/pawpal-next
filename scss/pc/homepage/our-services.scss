@@ -122,6 +122,18 @@
 				overflow: hidden;
 			}
 
+			&__slider--center-slides {
+				.our-services-swiper .swiper-wrapper {
+					justify-content: center;
+				}
+			}
+
+			&__slider--two-up {
+				.our-services-swiper .swiper-wrapper {
+					justify-content: flex-start;
+				}
+			}
+
 			.our-services-swiper {
 				width: 100%;
 				overflow: visible;
@@ -464,6 +476,18 @@
 				overflow: hidden;
 			}
 
+			&__slider--center-slides {
+				.our-services-swiper .swiper-wrapper {
+					justify-content: center;
+				}
+			}
+
+			&__slider--two-up {
+				.our-services-swiper .swiper-wrapper {
+					justify-content: flex-start;
+				}
+			}
+
 			.our-services-swiper {
 				width: 100%;
 				overflow: visible;
@@ -682,7 +706,7 @@
 	}
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
 	#pc-wrap,
 	#mobile-wrap {
 		.home-page {
@@ -695,7 +719,7 @@
 	}
 }
 
-@media (max-width: 520px) {
+@media (max-width: 767px) {
 	#pc-wrap,
 	#mobile-wrap {
 		.home-page {
@@ -709,6 +733,96 @@
 					align-self: flex-start;
 				}
 			}
+		}
+	}
+}
+
+/* Magazine-cover card treatment for homepage services carousel */
+#pc-wrap .home-page,
+#mobile-wrap .home-page {
+	.our-services {
+		&__card {
+			border-radius: 16px;
+			background: transparent;
+			overflow: hidden;
+		}
+
+		&__card-media {
+			position: relative;
+			height: clamp(360px, 42vw, 420px);
+			aspect-ratio: auto;
+			border-radius: 16px;
+			overflow: hidden;
+			background: #e8ddd0;
+		}
+
+		&__card-img,
+		&__card-fallback {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+
+		&__card-img {
+			object-fit: cover;
+			object-position: center;
+			transform: scale(1);
+			transition: transform 0.35s ease;
+		}
+
+		&__card-fallback {
+			background: linear-gradient(135deg, #e07b3a 0%, #c96820 100%);
+		}
+
+		&__card-overlay {
+			padding: 14px 14px 16px;
+			background: linear-gradient(to top, rgba(0, 0, 0, 0.74) 0%, rgba(0, 0, 0, 0.3) 45%, transparent 100%);
+			transition: background 0.25s ease;
+		}
+
+		&__card-title {
+			color: #fff;
+		}
+
+		&__card-text {
+			color: rgba(255, 255, 255, 0.92);
+			font-weight: 600;
+		}
+
+		&__card-action {
+			opacity: 0;
+			visibility: hidden;
+			transform: translateY(-4px);
+			transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+		}
+
+		&__card:hover &__card-img {
+			transform: scale(1.05);
+		}
+
+		&__card:hover &__card-overlay {
+			background: linear-gradient(to top, rgba(0, 0, 0, 0.84) 0%, rgba(0, 0, 0, 0.42) 50%, transparent 100%);
+		}
+
+		&__card:hover &__card-action {
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0);
+		}
+	}
+}
+
+/* Dark mode: keep card media background-image visible */
+:root[data-theme='dark'] {
+	.our-services {
+		&__card-media {
+			background-color: transparent !important;
+		}
+
+		&__card-img {
+			/* img element — no override needed, keep as-is */
 		}
 	}
 }

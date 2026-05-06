@@ -7,12 +7,12 @@ import moment from 'moment';
 import type { Service } from '../../types/services/service';
 import type { Comment } from '../../types/comment/comment';
 import type { CommentsInquiry, CommentInput } from '../../types/comment/comment.input';
-import { REACT_APP_API_URL } from '../../config';
 import { formatterStr } from '../../utils';
 import { T } from '../../types/common';
 import RelatedServiceCard from './RelatedServiceCard';
 import ServiceReviewCard from './ServiceReviewCard';
 import ServiceDetailInquirySidebar from '../inquiry/ServiceDetailInquirySidebar';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface ServiceDetailMobileProps {
 	service: Service | null;
@@ -53,7 +53,7 @@ function ServiceDetailMobile({
 				<Stack className="images">
 					<Stack className="main-image" sx={{ borderRadius: 2, overflow: 'hidden' }}>
 						<img
-							src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/listing/bigImage.png'}
+							src={resolveListingImageUrl(slideImage, '/img/listing/bigImage.png')}
 							alt=""
 							style={{ width: '100%', display: 'block', maxHeight: 280, objectFit: 'cover' }}
 						/>
@@ -67,7 +67,7 @@ function ServiceDetailMobile({
 								sx={{ width: 64, height: 64, borderRadius: 1, overflow: 'hidden', cursor: 'pointer' }}
 							>
 								<img
-									src={`${REACT_APP_API_URL}/${subImg}`}
+									src={resolveListingImageUrl(subImg, '/img/listing/bigImage.png')}
 									alt=""
 									style={{ width: '100%', height: '100%', objectFit: 'cover' }}
 								/>

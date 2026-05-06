@@ -17,6 +17,7 @@ export const SIGN_UP = gql`
 			memberImage
 			memberAddress
 			memberDesc
+			isPendingSpecialist
 			memberListings
 			memberRank
 			memberArticles
@@ -317,8 +318,8 @@ export const UPDATE_BOARD_ARTICLE = gql`
 `;
 
 export const LIKE_TARGET_BOARD_ARTICLE = gql`
-	mutation LikeTargetBoardArticle($input: String!) {
-		likeTargetBoardArticle(articleId: $input) {
+	mutation LikeTargetBoardArticle($articleId: String!) {
+		likeTargetBoardArticle(articleId: $articleId) {
 			_id
 			articleCategory
 			articleStatus
@@ -393,3 +394,6 @@ export const UNSUBSCRIBE = gql`
 		}
 	}
 `;
+
+/** Admin member updates (same document as `apollo/admin/mutation`). */
+export { UPDATE_MEMBER_BY_ADMIN } from '../admin/mutation';

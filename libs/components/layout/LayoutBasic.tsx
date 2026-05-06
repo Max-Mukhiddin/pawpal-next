@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Head from 'next/head';
@@ -14,7 +15,12 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
-const withLayoutBasic = (Component: any) => {
+interface LayoutBasicOptions {
+	heroImage?: string;
+	noHero?: boolean;
+}
+
+const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {}) => {
 	return (props: any) => {
 		const router = useRouter();
 		const { t, i18n } = useTranslation('common');
@@ -22,10 +28,14 @@ const withLayoutBasic = (Component: any) => {
 		const [authHeader, setAuthHeader] = useState<boolean>(false);
 		const user = useReactiveVar(userVar);
 
+		const heroImage = layoutOptions.heroImage ?? '/images/hero/pawpal-hero.jpg';
+		const noHero = layoutOptions.noHero ?? false;
+
 		const memoizedValues = useMemo(() => {
 			const routeMap: Record<string, { title: string; breadcrumb: string }> = {
 				'/mypage': { title: 'My Account', breadcrumb: 'My Account' },
-				'/community': { title: 'Community', breadcrumb: 'Community' },
+				'/community': { title: 'Blog', breadcrumb: 'Blog' },
+			'/blog': { title: 'Blog', breadcrumb: 'Blog' },
 				'/specialist': { title: 'Our Specialists', breadcrumb: 'Specialists' },
 				'/about': { title: 'About Us', breadcrumb: 'About Us' },
 				'/cs': { title: 'Contact', breadcrumb: 'Contact' },
@@ -39,7 +49,7 @@ const withLayoutBasic = (Component: any) => {
 				Object.keys(routeMap).find((key) => router.pathname === key || router.pathname.startsWith(`${key}/`)) ?? '';
 			const matched = routeMap[matchedKey] ?? { title: 'PawPal', breadcrumb: 'PawPal' };
 
-			return { title: matched.title, desc: `Home / ${matched.breadcrumb}` };
+			return { title: matched.title, breadcrumb: matched.breadcrumb };
 		}, [router.pathname]);
 
 		useEffect(() => {
@@ -88,20 +98,29 @@ const withLayoutBasic = (Component: any) => {
 							<Top />
 						</Stack>
 
-						<Stack
-							className={`header-basic ${authHeader && 'auth'}`}
-							style={{
-								background: '#1A1A1A',
-								boxShadow: 'inset 10px 40px 150px 40px rgb(24 22 36)',
-							}}
-						>
-							<Stack className={'container'}>
-								<strong>{t(memoizedValues.title)}</strong>
-								<span>{t(memoizedValues.desc)}</span>
-							</Stack>
-						</Stack>
-
+							{/* Hero lives inside #main so #pc-wrap > #main stays the 2nd child,
+						    matching `#pc-wrap > #main:nth-child(2) { padding-top: 72px }` in top.scss.
+						    This gives the same navbar clearance as LayoutFull (service/product pages). */}
 						<Stack id={'main'}>
+							{!noHero && router.pathname !== '/about' && (
+								<div className={`header-basic${authHeader ? ' auth' : ''}`}>
+									<div
+										className="header-basic__bg"
+										style={{ backgroundImage: `url('${heroImage}')` }}
+										aria-hidden
+									/>
+									<div className="header-basic__content">
+										<strong>{t(memoizedValues.title)}</strong>
+										<span>
+											<Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
+												{t('Home')}
+											</Link>
+											{' / '}
+											{t(memoizedValues.breadcrumb)}
+										</span>
+									</div>
+								</div>
+							)}
 							<Component {...props} />
 						</Stack>
 

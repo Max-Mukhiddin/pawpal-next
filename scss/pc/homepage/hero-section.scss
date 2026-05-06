@@ -130,8 +130,8 @@
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			padding: 14px 24px;
-			border-radius: 999px;
+			padding: 12px 28px;
+			border-radius: 50px;
 			font-family: $font;
 			font-size: 14px;
 			font-weight: 600;
@@ -145,13 +145,11 @@
 				filter 0.2s ease,
 				transform 0.25s $ease;
 			box-sizing: border-box;
-			border: 1px solid transparent;
 
 			&--primary {
-				background: var(--pp-hero-accent);
-				color: var(--pp-hero-accent-text);
-				border-color: var(--pp-hero-accent);
-				box-shadow: 0 14px 26px rgba(0, 0, 0, 0.22);
+				background: #e07b3a;
+				color: #fff;
+				border: 2px solid #e07b3a;
 
 				&:hover {
 					filter: brightness(1.06);
@@ -160,13 +158,13 @@
 			}
 
 			&--ghost {
-				background: rgba(255, 255, 255, 0.06);
-				color: rgba(253, 251, 247, 0.92);
-				border-color: rgba(253, 251, 247, 0.32);
+				background: transparent;
+				color: #fff;
+				border: 2px solid #fff;
 
 				&:hover {
-					background: rgba(255, 255, 255, 0.1);
-					border-color: rgba(253, 251, 247, 0.55);
+					background: var(--color-bg-card);
+					color: var(--color-text-primary);
 				}
 			}
 		}
@@ -467,8 +465,9 @@
 	}
 }
 
-@media (max-width: 520px) {
-	#pc-wrap .home-page {
+@media (max-width: 767px) {
+	#pc-wrap .home-page,
+	#mobile-wrap .home-page {
 		.hero-pawpal {
 			&__inner {
 				align-items: flex-end;

@@ -9,6 +9,7 @@ import { formatterStr } from '../../utils';
 import Moment from 'react-moment';
 import { useRouter } from 'next/router';
 import { ListingStatus } from '../../enums/listing.enum';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 interface SpecialistCatalogRowProps {
 	listing: Listing;
@@ -55,7 +56,7 @@ export const SpecialistCatalogRow = (props: SpecialistCatalogRowProps) => {
 		return (
 			<Stack className={memberPage ? 'member-listing-card-box' : 'listing-card-box'}>
 				<Stack className="image-box" onClick={() => pushListingDetail(listing?._id)}>
-					<img src={`${process.env.REACT_APP_API_URL}/${listing.listingImages[0]}`} alt="" />
+					<img src={resolveListingImageUrl(listing?.listingImages?.[0])} alt="" />
 				</Stack>
 				<Stack className="information-box" onClick={() => pushListingDetail(listing?._id)}>
 					<Typography className="name">{listing.listingTitle}</Typography>

@@ -6,10 +6,10 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { REACT_APP_API_URL } from '../../config';
 import type { Service } from '../../types/services/service';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface RelatedServiceCardProps {
 	service: Service;
@@ -19,14 +19,18 @@ export interface RelatedServiceCardProps {
 const RelatedServiceCard: React.FC<RelatedServiceCardProps> = ({ service, onLike }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const image = service?.listingImages?.[0]
-		? `${REACT_APP_API_URL}/${service.listingImages[0]}`
-		: '/img/icons/icoAlert.svg';
+	const image = resolveListingImageUrl(service?.listingImages?.[0], '/images/hero/pawpal-hero.jpg');
 
 	return (
-		<Stack className="related-service-card" onClick={() => router.push(`/services/detail?id=${service._id}`)}>
+		<Stack className="related-service-card" onClick={() => router.push(`/service/detail?id=${service._id}`)}>
 			<Box className="related-service-card__image" component={'div'}>
-				<img src={image} alt={service.listingTitle} />
+				<img
+					src={image}
+					onError={(e) => {
+						e.currentTarget.src = '/images/hero/pawpal-hero.jpg';
+					}}
+					alt={service.listingTitle}
+				/>
 			</Box>
 			<Stack className="related-service-card__body">
 				<Typography className="related-service-card__title">{service.listingTitle}</Typography>

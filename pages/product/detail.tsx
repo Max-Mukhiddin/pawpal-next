@@ -12,7 +12,6 @@ import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import type { Product } from '../../libs/types/products/product';
 import { formatterStr } from '../../libs/utils';
-import { REACT_APP_API_URL } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
 import { Comment } from '../../libs/types/comment/comment';
@@ -26,6 +25,7 @@ import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } f
 import ProductReviewCard from '../../libs/components/products/ProductReviewCard';
 import ProductDetailInquirySidebar from '../../libs/components/products/ProductDetailInquirySidebar';
 import ProductDetailMobile from '../../libs/components/products/ProductDetailMobile';
+import { resolveListingImageUrl, resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -141,7 +141,11 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 
 	/** HANDLERS **/
 	const changeImageHandler = (image: string) => setSlideImage(image);
-	const getImg = (p?: string) => (p ? `${REACT_APP_API_URL}/${p}` : '/images/placeholder-pet.jpg');
+	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/images/placeholder-pet.jpg');
+	const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
+	const heroImage = product?.listingImages?.[0]
+		? resolveListingImageUrl(product.listingImages[0], '/img/banner/products.webp')
+		: '/img/banner/products.webp';
 
 	const likeProductHandler = async (userData: T, id: string) => {
 		try {
@@ -209,7 +213,14 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 
 	return (
 		<div className="product-detail-revamp">
-			<section className="product-detail-revamp__hero">
+			<section
+				className="product-detail-revamp__hero"
+				style={{
+					backgroundImage: `url('${heroImage}')`,
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+				}}
+			>
 				<div className="product-detail-revamp__hero-inner">
 					<h1>{product?.listingTitle}</h1>
 					<p>{`Home / Products / ${product?.listingTitle ?? ''}`}</p>
@@ -220,7 +231,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 				<div className="product-detail-revamp__grid">
 					<div className="product-detail-revamp__left">
 						<div className="media-card">
-							<img src={getImg(slideImage || product?.listingImages?.[0])} alt="" className="main-image" />
+							<img src={getListingImg(slideImage || product?.listingImages?.[0])} alt="" className="main-image" />
 							{(product?.listingImages?.length ?? 0) > 1 && (
 								<div className="thumb-row">
 									{product?.listingImages?.slice(0, 3).map((img) => (
@@ -230,7 +241,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 											className={slideImage === img ? 'thumb is-active' : 'thumb'}
 											onClick={() => changeImageHandler(img)}
 										>
-											<img src={getImg(img)} alt="" />
+											<img src={getListingImg(img)} alt="" />
 										</button>
 									))}
 								</div>
@@ -283,7 +294,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 						</div>
 
 						<div className="specialist-card">
-							<img src={getImg(product?.memberData?.memberImage ?? undefined)} alt="" />
+							<img src={getMemberImg(product?.memberData?.memberImage ?? undefined)} alt="" />
 							<div>
 								<strong>{product?.memberData?.memberNick || 'Specialist'}</strong>
 								<Link href={`/specialist/detail?id=${product?.memberData?._id}`}>View Profile →</Link>
@@ -349,7 +360,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 								.slice(0, 4)
 								.map((relatedProduct: Product) => (
 									<Link href={`/product/detail?id=${relatedProduct._id}`} className="related-card" key={relatedProduct._id}>
-										<img src={getImg(relatedProduct.listingImages?.[0])} alt="" />
+										<img src={getListingImg(relatedProduct.listingImages?.[0])} alt="" />
 										<div className="overlay">
 											<strong>{relatedProduct.listingTitle}</strong>
 										</div>

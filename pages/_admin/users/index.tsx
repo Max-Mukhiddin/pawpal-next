@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import withAdminLayout from '../../../libs/components/layout/LayoutAdmin';
 import { MemberPanelList } from '../../../libs/components/admin/users/MemberList';
-import { Box, InputAdornment, List, ListItem, Stack } from '@mui/material';
+import { Box, Button, InputAdornment, List, ListItem, Stack } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Select from '@mui/material/Select';
@@ -14,12 +14,12 @@ import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import { MembersInquiry } from '../../../libs/types/member/member.input';
 import { Member } from '../../../libs/types/member/member';
 import { MemberStatus, MemberType } from '../../../libs/enums/member.enum';
-import { sweetErrorHandling } from '../../../libs/sweetAlert';
+import { sweetErrorHandling, sweetMixinSuccessAlert } from '../../../libs/sweetAlert';
 import { MemberUpdate } from '../../../libs/types/member/member.update';
 import { useMutation, useQuery } from '@apollo/client';
-import { GET_ALL_MEMBERS_BY_ADMIN } from '../../../apollo/admin/query';
+import { GET_ALL_MEMBERS_BY_ADMIN } from '../../../apollo/user/query';
 import { T } from '../../../libs/types/common';
-import { UPDATE_MEMBER_BY_ADMIN } from '../../../apollo/admin/mutation';
+import { UPDATE_MEMBER_BY_ADMIN } from '../../../apollo/user/mutation';
 
 const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	const [anchorEl, setAnchorEl] = useState<[] | HTMLElement[]>([]);
@@ -31,6 +31,7 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	);
 	const [searchText, setSearchText] = useState('');
 	const [searchType, setSearchType] = useState('ALL');
+	const [pendingSpecialistsOnly, setPendingSpecialistsOnly] = useState(false);
 
 	/** APOLLO REQUESTS **/
 
@@ -46,8 +47,10 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 		variables: { input: membersInquiry },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setMembers(data?.getAllMembersByAdmin?.list);
-			setMembersTotal(data?.getAllMembersByAdmin?.metaCounter[0]?.total ?? 0);
+			const rawList: Member[] = data?.getAllMembersByAdmin?.list ?? [];
+			const metaTotal = data?.getAllMembersByAdmin?.metaCounter[0]?.total ?? 0;
+			setMembers(rawList);
+			setMembersTotal(metaTotal);
 		},
 	});
 
@@ -81,25 +84,57 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	};
 
 	const tabChangeHandler = async (event: any, newValue: string) => {
+		setPendingSpecialistsOnly(false);
 		setValue(newValue);
 		setSearchText('');
 
-		setMembersInquiry({ ...membersInquiry, page: 1, sort: 'createdAt' });
+		const base = {
+			page: 1,
+			limit: membersInquiry.limit,
+			sort: 'createdAt',
+		};
 
 		switch (newValue) {
 			case 'ACTIVE':
-				setMembersInquiry({ ...membersInquiry, search: { memberStatus: MemberStatus.ACTIVE } });
+				setMembersInquiry({ ...base, search: { memberStatus: MemberStatus.ACTIVE } });
 				break;
 			case 'BLOCK':
-				setMembersInquiry({ ...membersInquiry, search: { memberStatus: MemberStatus.BLOCK } });
+				setMembersInquiry({ ...base, search: { memberStatus: MemberStatus.BLOCK } });
 				break;
 			case 'DELETE':
-				setMembersInquiry({ ...membersInquiry, search: { memberStatus: MemberStatus.DELETE } });
+				setMembersInquiry({ ...base, search: { memberStatus: MemberStatus.DELETE } });
 				break;
 			default:
-				delete membersInquiry?.search?.memberStatus;
-				setMembersInquiry({ ...membersInquiry });
+				setMembersInquiry({ ...base, search: {} });
 				break;
+		}
+	};
+
+	const approveSpecialistHandler = async (memberId: string) => {
+		try {
+			await updateMemberByAdmin({
+				variables: {
+					input: { _id: memberId, memberType: MemberType.AGENT, isPendingSpecialist: false },
+				},
+			});
+			await getAllMembersRefetch({ input: membersInquiry });
+			await sweetMixinSuccessAlert('Specialist approved successfully.');
+		} catch (err: any) {
+			sweetErrorHandling(err).then();
+		}
+	};
+
+	const rejectSpecialistHandler = async (memberId: string) => {
+		try {
+			await updateMemberByAdmin({
+				variables: {
+					input: { _id: memberId, isPendingSpecialist: false },
+				},
+			});
+			await getAllMembersRefetch({ input: membersInquiry });
+			await sweetMixinSuccessAlert('Application rejected.', 2500);
+		} catch (err: any) {
+			sweetErrorHandling(err).then();
 		}
 	};
 
@@ -112,7 +147,7 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 			});
 
 			menuIconCloseHandler();
-				await getAllMembersRefetch({ input: membersInquiry });
+			await getAllMembersRefetch({ input: membersInquiry });
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
@@ -128,10 +163,13 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 
 	const searchTextHandler = () => {
 		try {
+			setPendingSpecialistsOnly(false);
+			const nextSearch = { ...membersInquiry.search };
+			delete nextSearch.isPendingSpecialist;
 			setMembersInquiry({
 				...membersInquiry,
 				search: {
-					...membersInquiry.search,
+					...nextSearch,
 					text: searchText,
 				},
 			});
@@ -142,24 +180,57 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 
 	const searchTypeHandler = async (newValue: string) => {
 		try {
+			setPendingSpecialistsOnly(false);
 			setSearchType(newValue);
 
 			if (newValue !== 'ALL') {
+				const nextSearch = { ...membersInquiry.search };
+				delete nextSearch.isPendingSpecialist;
 				setMembersInquiry({
 					...membersInquiry,
 					page: 1,
 					sort: 'createdAt',
 					search: {
-						...membersInquiry.search,
+						...nextSearch,
 						memberType: newValue as MemberType,
 					},
 				});
 			} else {
-				delete membersInquiry?.search?.memberType;
-				setMembersInquiry({ ...membersInquiry });
+				const nextSearch = { ...membersInquiry.search };
+				delete nextSearch.memberType;
+				delete nextSearch.isPendingSpecialist;
+				setMembersInquiry({
+					...membersInquiry,
+					page: 1,
+					sort: 'createdAt',
+					search: nextSearch,
+				});
 			}
 		} catch (err: any) {
 			console.log('searchTypeHandler: ', err.message);
+		}
+	};
+
+	const pendingSpecialistsToggleHandler = () => {
+		const next = !pendingSpecialistsOnly;
+		setPendingSpecialistsOnly(next);
+		if (next) {
+			setValue('ALL');
+			setSearchType('ALL');
+			setSearchText('');
+			setMembersInquiry({
+				page: 1,
+				limit: membersInquiry.limit,
+				sort: 'createdAt',
+				search: { isPendingSpecialist: true },
+			});
+		} else {
+			setMembersInquiry({
+				page: 1,
+				limit: membersInquiry.limit,
+				sort: 'createdAt',
+				search: {},
+			});
 		}
 	};
 
@@ -203,11 +274,11 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 								</ListItem>
 							</List>
 							<Divider />
-							<Stack className={'search-area'} sx={{ m: '24px' }}>
+							<Stack className={'search-area'} sx={{ m: '24px' }} direction="row" alignItems="center" flexWrap="wrap" useFlexGap>
 								<OutlinedInput
 									value={searchText}
 									onChange={(e: any) => textHandler(e.target.value)}
-									sx={{ width: '100%' }}
+									sx={{ width: '100%', flex: '1 1 280px' }}
 									className={'search'}
 									placeholder="Search user name"
 									onKeyDown={(event) => {
@@ -220,6 +291,7 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 													style={{ cursor: 'pointer' }}
 													onClick={async () => {
 														setSearchText('');
+														setPendingSpecialistsOnly(false);
 														setMembersInquiry({
 															...membersInquiry,
 															search: {
@@ -227,7 +299,7 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 																text: '',
 															},
 														});
-															await getAllMembersRefetch({ input: membersInquiry });
+														await getAllMembersRefetch({ input: membersInquiry });
 													}}
 												/>
 											)}
@@ -251,6 +323,26 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 										Admin
 									</MenuItem>
 								</Select>
+								<Button
+									type="button"
+									variant={pendingSpecialistsOnly ? 'contained' : 'outlined'}
+									onClick={pendingSpecialistsToggleHandler}
+									sx={{
+										ml: { xs: 0, sm: '12px' },
+										mt: { xs: '12px', sm: 0 },
+										textTransform: 'none',
+										fontWeight: 600,
+										borderColor: '#E07B3A',
+										color: pendingSpecialistsOnly ? '#fff' : '#E07B3A',
+										bgcolor: pendingSpecialistsOnly ? '#E07B3A' : 'transparent',
+										'&:hover': {
+											borderColor: '#c96a32',
+											bgcolor: pendingSpecialistsOnly ? '#c96a32' : 'rgba(224, 123, 58, 0.08)',
+										},
+									}}
+								>
+									Pending Specialists
+								</Button>
 							</Stack>
 							<Divider />
 						</Box>
@@ -260,6 +352,9 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 							menuIconClickHandler={menuIconClickHandler}
 							menuIconCloseHandler={menuIconCloseHandler}
 							updateMemberHandler={updateMemberHandler}
+							pendingSpecialistReviewMode={pendingSpecialistsOnly}
+							onApproveSpecialist={approveSpecialistHandler}
+							onRejectSpecialist={rejectSpecialistHandler}
 						/>
 
 						<TablePagination

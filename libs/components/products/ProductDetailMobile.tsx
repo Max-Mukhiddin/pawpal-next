@@ -7,11 +7,11 @@ import moment from 'moment';
 import type { Product } from '../../types/products/product';
 import type { Comment } from '../../types/comment/comment';
 import type { CommentInput, CommentsInquiry } from '../../types/comment/comment.input';
-import { REACT_APP_API_URL } from '../../config';
 import { formatterStr } from '../../utils';
 import { T } from '../../types/common';
 import RelatedProductCard from './RelatedProductCard';
 import ProductReviewCard from './ProductReviewCard';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface ProductDetailMobileProps {
 	product: Product | null;
@@ -52,7 +52,7 @@ function ProductDetailMobile({
 				<Stack className="images">
 					<Stack className="main-image" sx={{ borderRadius: 2, overflow: 'hidden' }}>
 						<img
-							src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/listing/bigImage.png'}
+							src={resolveListingImageUrl(slideImage, '/img/listing/bigImage.png')}
 							alt=""
 							style={{ width: '100%', display: 'block', maxHeight: 280, objectFit: 'cover' }}
 						/>
@@ -66,7 +66,7 @@ function ProductDetailMobile({
 								sx={{ width: 64, height: 64, borderRadius: 1, overflow: 'hidden', cursor: 'pointer' }}
 							>
 								<img
-									src={`${REACT_APP_API_URL}/${subImg}`}
+									src={resolveListingImageUrl(subImg, '/img/listing/bigImage.png')}
 									alt=""
 									style={{ width: '100%', height: '100%', objectFit: 'cover' }}
 								/>

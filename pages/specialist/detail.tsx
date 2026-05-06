@@ -22,6 +22,7 @@ import SpecialistProfileSummary from '../../libs/components/specialists/Speciali
 import SpecialistInquiryPanel from '../../libs/components/specialists/SpecialistInquiryPanel';
 import RelatedSpecialistServiceCard from '../../libs/components/specialists/RelatedSpecialistServiceCard';
 import SpecialistReviewCard from '../../libs/components/specialists/SpecialistReviewCard';
+import { resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -223,8 +224,24 @@ const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
 		);
 	}
 
+	const specialistHeroImage = '/img/banner/agents.webp';
+
 	return (
 		<Stack className={'specialist-detail-page'} sx={{ px: { xs: 1, sm: 0 } }}>
+			<section
+				className="specialist-detail-page__hero"
+				style={{
+					backgroundImage: `url('${specialistHeroImage}')`,
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+					boxShadow: 'inset 10px 40px 150px 40px rgb(24 22 36)',
+				}}
+			>
+				<div className="specialist-detail-page__hero-inner">
+					<h1>{specialist?.memberFullName ?? specialist?.memberNick ?? 'Specialist Profile'}</h1>
+					<p>{`Home / Specialists / ${specialist?.memberNick ?? specialist?.memberFullName ?? ''}`}</p>
+				</div>
+			</section>
 			<Stack className={'container'}>
 				<SpecialistProfileSummary
 					specialist={specialist}

@@ -28,15 +28,30 @@ const SpecialistsFilter: React.FC<SpecialistsFilterProps> = ({
 }) => (
 	<Stack className={'filter'}>
 		<Box component={'div'} className={'left'}>
-			<input
-				type="text"
-				placeholder={'Search for a specialist'}
-				value={searchText}
-				onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchTextChange(e.target.value)}
-				onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-					if (event.key === 'Enter') onSearchEnter();
-				}}
-			/>
+			<div style={{ position: 'relative' }}>
+				<input
+					type="text"
+					placeholder={'Search for a specialist'}
+					value={searchText}
+					style={{ paddingLeft: '40px' }}
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSearchTextChange(e.target.value)}
+					onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+						if (event.key === 'Enter') onSearchEnter();
+					}}
+				/>
+				<span
+					style={{
+						position: 'absolute',
+						left: '12px',
+						top: '50%',
+						transform: 'translateY(-50%)',
+						color: '#999',
+					}}
+					aria-hidden
+				>
+					🔍
+				</span>
+			</div>
 		</Box>
 		<Box component={'div'} className={'right'}>
 			<span>Sort specialists by</span>

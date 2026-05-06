@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@apollo/client';
 import { Skeleton } from '@mui/material';
@@ -65,21 +65,46 @@ const BRAND_STRIP = ['PawPal', 'PetCare+', 'SafePaws', 'VetLink'] as const;
 /** Returns CDN URL or empty string when no profile image (placeholders use initials). */
 function backendMemberImageUrl(memberImage?: string | null): string {
 	if (!memberImage?.trim()) return '';
-	return `${REACT_APP_API_URL}/${String(memberImage).replace(/^\/+/, '')}`;
+	const clean = String(memberImage).replace(/^\/+/, '');
+	if (clean.startsWith('http')) return clean;
+	if (clean.startsWith('uploads/')) return `${REACT_APP_API_URL}/${clean}`;
+	return `${REACT_APP_API_URL}/uploads/member/${clean}`;
 }
 
-function initialsFromNick(nick: string | undefined | null): string {
-	const n = (nick ?? '').trim();
-	if (n.length >= 2) return n.slice(0, 2).toUpperCase();
-	if (n.length === 1) return (n + n).toUpperCase();
-	return '??';
+function initialsFromMember(memberFullName: string | undefined | null, memberNick: string | undefined | null): string {
+	const initials = (memberFullName || memberNick || '?')
+		.split(' ')
+		.map((w) => w[0])
+		.join('')
+		.toUpperCase()
+		.slice(0, 2);
+	return initials;
 }
 
-function initialsForMember(m: Member): string {
-	const fromNick = initialsFromNick(m.memberNick);
-	if (fromNick !== '??') return fromNick;
-	return initialsFromNick(m.memberFullName);
-}
+const initialsPlaceholderDivStyleLg: React.CSSProperties = {
+	width: '100%',
+	height: '100%',
+	background: 'linear-gradient(135deg, #E07B3A22, #E07B3A55)',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+	fontSize: 48,
+	fontWeight: 700,
+	color: '#E07B3A',
+};
+
+const initialsPlaceholderDivStyleRail: React.CSSProperties = {
+	width: 40,
+	height: 40,
+	borderRadius: '50%',
+	background: 'linear-gradient(135deg, #E07B3A22, #E07B3A55)',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+	fontSize: 13,
+	fontWeight: 700,
+	color: '#E07B3A',
+};
 
 function initialsFromFallbackName(name: string): string {
 	const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -112,7 +137,7 @@ function mapMemberToRow(m: Member): TeamRow {
 		subline: servicesLabel,
 		thumb: img,
 		featured: img,
-		initials: initialsForMember(m),
+		initials: initialsFromMember(m.memberFullName, m.memberNick),
 		bioParas: [desc || 'Pet care specialist'],
 		profileHref: `/specialist/detail?id=${m._id}`,
 	};
@@ -211,7 +236,11 @@ export default function TopPetSpecialists() {
 
 	const rows: TeamRow[] = useMemo(() => {
 		const list = data?.getAgents?.list;
-		if (list && list.length > 0) return list.map(mapMemberToRow);
+		if (list && list.length > 0) {
+			const activeSpecialists = list.filter((sp: Member) => (sp.memberListings ?? 0) > 0);
+			const specialistsToShow = activeSpecialists.length > 0 ? activeSpecialists : list;
+			return specialistsToShow.map(mapMemberToRow);
+		}
 		return SPECIALISTS.map(mapFallbackToRow);
 	}, [data]);
 
@@ -244,9 +273,9 @@ export default function TopPetSpecialists() {
 								{m.thumb ? (
 									<img src={m.thumb} alt="" width={40} height={40} loading="lazy" />
 								) : (
-									<span className="team-pawpal__member-avatar-initials" aria-hidden>
+									<div style={initialsPlaceholderDivStyleRail} aria-hidden>
 										{m.initials}
-									</span>
+									</div>
 								)}
 							</span>
 							<span className="team-pawpal__member-text">
@@ -271,8 +300,8 @@ export default function TopPetSpecialists() {
 									height={900}
 								/>
 							) : (
-								<div className="team-pawpal__photo-placeholder" aria-hidden>
-									<span className="team-pawpal__photo-placeholder-initials">{person.initials}</span>
+								<div className="team-pawpal__photo-img" style={initialsPlaceholderDivStyleLg} aria-hidden>
+									{person.initials}
 								</div>
 							)}
 						</div>
@@ -321,7 +350,7 @@ export default function TopPetSpecialists() {
 	);
 
 	return (
-		<section className="pawpal-home-section team-pawpal" aria-labelledby="team-pawpal-title">
+		<section className="pawpal-home-section team-pawpal animate-on-scroll" aria-labelledby="team-pawpal-title">
 			<div className="pawpal-home-section__inner team-pawpal__inner">
 				<header className="team-pawpal__head">
 					<div className="team-pawpal__head-main">

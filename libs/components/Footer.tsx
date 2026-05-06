@@ -40,8 +40,8 @@ const categories = [
 
 const resources = [
 	{ label: 'FAQ', href: '/cs?tab=faq' },
-	{ label: 'Blog', href: '/community' },
-	{ label: 'Community', href: '/community' },
+	{ label: 'Blog', href: '/blog' },
+	{ label: 'Articles', href: '/blog' },
 	{ label: 'Pet guides', href: '/about' },
 	{ label: 'Care tips', href: '/cs' },
 ];

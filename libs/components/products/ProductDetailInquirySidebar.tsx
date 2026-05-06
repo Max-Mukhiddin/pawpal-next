@@ -3,9 +3,9 @@ import { Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 import type { Product } from '../../types/products/product';
 import type { T } from '../../types/common';
-import { REACT_APP_API_URL } from '../../config';
 import { useListingInquiryForm } from '../../hooks/useListingInquiryForm';
 import ListingInquiryDetailSidebarFields from '../inquiry/ListingInquiryDetailSidebarFields';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 export interface ProductDetailInquirySidebarProps {
 	product: Product | null;
@@ -31,9 +31,7 @@ const ProductDetailInquirySidebar: React.FC<ProductDetailInquirySidebarProps> = 
 					<img
 						className={'member-image'}
 						src={
-							product?.memberData?.memberImage
-								? `${REACT_APP_API_URL}/${product.memberData.memberImage}`
-								: '/img/profile/defaultUser.svg'
+							resolveMemberImageUrl(product?.memberData?.memberImage, '/img/profile/defaultUser.svg')
 						}
 						alt=""
 					/>

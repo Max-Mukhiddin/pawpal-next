@@ -1,6 +1,7 @@
 import { NextPage } from 'next';
 import withLayoutMain from '../libs/components/layout/LayoutHome';
 import { Stack } from '@mui/material';
+import { useScrollAnimation } from '../libs/hooks/useScrollAnimation';
 import HeroSection from '../libs/components/homepage/HeroSection';
 import OurServices from '../libs/components/homepage/OurServices';
 import BrandShowcase from '../libs/components/homepage/BrandShowcase';
@@ -17,17 +18,21 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
-const Home: NextPage = () => (
-	<Stack className={'home-page'}>
-		<HeroSection />
-		<OurServices />
-		<BrandShowcase />
-		<FeaturedServices />
-		<FeaturedProducts />
-		<WhyPawPal />
-		<TopPetSpecialists />
-		<PetTipsSection />
-	</Stack>
-);
+const Home: NextPage = () => {
+	useScrollAnimation();
+
+	return (
+		<Stack className={'home-page'}>
+			<HeroSection />
+			<OurServices />
+			<BrandShowcase />
+			<FeaturedServices />
+			<FeaturedProducts />
+			<WhyPawPal />
+			<TopPetSpecialists />
+			<PetTipsSection />
+		</Stack>
+	);
+};
 
 export default withLayoutMain(Home);

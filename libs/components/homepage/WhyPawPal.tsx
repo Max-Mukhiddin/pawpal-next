@@ -74,7 +74,7 @@ const STORY_IMAGE = '/images/hero/pawpal-hero.jpg';
 
 export default function WhyPawPal() {
 	return (
-		<section className="pawpal-home-section why-pawpal" aria-labelledby="why-pawpal-title">
+		<section className="pawpal-home-section why-pawpal animate-on-scroll" aria-labelledby="why-pawpal-title">
 			<div className="why-pawpal__watermark" aria-hidden />
 			<div className="pawpal-home-section__inner why-pawpal__inner">
 				<header className="why-pawpal__head">

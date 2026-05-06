@@ -16,7 +16,7 @@ import { useRouter } from 'next/router';
 import type { Listing } from '../../libs/types/listing/listing';
 import moment from 'moment';
 import { formatterStr } from '../../libs/utils';
-import { REACT_APP_API_URL } from '../../libs/config';
+import { resolveListingImageUrl } from '../../libs/utils/mediaUrl';
 import { ListingType } from '../../libs/enums/listing.enum';
 import { userVar } from '../../apollo/store';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
@@ -276,13 +276,13 @@ const ListingDetail: NextPage = ({ initialComment, ...props }: any) => {
 							<Stack className={'images'}>
 								<Stack className={'main-image'}>
 									<img
-										src={slideImage ? `${REACT_APP_API_URL}/${slideImage}` : '/img/listing/bigImage.png'}
+										src={resolveListingImageUrl(slideImage, '/img/listing/bigImage.png')}
 										alt={'main-image'}
 									/>
 								</Stack>
 								<Stack className={'sub-images'}>
 									{listing?.listingImages?.map((subImg: string) => {
-										const imagePath: string = `${REACT_APP_API_URL}/${subImg}`;
+										const imagePath: string = resolveListingImageUrl(subImg, '/img/listing/bigImage.png');
 										return (
 											<Stack className={'sub-img-box'} onClick={() => changeImageHandler(subImg)} key={subImg}>
 												<img src={imagePath} alt={'sub-image'} />

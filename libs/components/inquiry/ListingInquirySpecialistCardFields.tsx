@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { Button, CircularProgress, Stack, Typography } from '@mui/material';
 import type { ListingInquiryFormValues } from '../../types/inquiry/listing-inquiry.form';
 import type { ListingInquiryFieldErrors } from '../../utils/listingInquiryFormValidation';
 
@@ -156,10 +156,10 @@ const ListingInquirySpecialistCardFields: React.FC<ListingInquirySpecialistCardF
 			}}
 		>
 			{submitting ? (
-				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+				<span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
 					<CircularProgress size={18} color="inherit" />
-					<span>Sending…</span>
-				</Box>
+					<span>Sending...</span>
+				</span>
 			) : (
 				submitLabel
 			)}

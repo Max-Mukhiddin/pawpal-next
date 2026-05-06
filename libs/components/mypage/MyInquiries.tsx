@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { NextPage } from 'next';
 import { Chip, Pagination, Stack, Typography } from '@mui/material';
 import { useQuery, useReactiveVar } from '@apollo/client';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { userVar } from '../../../apollo/store';
 import { GET_MY_INQUIRIES } from '../../../apollo/user/query';
 import { Direction } from '../../enums/common.enum';
@@ -36,7 +35,6 @@ const fieldLabelSx = {
 };
 
 const MyInquiries: NextPage = () => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const [rows, setRows] = useState<InquiryListItem[]>([]);
 	const [total, setTotal] = useState(0);
@@ -62,10 +60,6 @@ const MyInquiries: NextPage = () => {
 		if (s == null || s === '') return InquiryStatus.NEW;
 		return String(s).toUpperCase() as InquiryStatus;
 	};
-
-	if (device === 'mobile') {
-		return <div>pawpal MY INQUIRIES MOBILE</div>;
-	}
 
 	return (
 		<div id="my-inquiries-page">

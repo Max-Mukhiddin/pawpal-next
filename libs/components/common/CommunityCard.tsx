@@ -31,7 +31,7 @@ const CommunityCard = (props: CommunityCardProps) => {
 	const chooseArticleHandler = (e: React.SyntheticEvent, boardArticle: BoardArticle) => {
 		router.push(
 			{
-				pathname: '/community/detail',
+				pathname: '/blog/detail',
 				query: { articleCategory: boardArticle?.articleCategory, id: boardArticle?._id },
 			},
 			undefined,

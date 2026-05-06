@@ -11,6 +11,7 @@ export interface MemberUpdate {
 	memberImage?: string;
 	memberAddress?: string;
 	memberDesc?: string;
+	isPendingSpecialist?: boolean;
 	deletedAt?: Date;
 }
 
@@ -24,5 +25,6 @@ export interface AdminMemberUpdate {
 	memberImage?: string;
 	memberAddress?: string;
 	memberDesc?: string;
+	isPendingSpecialist?: boolean;
 	deletedAt?: Date;
 }

@@ -57,11 +57,11 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Messages.error2);
 
-			await likeTargetBoardArticle({
-				variables: {
-					input: id,
-				},
-			});
+		await likeTargetBoardArticle({
+			variables: {
+				articleId: id,
+			},
+		});
 
 			await boardArticlesRefetch({ input: searchFilter });
 			await sweetTopSmallSuccessAlert('Success!', 800);
@@ -111,7 +111,7 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 							/>
 						</Stack>
 						<Stack className="total-result">
-							<Typography>{total} property available</Typography>
+							<Typography>{total} listing available</Typography>
 						</Stack>
 					</Stack>
 				)}

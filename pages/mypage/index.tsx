@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { NextPage } from 'next';
 import { Stack } from '@mui/material';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import SpecialistCatalog from '../../libs/components/mypage/SpecialistCatalog';
 import MyFavorites from '../../libs/components/mypage/MyFavorites';
@@ -32,7 +31,6 @@ export const getStaticProps = async ({ locale }: any) => ({
 });
 
 const MyPage: NextPage = () => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 	const category: any = router.query?.category ?? 'myProfile';
@@ -112,11 +110,8 @@ const MyPage: NextPage = () => {
 		}
 	};
 
-	if (device === 'mobile') {
-		return <div>MY PAGE</div>;
-	} else {
-		return (
-			<div id="my-page" style={{ position: 'relative' }}>
+	return (
+		<div id="my-page">
 				<div className="container">
 					<Stack className={'my-page'} sx={{ pt: '40px' }}>
 						<Stack className={'back-frame'}>
@@ -124,6 +119,7 @@ const MyPage: NextPage = () => {
 								<MyMenu />
 							</Stack>
 							<Stack className="main-config" mb={'76px'}>
+								<div className="mypage-content-fade">
 								<Stack className={'list-config'}>
 									{category === 'addListing' && <AddNewListing />}
 									{(category === 'myProducts' ||
@@ -141,6 +137,9 @@ const MyPage: NextPage = () => {
 									{category === 'recentlyVisited' && <RecentlyVisited />}
 									{category === 'myArticles' && <MyArticles />}
 									{category === 'writeArticle' && <WriteArticle />}
+								{category === 'editArticle' && (
+									<WriteArticle articleId={router.query.articleId as string} />
+								)}
 									{category === 'myProfile' && <MyProfile />}
 									{category === 'followers' && (
 										<MemberFollowers
@@ -159,13 +158,13 @@ const MyPage: NextPage = () => {
 										/>
 									)}
 								</Stack>
+								</div>
 							</Stack>
 						</Stack>
 					</Stack>
 				</div>
-			</div>
-		);
-	}
+		</div>
+	);
 };
 
-export default withLayoutBasic(MyPage);
+export default withLayoutBasic(MyPage, { noHero: true });

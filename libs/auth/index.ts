@@ -62,9 +62,22 @@ const requestJwtToken = async ({
 	}
 };
 
-export const signUp = async (nick: string, password: string, phone: string, type: string): Promise<void> => {
+export const signUp = async (
+	nick: string,
+	password: string,
+	phone: string,
+	memberType: string,
+	options?: { memberDesc?: string; isPendingSpecialist?: boolean },
+): Promise<void> => {
 	try {
-		const { jwtToken } = await requestSignUpJwtToken({ nick, password, phone, type });
+		const { jwtToken } = await requestSignUpJwtToken({
+			nick,
+			password,
+			phone,
+			memberType,
+			memberDesc: options?.memberDesc,
+			isPendingSpecialist: options?.isPendingSpecialist,
+		});
 
 		if (jwtToken) {
 			updateStorage({ jwtToken });
@@ -80,20 +93,37 @@ const requestSignUpJwtToken = async ({
 	nick,
 	password,
 	phone,
-	type,
+	memberType,
+	memberDesc,
+	isPendingSpecialist,
 }: {
 	nick: string;
 	password: string;
 	phone: string;
-	type: string;
+	memberType: string;
+	memberDesc?: string;
+	isPendingSpecialist?: boolean;
 }): Promise<{ jwtToken: string }> => {
 	const apolloClient = await initializeApollo();
+
+	const input: Record<string, string | boolean> = {
+		memberNick: nick,
+		memberPassword: password,
+		memberPhone: phone,
+		memberType,
+	};
+	if (memberDesc != null && memberDesc !== '') {
+		input.memberDesc = memberDesc;
+	}
+	if (isPendingSpecialist !== undefined) {
+		input.isPendingSpecialist = isPendingSpecialist;
+	}
 
 	try {
 		const result = await apolloClient.mutate({
 			mutation: SIGN_UP,
 			variables: {
-				input: { memberNick: nick, memberPassword: password, memberPhone: phone, memberType: type },
+				input,
 			},
 			fetchPolicy: 'network-only',
 		});
@@ -144,6 +174,7 @@ export const updateUserInfo = (jwtToken: any) => {
 				: `${claims.memberImage}`,
 		memberAddress: claims.memberAddress ?? '',
 		memberDesc: claims.memberDesc ?? '',
+		isPendingSpecialist: claims.isPendingSpecialist ?? false,
 		memberListings: claims.memberListings ?? 0,
 		memberFollowers: c.memberFollowers ?? 0,
 		memberFollowings: c.memberFollowings ?? 0,
@@ -181,6 +212,7 @@ const deleteUserInfo = () => {
 		memberImage: '',
 		memberAddress: '',
 		memberDesc: '',
+		isPendingSpecialist: false,
 		memberListings: 0,
 		memberFollowers: 0,
 		memberFollowings: 0,

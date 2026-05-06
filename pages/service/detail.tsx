@@ -10,7 +10,6 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import type { Service } from '../../libs/types/services/service';
 import { formatterStr } from '../../libs/utils';
-import { REACT_APP_API_URL } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
 import { Comment } from '../../libs/types/comment/comment';
@@ -27,6 +26,7 @@ import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } f
 import ServiceReviewCard from '../../libs/components/services/ServiceReviewCard';
 import ServiceDetailMobile from '../../libs/components/services/ServiceDetailMobile';
 import ServiceDetailInquirySidebar from '../../libs/components/inquiry/ServiceDetailInquirySidebar';
+import { resolveListingImageUrl, resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -140,7 +140,11 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 		setSlideImage(image);
 	};
 
-	const getImg = (p?: string) => (p ? `${REACT_APP_API_URL}/${p}` : '/images/placeholder-pet.jpg');
+	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/images/placeholder-pet.jpg');
+	const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
+	const heroImage = service?.listingImages?.[0]
+		? resolveListingImageUrl(service.listingImages[0], '/img/banner/services.webp')
+		: '/img/banner/services.webp';
 
 	const likeServiceHandler = async (user: T, id: string) => {
 		try {
@@ -209,7 +213,14 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 
 	return (
 		<div className="service-detail-revamp">
-			<section className="service-detail-revamp__hero">
+			<section
+				className="service-detail-revamp__hero"
+				style={{
+					backgroundImage: `url('${heroImage}')`,
+					backgroundSize: 'cover',
+					backgroundPosition: 'center',
+				}}
+			>
 				<div className="service-detail-revamp__hero-inner">
 					<h1>{service?.listingTitle}</h1>
 					<p>{`Home / Services / ${service?.listingTitle ?? ''}`}</p>
@@ -220,7 +231,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 				<div className="service-detail-revamp__grid">
 					<div className="service-detail-revamp__left">
 						<div className="media-card">
-							<img src={getImg(slideImage || service?.listingImages?.[0])} alt="" className="main-image" />
+							<img src={getListingImg(slideImage || service?.listingImages?.[0])} alt="" className="main-image" />
 							{(service?.listingImages?.length ?? 0) > 1 && (
 								<div className="thumb-row">
 									{service?.listingImages?.slice(0, 3).map((img) => (
@@ -230,7 +241,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 											className={slideImage === img ? 'thumb is-active' : 'thumb'}
 											onClick={() => changeImageHandler(img)}
 										>
-											<img src={getImg(img)} alt="" />
+											<img src={getListingImg(img)} alt="" />
 										</button>
 									))}
 								</div>
@@ -284,7 +295,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 						</div>
 
 						<div className="specialist-card">
-							<img src={getImg(service?.memberData?.memberImage ?? undefined)} alt="" />
+							<img src={getMemberImg(service?.memberData?.memberImage ?? undefined)} alt="" />
 							<div>
 								<strong>{service?.memberData?.memberNick || 'Specialist'}</strong>
 								<Link href={`/specialist/detail?id=${service?.memberData?._id}`}>View Profile →</Link>
@@ -355,7 +366,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 								.slice(0, 4)
 								.map((relatedService: Service) => (
 									<Link href={`/service/detail?id=${relatedService._id}`} className="related-card" key={relatedService._id}>
-										<img src={getImg(relatedService.listingImages?.[0])} alt="" />
+										<img src={getListingImg(relatedService.listingImages?.[0])} alt="" />
 										<div className="overlay">
 											<strong>{relatedService.listingTitle}</strong>
 										</div>

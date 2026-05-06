@@ -16,11 +16,12 @@ import type { ListingsInquiry } from '../../libs/types/listing/listing.input';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
-import { Messages, REACT_APP_API_URL } from '../../libs/config';
+import { Messages } from '../../libs/config';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { GET_COMMENTS, GET_MEMBER, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
+import { resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -185,7 +186,7 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 				<Stack className={'container'}>
 					<Stack className={'specialist-info'}>
 						<img
-							src={agent?.memberImage ? `${REACT_APP_API_URL}/${agent?.memberImage}` : '/img/profile/defaultUser.svg'}
+							src={resolveMemberImageUrl(agent?.memberImage, '/img/profile/defaultUser.svg')}
 							alt=""
 						/>
 						<Box component={'div'} className={'info'} onClick={() => redirectToMemberPageHandler(agent?._id as string)}>

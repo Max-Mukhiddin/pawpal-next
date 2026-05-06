@@ -116,14 +116,14 @@ const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 	};
 
 	return (
-		<Stack className={'pawpal-static-page pawpal-static-page--specialists'}>
+		<Stack className={'pawpal-static-page pawpal-static-page--specialists'} sx={{ pt: '24px' }}>
 			<Stack className={'container'} sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
 				<SpecialistsHero data={directoryHero} />
 
 				<Stack
 					className={'specialist-list-page'}
 					sx={{
-						padding: device === 'mobile' ? '16px 0 40px' : '28px 0 75px',
+						padding: device === 'mobile' ? '16px 0 40px' : '24px 0 75px',
 						width: '100%',
 						alignSelf: 'stretch',
 					}}

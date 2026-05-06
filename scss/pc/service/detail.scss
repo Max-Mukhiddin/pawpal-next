@@ -6,19 +6,39 @@
 	}
 
 	.service-detail-revamp__hero {
-		background: #1a1a1a;
-		padding: 80px 0;
+		position: relative;
+		width: 100%;
+		height: 300px;
+		min-height: 300px;
+		display: flex;
+		align-items: center;
+		background-color: #1a1a1a;
+		overflow: hidden;
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.6) 100%);
+			pointer-events: none;
+		}
 	}
 
 	.service-detail-revamp__hero-inner {
+		position: relative;
+		z-index: 1;
 		width: min(1200px, calc(100% - 32px));
 		margin: 0 auto;
 		color: #fff;
+
 		h1 {
-			font-size: 36px;
+			font-size: clamp(28px, 4vw, 42px);
 			line-height: 1.2;
 			margin: 0;
+			font-weight: 700;
+			text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 		}
+
 		p {
 			margin-top: 10px;
 			font-size: 14px;
@@ -45,7 +65,7 @@
 	.inquiry-card,
 	.service-reviews-config,
 	.leave-review-config {
-		background: #fff;
+		background: var(--color-bg-card);
 		border-radius: 16px;
 	}
 
@@ -69,7 +89,7 @@
 			border-radius: 12px;
 			padding: 0;
 			overflow: hidden;
-			background: #fff;
+			background: var(--color-bg-card);
 			cursor: pointer;
 			&.is-active {
 				border-color: #e07b3a;
@@ -135,7 +155,7 @@
 		.meta {
 			margin: 10px 0 0;
 			font-size: 14px;
-			color: #444;
+			color: var(--color-text-secondary);
 		}
 		.location-badge {
 			margin-top: 10px;
@@ -192,7 +212,7 @@
 			box-shadow: none;
 			background: transparent;
 			.info-box {
-				background: #fff;
+				background: var(--color-bg-card);
 				border-radius: 16px;
 				padding: 18px;
 				border: 1px solid #f0f0f0;
@@ -270,6 +290,63 @@
 				color: #fff;
 				font-size: 16px;
 			}
+		}
+	}
+
+	@media (max-width: 1023px) {
+		.service-detail-revamp__hero {
+			padding: 48px 16px;
+		}
+
+		.service-detail-revamp__hero-inner h1 {
+			font-size: clamp(24px, 4.5vw, 34px);
+		}
+
+		.service-detail-revamp__grid {
+			grid-template-columns: 1fr;
+		}
+
+		.related-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.media-card .main-image {
+			height: auto;
+			min-height: 260px;
+		}
+
+		.media-card .thumb-row {
+			flex-wrap: wrap;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.service-detail-revamp__hero-inner,
+		.service-detail-revamp__container {
+			width: calc(100% - 24px);
+		}
+
+		.tabs-card .tabs {
+			flex-wrap: wrap;
+		}
+
+		.related-section h3 {
+			font-size: clamp(22px, 6vw, 28px);
+		}
+
+		.related-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.related-card {
+			height: auto;
+			min-height: 180px;
+			aspect-ratio: 16 / 10;
+		}
+
+		.inquiry-card .send-message {
+			width: 100%;
+			box-sizing: border-box;
 		}
 	}
 }

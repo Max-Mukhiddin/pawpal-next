@@ -4,11 +4,23 @@ import { useQuery } from '@apollo/client';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
+import { REACT_APP_API_URL } from '../../config';
 import { homeFeaturedListingsInquiry } from '../../utils/catalogListingInquiry';
 import type { Listing } from '../../types/listing/listing';
 import HomeFeaturedItemCard from './HomeFeaturedItemCard';
 
 const PRODUCT_HOME_INPUT = homeFeaturedListingsInquiry(ListingType.PRODUCT);
+const API_BASE = REACT_APP_API_URL || 'http://localhost:5007';
+const getImageUrl = (imagePath: string | undefined): string => {
+	if (!imagePath) return '/img/banner/listing_default.jpg';
+	if (imagePath.startsWith('http')) return imagePath;
+	if (imagePath.startsWith('/images/') || imagePath.startsWith('/img/') || imagePath.startsWith('/public/')) {
+		return imagePath;
+	}
+	const clean = imagePath.replace(/^\/+/, '');
+	if (clean.startsWith('uploads/')) return `${API_BASE}/${clean}`;
+	return `${API_BASE}/uploads/listing/${clean}`;
+};
 
 export default function FeaturedProducts() {
 	const variables = useMemo(() => ({ input: PRODUCT_HOME_INPUT }), []);
@@ -19,10 +31,17 @@ export default function FeaturedProducts() {
 	});
 
 	const listings: Listing[] = data?.getListings?.list ?? [];
+	const normalizedListings = listings.map((listing) => ({
+		...listing,
+		listingImages: listing.listingImages?.length ? [getImageUrl(listing.listingImages[0]), ...listing.listingImages.slice(1)] : [],
+	}));
 	const showEmpty = !loading && (error || listings.length === 0);
 
 	return (
-		<section className="pawpal-home-section featured-products-pawpal" aria-labelledby="pawpal-home-products-title">
+		<section
+			className="pawpal-home-section featured-products-pawpal animate-on-scroll"
+			aria-labelledby="pawpal-home-products-title"
+		>
 			<div className="pawpal-home-section__inner featured-products-pawpal__inner">
 				<header className="featured-products-pawpal__head">
 					<div className="featured-products-pawpal__intro">
@@ -52,9 +71,9 @@ export default function FeaturedProducts() {
 					</p>
 				)}
 
-				{listings.length > 0 && (
+				{normalizedListings.length > 0 && (
 					<div className="featured-products-pawpal__grid">
-						{listings.map((listing) => (
+						{normalizedListings.map((listing) => (
 							<HomeFeaturedItemCard
 								key={listing._id}
 								listing={listing}

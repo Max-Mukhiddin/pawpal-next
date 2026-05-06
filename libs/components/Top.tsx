@@ -16,11 +16,11 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { Logout } from '@mui/icons-material';
-import { REACT_APP_API_URL } from '../config';
 import IconButton from '@mui/material/IconButton';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import { useThemeMode } from '../theme';
+import { resolveMemberImageUrl } from '../utils/mediaUrl';
 
 const StyledLangMenu = styled((props: MenuProps) => (
 	<Menu
@@ -62,6 +62,7 @@ export default function Top() {
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const pathname = router.pathname;
+	const avatarSrc = resolveMemberImageUrl(user?.memberImage, '/img/profile/defaultUser.svg');
 
 	const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
 	const [lang, setLang] = useState<string | null>('en');
@@ -73,14 +74,15 @@ export default function Top() {
 	const primaryNav = useMemo(
 		() => [
 			{ href: '/', label: t('Home'), isActive: (p: string) => p === '/' },
-			{ href: '/services', label: t('Services'), isActive: (p: string) => p.startsWith('/services') },
-			{ href: '/products', label: t('Products'), isActive: (p: string) => p.startsWith('/products') },
-			{ href: '/specialists', label: t('Specialists'), isActive: (p: string) => p.startsWith('/specialists') },
-			{
-				href: '/community',
-				label: t('Community'),
-				isActive: (p: string) => p.startsWith('/community'),
-			},
+			{ href: '/service', label: t('Services'), isActive: (p: string) => p.startsWith('/service') },
+			{ href: '/product', label: t('Products'), isActive: (p: string) => p.startsWith('/product') },
+			{ href: '/specialist', label: t('Specialists'), isActive: (p: string) => p.startsWith('/specialist') },
+			{ href: '/about', label: t('About'), isActive: (p: string) => p.startsWith('/about') },
+		{
+			href: '/blog',
+			label: t('Community'),
+			isActive: (p: string) => p.startsWith('/blog') || p.startsWith('/community'),
+		},
 		],
 		[t],
 	);
@@ -129,7 +131,17 @@ export default function Top() {
 			<Stack component="header" className="navbar navbar-pawpal navbar-pawpal--mobile" role="banner">
 				<Stack className="navbar-pawpal__mobile-top" direction="row" alignItems="center" justifyContent="space-between">
 					<Link href="/" className="navbar-pawpal__brand">
-						PawPal
+						<span className="navbar-pawpal__brand-icon" aria-hidden>
+							<svg width="28" height="28" viewBox="0 0 100 100">
+								<ellipse cx="50" cy="70" rx="22" ry="18" fill="#E07B3A" />
+								<ellipse cx="28" cy="45" rx="10" ry="13" fill="#E07B3A" />
+								<ellipse cx="72" cy="45" rx="10" ry="13" fill="#E07B3A" />
+								<ellipse cx="38" cy="35" rx="9" ry="12" fill="#E07B3A" />
+								<ellipse cx="62" cy="35" rx="9" ry="12" fill="#E07B3A" />
+							</svg>
+						</span>
+						<span className="navbar-pawpal__brand-paw">Paw</span>
+						<span className="navbar-pawpal__brand-pal">Pal</span>
 					</Link>
 					<Stack direction="row" alignItems="center" className="navbar-pawpal__mobile-actions">
 						<IconButton
@@ -170,9 +182,15 @@ export default function Top() {
 								onClick={(event) => setLogoutAnchor(event.currentTarget)}
 							>
 								<img
-									src={
-										user?.memberImage ? `${REACT_APP_API_URL}/${user?.memberImage}` : '/img/profile/defaultUser.svg'
-									}
+									src={avatarSrc}
+									onError={(e) => {
+										const img = e.currentTarget;
+										if (img.src.includes('/img/profile/defaultUser.svg')) {
+											img.src = '/images/hero/pawpal-hero.jpg';
+											return;
+										}
+										img.src = '/img/profile/defaultUser.svg';
+									}}
 									alt=""
 								/>
 							</button>
@@ -243,9 +261,25 @@ export default function Top() {
 	return (
 		<Stack component="header" className="navbar navbar-pawpal" role="banner">
 			<Stack className={`navbar-pawpal__bar ${isScrolled ? 'is-scrolled' : ''}`}>
-				<Stack className="container navbar-pawpal__inner">
+				<Stack
+					className="container navbar-pawpal__inner"
+					direction="row"
+					alignItems="center"
+					justifyContent="space-between"
+					sx={{ display: 'flex' }}
+				>
 					<Link href="/" className="navbar-pawpal__brand">
-						PawPal
+						<span className="navbar-pawpal__brand-icon" aria-hidden>
+							<svg width="28" height="28" viewBox="0 0 100 100">
+								<ellipse cx="50" cy="70" rx="22" ry="18" fill="#E07B3A" />
+								<ellipse cx="28" cy="45" rx="10" ry="13" fill="#E07B3A" />
+								<ellipse cx="72" cy="45" rx="10" ry="13" fill="#E07B3A" />
+								<ellipse cx="38" cy="35" rx="9" ry="12" fill="#E07B3A" />
+								<ellipse cx="62" cy="35" rx="9" ry="12" fill="#E07B3A" />
+							</svg>
+						</span>
+						<span className="navbar-pawpal__brand-paw">Paw</span>
+						<span className="navbar-pawpal__brand-pal">Pal</span>
 					</Link>
 					<nav className="navbar-pawpal__nav" aria-label="Primary">
 						{primaryNav.map(({ href, label, isActive }) => (
@@ -258,7 +292,11 @@ export default function Top() {
 							</Link>
 						))}
 					</nav>
-					<Box component="div" className="navbar-pawpal__actions">
+					<Box
+						component="div"
+						className="navbar-pawpal__actions"
+						sx={{ paddingRight: '16px', gap: '8px', alignItems: 'center', display: 'flex', flexDirection: 'row' }}
+					>
 						<IconButton
 							size="medium"
 							className="navbar-pawpal__icon-btn"
@@ -275,6 +313,9 @@ export default function Top() {
 						>
 							{mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
 						</IconButton>
+						<Link href="/service" className="navbar-pawpal__book-btn">
+							Book Now
+						</Link>
 						{user?._id ? (
 							<>
 								<button
@@ -283,9 +324,15 @@ export default function Top() {
 									onClick={(event) => setLogoutAnchor(event.currentTarget)}
 								>
 									<img
-										src={
-											user?.memberImage ? `${REACT_APP_API_URL}/${user?.memberImage}` : '/img/profile/defaultUser.svg'
-										}
+										src={avatarSrc}
+										onError={(e) => {
+											const img = e.currentTarget;
+											if (img.src.includes('/img/profile/defaultUser.svg')) {
+												img.src = '/images/hero/pawpal-hero.jpg';
+												return;
+											}
+											img.src = '/img/profile/defaultUser.svg';
+										}}
 										alt=""
 									/>
 								</button>

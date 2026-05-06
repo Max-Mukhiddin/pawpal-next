@@ -5,19 +5,18 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { userVar } from '../../../apollo/store';
-import { REACT_APP_API_URL } from '../../config';
 import type { Product } from '../../types/products/product';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
 import { ListingStatus } from '../../enums/listing.enum';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface ProductCardProps {
 	product: Product;
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
-const getBackendImage = (img?: string) =>
-	img ? `${REACT_APP_API_URL}/${String(img).replace(/^\/+/, '')}` : '';
+const getBackendImage = (img?: string) => resolveListingImageUrl(img, '');
 
 function statusBadgeLabel(status?: string): string {
 	if (status === ListingStatus.ACTIVE) return 'Available';
@@ -44,7 +43,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onLike }) => {
 		<Stack className="products-list-card">
 			<Box className="products-list-card__media" component="div" onClick={goDetail} role="presentation">
 				<img
-					src={image || '/img/icons/icoAlert.svg'}
+					src={image || '/images/hero/pawpal-hero.jpg'}
+					onError={(e) => {
+						e.currentTarget.src = '/images/hero/pawpal-hero.jpg';
+					}}
 					alt={product.listingTitle}
 					className="products-list-card__img"
 				/>

@@ -3,10 +3,10 @@ import { Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 import type { Service } from '../../types/services/service';
 import type { T } from '../../types/common';
-import { REACT_APP_API_URL } from '../../config';
 import { useListingInquiryForm } from '../../hooks/useListingInquiryForm';
 import ListingInquiryDetailSidebarFields from './ListingInquiryDetailSidebarFields';
 import ServiceDetailBookingSection from '../services/ServiceDetailBookingSection';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 export interface ServiceDetailInquirySidebarProps {
 	service: Service | null;
@@ -37,9 +37,7 @@ const ServiceDetailInquirySidebar: React.FC<ServiceDetailInquirySidebarProps> = 
 					<img
 						className={'member-image'}
 						src={
-							service?.memberData?.memberImage
-								? `${REACT_APP_API_URL}/${service?.memberData?.memberImage}`
-								: '/img/profile/defaultUser.svg'
+							resolveMemberImageUrl(service?.memberData?.memberImage, '/img/profile/defaultUser.svg')
 						}
 						alt=""
 					/>

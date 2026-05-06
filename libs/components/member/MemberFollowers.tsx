@@ -5,12 +5,12 @@ import { useRouter } from 'next/router';
 import { FollowInquiry } from '../../types/follow/follow.input';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Follower } from '../../types/follow/follow';
-import { REACT_APP_API_URL } from '../../config';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { userVar } from '../../../apollo/store';
 import { T } from '../../types/common';
 import { GET_MEMBER_FOLLOWERS } from '../../../apollo/user/query';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 interface MemberFollowsProps {
 	initialInput: FollowInquiry;
@@ -100,9 +100,7 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 						</div>
 					)}
 					{memberFollowers.map((follower: Follower) => {
-						const imagePath: string = follower?.followerData?.memberImage
-							? `${REACT_APP_API_URL}/${follower?.followerData?.memberImage}`
-							: '/img/profile/defaultUser.svg';
+						const imagePath: string = resolveMemberImageUrl(follower?.followerData?.memberImage, '/img/profile/defaultUser.svg');
 						return (
 							<Stack className="follows-card-box" key={follower._id}>
 								<Stack className={'info'} onClick={() => redirectToMemberPageHandler(follower?.followerData?._id)}>

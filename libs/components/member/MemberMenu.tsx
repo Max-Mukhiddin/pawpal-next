@@ -4,10 +4,10 @@ import { Stack, Typography, Box, List, ListItem, Button } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Link from 'next/link';
 import { Member } from '../../types/member/member';
-import { REACT_APP_API_URL } from '../../config';
 import { GET_MEMBER } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
 import { T } from '../../types/common';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 interface MemberMenuProps {
 	subscribeHandler: any;
@@ -46,7 +46,7 @@ const MemberMenu = (props: MemberMenuProps) => {
 				<Stack className={'profile'}>
 					<Box component={'div'} className={'profile-img'}>
 						<img
-							src={member?.memberImage ? `${REACT_APP_API_URL}/${member?.memberImage}` : '/img/profile/defaultUser.svg'}
+							src={resolveMemberImageUrl(member?.memberImage, '/img/profile/defaultUser.svg')}
 							alt={'member-photo'}
 						/>
 					</Box>
@@ -56,7 +56,9 @@ const MemberMenu = (props: MemberMenuProps) => {
 							<img src={'/img/icons/call.svg'} alt={'icon'} />
 							<Typography className={'p-number'}>{member?.memberPhone}</Typography>
 						</Box>
-						<Typography className={'view-list'}>{member?.memberType}</Typography>
+						<Typography className={'view-list'}>
+						{member?.memberType === 'AGENT' ? 'Specialist' : member?.memberType}
+					</Typography>
 					</Stack>
 				</Stack>
 				<Stack className="follow-button-box">
@@ -103,9 +105,9 @@ const MemberMenu = (props: MemberMenuProps) => {
 											) : (
 												<img className={'com-icon'} src={'/img/icons/home.svg'} alt={'com-icon'} />
 											)}
-											<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
-												Properties
-											</Typography>
+						<Typography className={'sub-title'} variant={'subtitle1'} component={'p'}>
+											Services &amp; Products
+										</Typography>
 											<Typography className="count-title" variant="subtitle1">
 												{member?.memberListings}
 											</Typography>

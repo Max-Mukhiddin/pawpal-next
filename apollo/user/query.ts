@@ -323,8 +323,8 @@ export const GET_AGENT_PROPERTIES = GET_AGENT_LISTINGS;
  *************************/
 
 export const GET_BOARD_ARTICLE = gql`
-	query GetBoardArticle($input: String!) {
-		getBoardArticle(articleId: $input) {
+	query GetBoardArticle($articleId: String!) {
+		getBoardArticle(articleId: $articleId) {
 			_id
 			articleCategory
 			articleStatus
@@ -676,6 +676,36 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					followerId
 					myFollowing
 				}
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+/** Admin member directory — includes specialist approval flag */
+export const GET_ALL_MEMBERS_BY_ADMIN = gql`
+	query GetAllMembersByAdmin($input: MembersInquiry!) {
+		getAllMembersByAdmin(input: $input) {
+			list {
+				_id
+				memberType
+				memberStatus
+				memberPhone
+				memberNick
+				memberFullName
+				memberImage
+				memberAddress
+				memberDesc
+				isPendingSpecialist
+				memberListings
+				memberRank
+				memberArticles
+				memberPoints
+				memberLikes
+				memberViews
+				createdAt
+				updatedAt
 			}
 			metaCounter {
 				total

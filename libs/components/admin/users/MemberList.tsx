@@ -11,6 +11,7 @@ import {
 	Menu,
 	Fade,
 	MenuItem,
+	Chip,
 } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
@@ -28,16 +29,6 @@ interface Data {
 	state: string;
 	warning: string;
 	block: string;
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-	if (b[orderBy] < a[orderBy]) {
-		return -1;
-	}
-	if (b[orderBy] > a[orderBy]) {
-		return 1;
-	}
-	return 0;
 }
 
 type Order = 'asc' | 'desc';
@@ -101,16 +92,17 @@ const headCells: readonly HeadCell[] = [
 ];
 
 interface EnhancedTableProps {
-	numSelected: number;
-	onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Data) => void;
-	onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-	order: Order;
-	orderBy: string;
-	rowCount: number;
+	numSelected?: number;
+	onRequestSort?: (event: React.MouseEvent<unknown>, property: keyof Data) => void;
+	onSelectAllClick?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+	order?: Order;
+	orderBy?: string;
+	rowCount?: number;
+	pendingSpecialistReviewMode?: boolean;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-	const { onSelectAllClick } = props;
+	const { pendingSpecialistReviewMode } = props;
 
 	return (
 		<TableHead>
@@ -124,6 +116,16 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 						{headCell.label}
 					</TableCell>
 				))}
+				{pendingSpecialistReviewMode ? (
+					<TableCell align="center" padding="normal">
+						APPLICATION
+					</TableCell>
+				) : null}
+				{pendingSpecialistReviewMode ? (
+					<TableCell align="center" padding="normal">
+						ACTIONS
+					</TableCell>
+				) : null}
 			</TableRow>
 		</TableHead>
 	);
@@ -135,21 +137,35 @@ interface MemberPanelListType {
 	menuIconClickHandler: any;
 	menuIconCloseHandler: any;
 	updateMemberHandler: any;
+	pendingSpecialistReviewMode?: boolean;
+	onApproveSpecialist?: (memberId: string) => void;
+	onRejectSpecialist?: (memberId: string) => void;
 }
 
 export const MemberPanelList = (props: MemberPanelListType) => {
-	const { members, anchorEl, menuIconClickHandler, menuIconCloseHandler, updateMemberHandler } = props;
+	const {
+		members,
+		anchorEl,
+		menuIconClickHandler,
+		menuIconCloseHandler,
+		updateMemberHandler,
+		pendingSpecialistReviewMode,
+		onApproveSpecialist,
+		onRejectSpecialist,
+	} = props;
+
+	const colSpan = headCells.length + (pendingSpecialistReviewMode ? 2 : 0);
 
 	return (
 		<Stack>
 			<TableContainer>
 				<Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size={'medium'}>
 					{/*@ts-ignore*/}
-					<EnhancedTableHead />
+					<EnhancedTableHead pendingSpecialistReviewMode={pendingSpecialistReviewMode} />
 					<TableBody>
 						{members.length === 0 && (
 							<TableRow>
-								<TableCell align="center" colSpan={8}>
+								<TableCell align="center" colSpan={colSpan}>
 									<span className={'no-data'}>data not found!</span>
 								</TableCell>
 							</TableRow>
@@ -243,6 +259,43 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 													))}
 											</Menu>
 										</TableCell>
+										{pendingSpecialistReviewMode ? (
+											<TableCell align="center">
+												{member.isPendingSpecialist ? (
+													<Chip
+														label="Pending Specialist"
+														size="small"
+														sx={{ fontWeight: 600, bgcolor: '#FFF3E0', color: '#E65100', border: '1px solid #E07B3A' }}
+													/>
+												) : (
+													'—'
+												)}
+											</TableCell>
+										) : null}
+										{pendingSpecialistReviewMode && onApproveSpecialist && onRejectSpecialist ? (
+											<TableCell align="center">
+												<Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap" useFlexGap>
+													<Button
+														variant="contained"
+														color="success"
+														size="small"
+														onClick={() => onApproveSpecialist(member._id)}
+														sx={{ textTransform: 'none', fontWeight: 600 }}
+													>
+														Approve
+													</Button>
+													<Button
+														variant="outlined"
+														color="error"
+														size="small"
+														onClick={() => onRejectSpecialist(member._id)}
+														sx={{ textTransform: 'none', fontWeight: 600 }}
+													>
+														Reject
+													</Button>
+												</Stack>
+											</TableCell>
+										) : null}
 									</TableRow>
 								);
 							})}

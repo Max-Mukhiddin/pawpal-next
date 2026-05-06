@@ -5,18 +5,17 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import { userVar } from '../../../apollo/store';
-import { REACT_APP_API_URL } from '../../config';
 import type { Service } from '../../types/services/service';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface ServiceCardProps {
 	service: Service;
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
-const getBackendImage = (img?: string) =>
-	img ? `${REACT_APP_API_URL}/${String(img).replace(/^\/+/, '')}` : '';
+const getBackendImage = (img?: string) => resolveListingImageUrl(img, '/images/hero/pawpal-hero.jpg');
 
 /** Babet-style image-overlay catalog card. */
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
@@ -34,7 +33,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 				className="services-list-card__media"
 				component="div"
 				sx={{
-					backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
+					backgroundImage: `url(${bgUrl})`,
 					backgroundColor: '#2a2a2a',
 					backgroundSize: 'cover',
 					backgroundPosition: 'center',

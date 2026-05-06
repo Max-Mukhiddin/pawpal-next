@@ -4,13 +4,77 @@
 		width: 100%;
 	}
 
+	.services-filter {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		width: 100%;
+		box-sizing: border-box;
+		margin-bottom: 8px;
+
+		.services-filter__left,
+		.services-filter__right {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 12px;
+			min-width: 0;
+		}
+
+		.services-filter__left input {
+			width: min(420px, 100%);
+			max-width: 100%;
+			box-sizing: border-box;
+			padding: 12px 14px 12px 40px;
+			border-radius: 40px;
+			border: 1px solid #ddd;
+			font-family: $font;
+			font-size: 14px;
+		}
+
+		.services-filter__right span {
+			font-family: $font;
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--pp-text-muted, #6b5d52);
+		}
+	}
+
+	@media (max-width: 767px) {
+		.services-filter {
+			flex-direction: column;
+			align-items: stretch;
+
+			.services-filter__left,
+			.services-filter__right {
+				width: 100%;
+			}
+
+			.services-filter__left input {
+				width: 100%;
+			}
+
+			.services-filter__right {
+				justify-content: space-between;
+			}
+		}
+	}
+
 	.services-catalog-page__grid {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 16px;
 		width: 100%;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1023px) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		@media (max-width: 767px) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -88,7 +152,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: #fff;
+		background: var(--color-bg-card);
 		color: #181a20;
 		font-size: 16px;
 		font-weight: 700;
@@ -114,5 +178,33 @@
 		color: #fff;
 		font-size: 12px;
 		font-weight: 600;
+	}
+}
+
+:root[data-theme='dark'] {
+	#pc-wrap,
+	#mobile-wrap {
+		/* Filter bar — transparent, not dark box */
+		.services-filter {
+			background: transparent !important;
+
+			.services-filter__left input {
+				background: rgba(42, 42, 42, 0.9) !important;
+				border-color: rgba(255, 255, 255, 0.15) !important;
+				color: #f0f0f0 !important;
+			}
+
+			.services-filter__right span,
+			.services-filter__right select {
+				background: rgba(42, 42, 42, 0.9) !important;
+				border-color: rgba(255, 255, 255, 0.15) !important;
+				color: #f0f0f0 !important;
+			}
+		}
+
+		/* Card media keeps background-image — do NOT override */
+		.services-list-card__media {
+			background-color: transparent !important;
+		}
 	}
 }

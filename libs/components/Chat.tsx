@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Stack } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import Badge from '@mui/material/Badge';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import MarkChatUnreadIcon from '@mui/icons-material/MarkChatUnread';
 import { useRouter } from 'next/router';
@@ -10,9 +8,9 @@ import { RippleBadge } from '../../scss/MaterialTheme/styled';
 import { useReactiveVar } from '@apollo/client';
 import { socketVar, userVar } from '../../apollo/store';
 import { Member } from '../types/member/member';
-import { Messages, REACT_APP_API_URL } from '../config';
+import { Messages } from '../config';
 import { sweetErrorAlert } from '../sweetAlert';
-import { Message } from '@mui/icons-material';
+import { resolveMemberImageUrl } from '../utils/mediaUrl';
 
 const NewMessage = (type: any) => {
 	if (type === 'right') {
@@ -148,9 +146,7 @@ const Chat = () => {
 							</Box>
 							{messagesList.map((ele: MessagePayload) => {
 								const { text, memberData } = ele;
-								const memberImage = memberData?.memberImage
-									? `${REACT_APP_API_URL}/${memberData.memberImage}`
-									: '/img/profile/defaultUser.svg';
+								const memberImage = resolveMemberImageUrl(memberData?.memberImage, '/img/profile/defaultUser.svg');
 
 								return memberData?._id === user?._id ? (
 									<Box
@@ -179,13 +175,27 @@ const Chat = () => {
 						type={'text'}
 						name={'message'}
 						className={'msg-input'}
-						placeholder={'Type message'}
+						placeholder="Type a message..."
 						value={messageInput}
 						onChange={getInputMessageHandler}
 						onKeyDown={getKeyHandler}
 					/>
-					<button className={'send-msg-btn'} onClick={onClickHandler}>
-						<SendIcon style={{ color: '#fff' }} />
+					<button
+						type="button"
+						className={'send-msg-btn'}
+						onClick={onClickHandler}
+						style={{
+							background: '#E07B3A',
+							color: 'white',
+							border: 'none',
+							borderRadius: '50%',
+							width: 36,
+							height: 36,
+							cursor: 'pointer',
+						}}
+						aria-label="Send message"
+					>
+						→
 					</button>
 				</Box>
 			</Stack>

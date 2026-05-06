@@ -8,7 +8,7 @@
     position: fixed;
     left: auto;
     box-shadow: none;
-    background: #fff;
+    background: var(--color-bg-card);
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     .settings-icon-admin {
       margin-right: 15px;
@@ -307,7 +307,7 @@
     }
 
     .table-wrap {
-      background: #fff;
+      background: var(--color-bg-card);
       border-radius: 4px;
       box-shadow: rgb(145 158 171 / 20%) 0px 0px 2px 0px, rgb(145 158 171 / 12%) 0px 12px 24px -4px;
       .tab-menu {
@@ -459,7 +459,7 @@
       }
       .MuiOutlinedInput-root {
         height: 48px;
-        background: #fff;
+        background: var(--color-bg-card);
         font-size: 14px;
       }
       .MuiTableCell-root {
@@ -475,7 +475,7 @@
       flex-direction: row;
       button {
         height: 44px;
-        background: #fff;
+        background: var(--color-bg-card);
         border: 1px solid #eee;
         color: #757575;
         margin-right: 8px;
