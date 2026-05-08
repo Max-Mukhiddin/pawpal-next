@@ -141,7 +141,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 
 	/** HANDLERS **/
 	const changeImageHandler = (image: string) => setSlideImage(image);
-	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/images/placeholder-pet.jpg');
+	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
 	const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
 	const heroImage = product?.listingImages?.[0]
 		? resolveListingImageUrl(product.listingImages[0], '/img/banner/products.webp')

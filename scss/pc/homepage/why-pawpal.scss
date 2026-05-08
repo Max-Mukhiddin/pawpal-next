@@ -10,12 +10,8 @@
 
 		position: relative;
 		overflow: hidden;
-		background: var(--pp-why-pawpal-bg) !important;
+		background: #fff8f0 !important;
 		border-bottom: none;
-
-		&.pawpal-home-section:nth-of-type(even) {
-			background: var(--pp-why-pawpal-bg) !important;
-		}
 
 		&__watermark {
 			position: absolute;

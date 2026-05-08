@@ -305,14 +305,14 @@ export default function Top() {
 						>
 							<ShoppingBagOutlinedIcon />
 						</IconButton>
-						<IconButton
-							size="medium"
-							className="navbar-pawpal__icon-btn"
-							onClick={toggleMode}
-							aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}
-						>
-							{mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
-						</IconButton>
+					<IconButton
+						size="medium"
+						className="navbar-pawpal__icon-btn"
+						onClick={toggleMode}
+						aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}
+					>
+						{mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
+					</IconButton>
 						<Link href="/service" className="navbar-pawpal__book-btn">
 							Book Now
 						</Link>

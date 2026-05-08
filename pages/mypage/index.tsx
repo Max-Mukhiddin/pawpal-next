@@ -114,11 +114,11 @@ const MyPage: NextPage = () => {
 		<div id="my-page">
 				<div className="container">
 					<Stack className={'my-page'} sx={{ pt: '40px' }}>
-						<Stack className={'back-frame'}>
-							<Stack className={'left-config'}>
+						<Stack className={'back-frame mypage-content'}>
+							<Stack className={'left-config mypage-sidebar'}>
 								<MyMenu />
 							</Stack>
-							<Stack className="main-config" mb={'76px'}>
+							<Stack className="main-config mypage-main" mb={'76px'}>
 								<div className="mypage-content-fade">
 								<Stack className={'list-config'}>
 									{category === 'addListing' && <AddNewListing />}
@@ -167,4 +167,4 @@ const MyPage: NextPage = () => {
 	);
 };
 
-export default withLayoutBasic(MyPage, { noHero: true });
+export default withLayoutBasic(MyPage);

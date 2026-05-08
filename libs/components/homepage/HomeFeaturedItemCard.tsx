@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import type { Listing } from '../../types/listing/listing';
-import { REACT_APP_API_URL } from '../../config';
 import { formatterStr } from '../../utils';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface HomeFeaturedItemCardProps {
 	listing: Listing;
@@ -12,21 +12,9 @@ export interface HomeFeaturedItemCardProps {
 
 /** Homepage featured strip tile; matches `.featured-products-pawpal__*` BEM from featured-products.scss */
 export default function HomeFeaturedItemCard({ listing, detailBasePath, viewLabel }: HomeFeaturedItemCardProps) {
-	const apiBase = REACT_APP_API_URL || 'http://localhost:5007';
-	const getImageUrl = (imagePath: string | undefined): string => {
-		if (!imagePath) return '/img/banner/listing_default.jpg';
-		if (imagePath.startsWith('http')) return imagePath;
-		if (imagePath.startsWith('/images/') || imagePath.startsWith('/img/') || imagePath.startsWith('/public/')) {
-			return imagePath;
-		}
-		const clean = imagePath.replace(/^\/+/, '');
-		if (clean.startsWith('uploads/')) return `${apiBase}/${clean}`;
-		return `${apiBase}/uploads/listing/${clean}`;
-	};
-
 	const raw = listing.listingImages?.[0];
 	const hasImage = Boolean(raw && String(raw).trim() !== '');
-	const imageUrl = hasImage ? getImageUrl(String(raw)) : null;
+	const imageUrl = hasImage ? resolveListingImageUrl(String(raw), '/img/listing/default-listing.webp') : null;
 	const href = `${detailBasePath}?id=${listing._id}`;
 	const priceText =
 		listing.listingPrice != null && Number(listing.listingPrice) > 0
@@ -42,7 +30,14 @@ export default function HomeFeaturedItemCard({ listing, detailBasePath, viewLabe
 			<article className="featured-products-pawpal__card">
 				<div className="featured-products-pawpal__media">
 					{hasImage && imageUrl ? (
-						<img src={imageUrl} alt={listing.listingTitle} className="featured-products-pawpal__img" />
+						<img
+							src={imageUrl}
+							alt={listing.listingTitle}
+							className="featured-products-pawpal__img"
+							onError={(e) => {
+								e.currentTarget.src = '/img/listing/default-listing.webp';
+							}}
+						/>
 					) : (
 						<div className="featured-products-pawpal__media-placeholder" aria-hidden>
 							<span className="featured-products-pawpal__media-placeholder-icon">🐾</span>

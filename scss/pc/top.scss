@@ -3,27 +3,32 @@
  * Uses --pp-nav-* tokens from _theme.tokens.scss
  */
 
-/* LayoutHome / LayoutFull: main is the second child of #pc-wrap (after header) — offset fixed bar */
+/* LayoutHome / LayoutFull: offset the fixed navbar so content is not hidden behind it */
 #pc-wrap > #main:nth-child(2) {
-	padding-top: 0;
+	padding-top: 72px;
 }
 
 #pc-wrap #pawpal-header .navbar.navbar-pawpal {
 	.navbar-pawpal__bar {
-		position: sticky;
+		position: fixed;
 		top: 0;
 		left: 0;
+		right: 0;
 		width: 100%;
-		z-index: 100;
+		z-index: 1000;
 		padding: 16px 40px;
 		box-sizing: border-box;
-		background: var(--color-nav-bg);
-		border-bottom: 2px solid var(--color-border);
+		background: rgba(255, 248, 240, 0.85) !important;
+		backdrop-filter: blur(16px) !important;
+		-webkit-backdrop-filter: blur(16px) !important;
+		border-bottom: 1px solid rgba(232, 115, 74, 0.08);
+		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
 		transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 
 		&.is-scrolled {
-			background: var(--color-nav-bg);
-			box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+			background: rgba(255, 248, 240, 0.9);
+			box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+			border-bottom-color: transparent;
 		}
 	}
 
@@ -236,11 +241,28 @@
 	}
 }
 
+:root[data-theme='dark'] {
+	#pc-wrap #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar,
+	#mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile {
+		background: rgba(26, 26, 26, 0.9) !important;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+	}
+}
+
 #mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile,
 #pc-wrap.layout-home--mobile #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	z-index: 1000;
 	padding: 12px 14px 10px;
-	background: var(--pp-nav-bg);
+	background: rgba(245, 239, 230, 0.95);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	border-bottom: 1px solid var(--pp-nav-border);
+	box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
 
 	.navbar-pawpal__mobile-top {
 		margin-bottom: 10px;
@@ -348,7 +370,7 @@
 
 #mobile-wrap > #main:nth-child(2),
 #pc-wrap.layout-home--mobile > #main:nth-child(2) {
-	padding-top: 0;
+	padding-top: 130px;
 }
 
 /* MUI Menu is rendered in a body-level portal, so this must stay global. */

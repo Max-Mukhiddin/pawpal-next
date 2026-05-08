@@ -30,22 +30,19 @@ const ARTICLES = [
 
 export default function PetTipsSection() {
 	return (
-		<section
-			className="pawpal-home-section pet-tips-pawpal animate-on-scroll"
-			aria-labelledby="pawpal-home-tips-title"
-		>
-			<div className="pawpal-home-section__inner pet-tips-pawpal__inner">
-				<header className="pet-tips-pawpal__head">
+		<section className="section-pawpal section-pawpal--cream pet-tips-pawpal animate-on-scroll" aria-labelledby="pawpal-home-tips-title">
+			<div className="section-container pet-tips-pawpal__inner">
+				<header className="section-header">
 					<div className="pet-tips-pawpal__intro">
-						<p className="pet-tips-pawpal__eyebrow">Pet care tips</p>
-						<h2 id="pawpal-home-tips-title" className="pet-tips-pawpal__title">
-							Trusted advice for healthier pets
+						<p className="section-label">LATEST ARTICLES</p>
+						<h2 id="pawpal-home-tips-title" className="section-title">
+							Tips &amp; Stories For Pet Parents
 						</h2>
-						<p className="pet-tips-pawpal__lead">
+						<p className="section-subtitle">
 							Practical reads from grooming, activity, and nutrition experts to support better daily care.
 						</p>
 					</div>
-					<Link href="/blog" className="pet-tips-pawpal__browse">
+					<Link href="/blog" className="section-action">
 						<span>View all articles</span>
 						<ArrowForwardOutlinedIcon className="pet-tips-pawpal__browse-icon" aria-hidden />
 					</Link>

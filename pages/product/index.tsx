@@ -2,7 +2,7 @@ import React, { ChangeEvent, MouseEvent, useEffect, useMemo, useRef, useState } 
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
-import withLayoutFull from '../../libs/components/layout/LayoutFull';
+import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
 import { ProductsInquiry } from '../../libs/types/products/product.input';
 import type { Product } from '../../libs/types/products/product';
@@ -15,7 +15,6 @@ import { GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import ProductsHero from '../../libs/components/products/ProductsHero';
 import ProductsFilterBar from '../../libs/components/products/ProductsFilterBar';
 import ProductsList from '../../libs/components/products/ProductsList';
 
@@ -189,7 +188,6 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 	return (
 		<Stack className="pawpal-static-page pawpal-static-page--products">
 			<Stack className="container" sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
-				<ProductsHero />
 				{catalogBody}
 			</Stack>
 		</Stack>
@@ -212,4 +210,4 @@ ProductsListPage.defaultProps = {
 	},
 };
 
-export default withLayoutFull(ProductsListPage);
+export default withLayoutBasic(ProductsListPage);

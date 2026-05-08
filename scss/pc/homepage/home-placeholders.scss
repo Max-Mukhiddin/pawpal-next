@@ -8,37 +8,39 @@
 #mobile-wrap .home-page {
 	.pawpal-home-section {
 		width: 100%;
-		padding: clamp(64px, 8.5vw, 112px) var(--pp-home-section-pad-x);
+		padding: 80px 0;
 		box-sizing: border-box;
-		background: var(--pp-bg);
+		background: #ffffff;
 		border-bottom: none;
 
-		&:nth-of-type(even) {
-			background: var(--pp-bg-paper);
+		&:nth-of-type(odd) {
+			background: #fff8f0;
 		}
 
 		&__inner {
 			width: 100%;
-			max-width: var(--pp-home-content-max);
+			max-width: 1200px;
 			margin: 0 auto;
+			padding: 0 24px;
+			box-sizing: border-box;
 		}
 
 		&__title {
 			margin: 0 0 10px;
 			font-family: $font;
-			font-size: clamp(1.35rem, 2.8vw, 1.75rem);
+			font-size: clamp(2rem, 4.2vw, 2.5rem);
 			font-weight: 700;
 			letter-spacing: -0.02em;
-			color: var(--pp-text);
+			color: #1a1a1a;
 		}
 
 		&__lead {
 			margin: 0 0 20px;
 			font-family: $font;
-			font-size: 15px;
+			font-size: 1.05rem;
 			line-height: 1.55;
-			color: var(--pp-text-muted);
-			max-width: 42rem;
+			color: #777;
+			max-width: 600px;
 		}
 
 		&__grid-placeholder {
@@ -107,10 +109,7 @@
 
 	@media (max-width: 1023px) {
 		.pawpal-home-section {
-			padding-top: clamp(48px, 8vw, 96px);
-			padding-bottom: clamp(48px, 8vw, 96px);
-			padding-left: 24px;
-			padding-right: 24px;
+			padding: 64px 0;
 		}
 
 		.pawpal-home-section.pawpal-home-section--brand .pawpal-home-section__inner {
@@ -119,13 +118,12 @@
 	}
 
 	@media (max-width: 767px) {
-		.pawpal-home-section {
-			padding-left: 16px;
-			padding-right: 16px;
-		}
-
 		.pawpal-home-section__title {
 			font-size: clamp(1.2rem, 5vw, 1.5rem);
+		}
+
+		.pawpal-home-section__inner {
+			padding: 0 16px;
 		}
 
 		.pawpal-home-section.pawpal-home-section--brand .pawpal-home-section__inner {

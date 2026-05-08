@@ -1,16 +1,11 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
-import NorthEastOutlinedIcon from '@mui/icons-material/NorthEastOutlined';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
-import WestIcon from '@mui/icons-material/West';
-import EastIcon from '@mui/icons-material/East';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
-import { REACT_APP_API_URL } from '../../config';
 import type { Listing } from '../../types/listing/listing';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 const CARDS = [
 	{
@@ -57,24 +52,8 @@ const CARDS = [
 	},
 ] as const;
 
-const API_BASE = REACT_APP_API_URL || 'http://localhost:5007';
-
-const getImageUrl = (imagePath: string | undefined): string => {
-	if (!imagePath) return '/img/banner/listing_default.jpg';
-	if (imagePath.startsWith('http')) return imagePath;
-	if (
-		imagePath.startsWith('/images/') ||
-		imagePath.startsWith('/img/') ||
-		imagePath.startsWith('/public/')
-	) {
-		return imagePath;
-	}
-	const clean = imagePath.replace(/^\/+/, '');
-	if (clean.startsWith('uploads/')) {
-		return `${API_BASE}/${clean}`;
-	}
-	return `${API_BASE}/uploads/listing/${clean}`;
-};
+const getImageUrl = (imagePath: string | undefined): string =>
+	resolveListingImageUrl(imagePath, '/img/listing/default-listing.webp');
 
 export default function OurServices() {
 	const variables = useMemo(
@@ -110,143 +89,44 @@ export default function OurServices() {
 				})
 			: CARDS;
 
-	const showArrows = cards.length > 2;
-	const isSingleCard = cards.length === 1;
-	const isTwoCards = cards.length === 2;
-
 	return (
-		<section
-			className="pawpal-home-section our-services animate-on-scroll"
-			aria-labelledby="our-services-title"
-		>
-			<div className="pawpal-home-section__inner our-services__inner">
-				<header className="our-services__head">
-					<div className="our-services__intro">
-						<p className="our-services__eyebrow">Our services</p>
-						<h2 id="our-services-title" className="our-services__title">
-							Care your pet will love
-						</h2>
-						<p className="our-services__support">
-							Thoughtfully designed care for every stage of your pet’s life.
-						</p>
-					</div>
-					<Link href="/service" className="our-services__browse">
-						<span>Browse all services</span>
+		<section className="section-pawpal section-pawpal--cream our-services animate-on-scroll" aria-labelledby="our-services-title">
+			<div className="section-container">
+				<header className="section-header">
+					<p className="section-label">OUR SERVICES</p>
+					<h2 id="our-services-title" className="section-title">
+						Care Your Pet Will Love
+					</h2>
+					<p className="section-subtitle">Thoughtfully designed care for every stage of your pet&apos;s life.</p>
+					<Link href="/service" className="section-action">
+						Browse all services
 						<ArrowForwardOutlinedIcon className="our-services__browse-icon" aria-hidden />
 					</Link>
 				</header>
 
-				<div className="our-services__surface">
-					<div
-						className={`our-services__slider${isSingleCard ? ' our-services__slider--center-slides' : ''}${isTwoCards ? ' our-services__slider--two-up' : ''}`}
-					>
-						<Swiper
-							className="our-services-swiper"
-							modules={showArrows ? [Navigation, Pagination] : [Pagination]}
-							speed={480}
-							spaceBetween={24}
-							slidesPerView={1}
-							centeredSlides={isSingleCard}
-							grabCursor
-							watchOverflow
-							breakpoints={{
-								640: {
-									slidesPerView: 2,
-									spaceBetween: 24,
-								},
-								1024: {
-									slidesPerView: isTwoCards ? 2 : 3,
-									spaceBetween: 24,
-								},
-							}}
-							navigation={
-								showArrows
-									? {
-											prevEl: '.our-services-swiper-prev',
-											nextEl: '.our-services-swiper-next',
-										}
-									: false
-							}
-							pagination={{
-								el: '.our-services-swiper-pagination',
-								clickable: true,
-							}}
-						>
-							{cards.map((card) => {
-								const imageUrl = getImageUrl(card.image);
-								const hasImage = Boolean(imageUrl);
-								return (
-									<SwiperSlide key={card.slug} className="our-services__slide">
-										<Link href={card.href} className="our-services__card">
-											<div className="our-services__card-media">
-												{hasImage ? (
-													<img
-														src={imageUrl ?? ''}
-														alt={card.title}
-														className="our-services__card-img"
-														loading="lazy"
-													/>
-												) : (
-													<div className="our-services__card-fallback" aria-hidden />
-												)}
-												<span className="our-services__card-action" aria-hidden>
-													<NorthEastOutlinedIcon className="our-services__card-action-icon" />
-												</span>
-												<div
-													className={
-														hasImage
-															? 'our-services__card-overlay'
-															: 'our-services__card-overlay our-services__card-overlay--gradient'
-													}
-												>
-													<h3
-														className={
-															hasImage
-																? 'our-services__card-title'
-																: 'our-services__card-title our-services__card-title--prominent'
-														}
-													>
-														{card.title}
-													</h3>
-													<p
-														className={
-															hasImage
-																? 'our-services__card-text'
-																: 'our-services__card-text our-services__card-text--on-gradient'
-														}
-													>
-														{card.description}
-													</p>
-												</div>
-											</div>
-										</Link>
-									</SwiperSlide>
-								);
-							})}
-						</Swiper>
-					</div>
-
-					<div className="our-services__controls" aria-label="Service carousel controls">
-						{showArrows && (
-							<button
-								type="button"
-								className="our-services__nav-btn our-services-swiper-prev"
-								aria-label="Previous services"
-							>
-								<WestIcon className="our-services__nav-icon" aria-hidden />
-							</button>
-						)}
-						<div className="our-services-swiper-pagination" />
-						{showArrows && (
-							<button
-								type="button"
-								className="our-services__nav-btn our-services-swiper-next"
-								aria-label="Next services"
-							>
-								<EastIcon className="our-services__nav-icon" aria-hidden />
-							</button>
-						)}
-					</div>
+				<div className="our-services__grid">
+					{cards.map((card) => {
+						const imageUrl = getImageUrl(card.image);
+						return (
+							<Link href={card.href} className="our-services__card" key={card.slug}>
+								<div className="our-services__card-media">
+									<img
+										src={imageUrl}
+										alt={card.title}
+										className="our-services__card-img"
+										loading="lazy"
+										onError={(e) => {
+											e.currentTarget.src = '/img/listing/default-listing.webp';
+										}}
+									/>
+								</div>
+								<div className="our-services__card-body">
+									<h3 className="our-services__card-title">{card.title}</h3>
+									<p className="our-services__card-text">{card.description}</p>
+								</div>
+							</Link>
+						);
+					})}
 				</div>
 			</div>
 		</section>

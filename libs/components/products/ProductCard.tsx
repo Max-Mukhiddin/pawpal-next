@@ -16,7 +16,7 @@ export interface ProductCardProps {
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
-const getBackendImage = (img?: string) => resolveListingImageUrl(img, '');
+const getBackendImage = (img?: string) => resolveListingImageUrl(img, '/img/listing/default-listing.webp');
 
 function statusBadgeLabel(status?: string): string {
 	if (status === ListingStatus.ACTIVE) return 'Available';
@@ -43,9 +43,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onLike }) => {
 		<Stack className="products-list-card">
 			<Box className="products-list-card__media" component="div" onClick={goDetail} role="presentation">
 				<img
-					src={image || '/images/hero/pawpal-hero.jpg'}
+					src={image || '/img/listing/default-listing.webp'}
 					onError={(e) => {
-						e.currentTarget.src = '/images/hero/pawpal-hero.jpg';
+						e.currentTarget.src = '/img/listing/default-listing.webp';
 					}}
 					alt={product.listingTitle}
 					className="products-list-card__img"

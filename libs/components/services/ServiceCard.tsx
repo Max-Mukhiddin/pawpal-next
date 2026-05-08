@@ -15,7 +15,7 @@ export interface ServiceCardProps {
 	onLike: (user: T, id: string) => Promise<void>;
 }
 
-const getBackendImage = (img?: string) => resolveListingImageUrl(img, '/images/hero/pawpal-hero.jpg');
+const getBackendImage = (img?: string) => resolveListingImageUrl(img, '/img/listing/default-listing.webp');
 
 /** Babet-style image-overlay catalog card. */
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
@@ -32,14 +32,15 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 			<Box
 				className="services-list-card__media"
 				component="div"
-				sx={{
-					backgroundImage: `url(${bgUrl})`,
-					backgroundColor: '#2a2a2a',
-					backgroundSize: 'cover',
-					backgroundPosition: 'center',
-					backgroundRepeat: 'no-repeat',
-				}}
 			>
+				<img
+					src={bgUrl}
+					onError={(e) => {
+						e.currentTarget.src = '/img/listing/default-listing.webp';
+					}}
+					alt={service.listingTitle}
+					className="services-list-card__img"
+				/>
 				<div className="services-list-card__gradient" aria-hidden />
 				{service.durationMinutes != null ? (
 					<span className="services-list-card__duration-pill">{service.durationMinutes} min</span>

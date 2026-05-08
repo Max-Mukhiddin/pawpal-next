@@ -13,9 +13,6 @@ import { T } from '../../libs/types/common';
 import { Messages } from '../../libs/config';
 import { Direction } from '../../libs/enums/common.enum';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import { SPECIALISTS_PAGE_MOCK } from '../../libs/data/specialists/specialistsPage.mock';
-import type { SpecialistsHeroContent } from '../../libs/types/specialists/specialists.page';
-import SpecialistsHero from '../../libs/components/specialists/SpecialistsHero';
 import SpecialistsFilter from '../../libs/components/specialists/SpecialistsFilter';
 import SpecialistListCard from '../../libs/components/specialists/SpecialistListCard';
 
@@ -27,7 +24,6 @@ export const getStaticProps = async ({ locale }: any) => ({
 
 const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 	const device = useDeviceDetect();
-	const [directoryHero] = useState<SpecialistsHeroContent>(() => SPECIALISTS_PAGE_MOCK.hero);
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const [filterSortName, setFilterSortName] = useState('Newest first');
 	const [sortingOpen, setSortingOpen] = useState(false);
@@ -118,8 +114,6 @@ const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 	return (
 		<Stack className={'pawpal-static-page pawpal-static-page--specialists'} sx={{ pt: '24px' }}>
 			<Stack className={'container'} sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
-				<SpecialistsHero data={directoryHero} />
-
 				<Stack
 					className={'specialist-list-page'}
 					sx={{

@@ -25,7 +25,7 @@ const CatalogBrowseCard = (props: CatalogBrowseCardProps) => {
 	const { listing, likeListingHandler, myFavorites, recentlyVisited } = props;
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
-	const imagePath: string = resolveListingImageUrl(listing?.listingImages[0], '/img/banner/header1.svg');
+	const imagePath: string = resolveListingImageUrl(listing?.listingImages?.[0], '/img/listing/default-listing.webp');
 
 	if (device === 'mobile') {
 		return <div>CATALOG CARD</div>;
@@ -39,7 +39,13 @@ const CatalogBrowseCard = (props: CatalogBrowseCardProps) => {
 							query: { id: listing?._id },
 						}}
 					>
-						<img src={imagePath} alt="" />
+						<img
+							src={imagePath}
+							onError={(e) => {
+								e.currentTarget.src = '/img/listing/default-listing.webp';
+							}}
+							alt=""
+						/>
 					</Link>
 					{listing && listing?.listingRank > topListingRank && (
 						<Box component={'div'} className={'top-badge'}>

@@ -2,7 +2,7 @@ import React, { ChangeEvent, MouseEvent, useEffect, useMemo, useRef, useState } 
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
-import withLayoutFull from '../../libs/components/layout/LayoutFull';
+import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
 import { ServicesInquiry } from '../../libs/types/services/service.input';
 import type { Service } from '../../libs/types/services/service';
@@ -15,7 +15,6 @@ import { GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import ServicesHero from '../../libs/components/services/ServicesHero';
 import ServicesFilterBar from '../../libs/components/services/ServicesFilterBar';
 import ServicesList from '../../libs/components/services/ServicesList';
 
@@ -188,7 +187,6 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	return (
 		<Stack className="pawpal-static-page pawpal-static-page--services">
 			<Stack className="container" sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
-				<ServicesHero />
 				{catalogBody}
 			</Stack>
 		</Stack>
@@ -211,4 +209,4 @@ ServicesListPage.defaultProps = {
 	},
 };
 
-export default withLayoutFull(ServicesListPage);
+export default withLayoutBasic(ServicesListPage);

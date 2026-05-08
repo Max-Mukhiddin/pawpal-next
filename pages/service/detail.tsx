@@ -140,7 +140,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 		setSlideImage(image);
 	};
 
-	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/images/placeholder-pet.jpg');
+	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
 	const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
 	const heroImage = service?.listingImages?.[0]
 		? resolveListingImageUrl(service.listingImages[0], '/img/banner/services.webp')

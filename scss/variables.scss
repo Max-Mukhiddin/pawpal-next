@@ -344,4 +344,53 @@ $bp-mobile-max: 767px;
 	.header-basic__content span {
 		color: rgba(255, 255, 255, 0.78) !important;
 	}
+
+	/* Join/Auth */
+	.join-page,
+	.join-page .container .main,
+	.join-page .container .main .left {
+		background-color: #1a1a1a !important;
+	}
+
+	.join-page input {
+		background: #2a2a2a !important;
+		border-color: rgba(255, 255, 255, 0.1) !important;
+		color: #f0f0f0 !important;
+	}
+
+	/* Homepage warm cards/strips */
+	.hero-pawpal__strip,
+	.our-services__card,
+	.products-list-card,
+	.services-list-card {
+		background-color: #242424 !important;
+		border: 1px solid rgba(255, 255, 255, 0.06) !important;
+	}
+
+	.hero-pawpal__stat-value,
+	.hero-pawpal__stat-label,
+	.hero-pawpal__review-text {
+		color: #f0f0f0 !important;
+	}
+
+	/* Mypage refreshed surfaces */
+	#my-page,
+	#my-page .mypage-banner,
+	#my-page .left-config,
+	#my-page .main-config {
+		background-color: #1a1a1a !important;
+	}
+
+	#my-page .left-config,
+	#my-page .main-config {
+		border: 1px solid rgba(255, 255, 255, 0.06) !important;
+	}
+
+	#my-page input,
+	#my-page textarea,
+	#my-page select {
+		background: #2a2a2a !important;
+		border-color: rgba(255, 255, 255, 0.1) !important;
+		color: #f0f0f0 !important;
+	}
 }

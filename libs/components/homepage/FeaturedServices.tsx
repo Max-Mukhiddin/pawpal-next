@@ -4,23 +4,13 @@ import { useQuery } from '@apollo/client';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
-import { REACT_APP_API_URL } from '../../config';
 import { homeFeaturedListingsInquiry } from '../../utils/catalogListingInquiry';
 import type { Listing } from '../../types/listing/listing';
 import HomeFeaturedItemCard from './HomeFeaturedItemCard';
+import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 const SERVICE_HOME_INPUT = homeFeaturedListingsInquiry(ListingType.SERVICE);
-const API_BASE = REACT_APP_API_URL || 'http://localhost:5007';
-const getImageUrl = (imagePath: string | undefined): string => {
-	if (!imagePath) return '/img/banner/listing_default.jpg';
-	if (imagePath.startsWith('http')) return imagePath;
-	if (imagePath.startsWith('/images/') || imagePath.startsWith('/img/') || imagePath.startsWith('/public/')) {
-		return imagePath;
-	}
-	const clean = imagePath.replace(/^\/+/, '');
-	if (clean.startsWith('uploads/')) return `${API_BASE}/${clean}`;
-	return `${API_BASE}/uploads/listing/${clean}`;
-};
+const getImageUrl = (imagePath: string | undefined): string => resolveListingImageUrl(imagePath, '/img/listing/default-listing.webp');
 
 export default function FeaturedServices() {
 	const variables = useMemo(() => ({ input: SERVICE_HOME_INPUT }), []);
@@ -42,11 +32,12 @@ export default function FeaturedServices() {
 			<div className="pawpal-home-section__inner">
 				<header className="featured-products-pawpal__head">
 					<div className="featured-products-pawpal__intro">
+						<p className="featured-products-pawpal__eyebrow">Our services</p>
 						<h2 id="pawpal-home-services-title" className="pawpal-home-section__title">
-							Featured services
+							Care your pet will love
 						</h2>
 						<p className="pawpal-home-section__lead" style={{ marginBottom: 0 }}>
-							Hand-picked care services from PawPal specialists and partners.
+							From grooming to training, discover trusted pet care designed for daily wellbeing.
 						</p>
 					</div>
 					<Link href="/service" className="featured-products-pawpal__browse">

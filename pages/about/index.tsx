@@ -124,24 +124,6 @@ const About: NextPage = () => {
 
 	return (
 		<Stack className="about-page about-pawpal" component="div">
-			<section className="about-page__hero">
-				<div
-					className="about-page__hero-bg"
-					aria-hidden
-					style={{
-						backgroundImage: `url('/img/banner/agents.webp')`,
-						backgroundSize: 'cover',
-						backgroundPosition: 'center top',
-					}}
-				/>
-				<div className="about-page__hero-content">
-					<h1 className="about-page__hero-title">About Us</h1>
-				</div>
-				<div className="about-page__hero-curve">
-					<span>Home / About Us</span>
-				</div>
-			</section>
-
 			<section className="about-page__mission container">
 				<div className="about-page__mission-left">
 					<span className="eyebrow">About PawPal</span>

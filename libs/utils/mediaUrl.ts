@@ -7,7 +7,7 @@ const isLocalAssetPath = (path: string) =>
 
 export const resolveListingImageUrl = (
 	imagePath?: string | null,
-	fallback = '/img/banner/listing_default.jpg',
+	fallback = '/img/listing/default-listing.webp',
 ): string => {
 	if (!imagePath) return fallback;
 	if (imagePath.startsWith('http')) return imagePath;

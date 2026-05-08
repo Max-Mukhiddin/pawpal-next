@@ -1,85 +1,10 @@
 #pc-wrap .home-page,
 #mobile-wrap .home-page {
 	.pet-tips-pawpal {
-		background: var(--pp-bg-paper) !important;
-		padding-bottom: clamp(76px, 9vw, 118px);
-
 		&__inner {
 			display: flex;
 			flex-direction: column;
 			gap: clamp(18px, 2.6vw, 28px);
-		}
-
-		&__head {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: flex-start;
-			justify-content: space-between;
-			gap: 16px 24px;
-		}
-
-		&__intro {
-			flex: 1 1 320px;
-			max-width: min(44rem, 100%);
-		}
-
-		&__eyebrow {
-			margin: 0 0 10px;
-			font-family: $font;
-			font-size: 11px;
-			font-weight: 700;
-			letter-spacing: 0.16em;
-			text-transform: uppercase;
-			color: var(--pp-primary);
-		}
-
-		&__title {
-			margin: 0 0 10px;
-			font-family: $font;
-			font-size: clamp(1.8rem, 3.4vw, 2.5rem);
-			font-weight: 700;
-			line-height: 1.1;
-			letter-spacing: -0.03em;
-			color: var(--pp-text);
-		}
-
-		&__lead {
-			margin: 0;
-			font-family: $font;
-			font-size: 15px;
-			line-height: 1.55;
-			color: var(--pp-text-muted);
-			max-width: 36rem;
-		}
-
-		&__browse {
-			display: inline-flex;
-			align-items: center;
-			gap: 8px;
-			padding: 10px 18px;
-			border-radius: 999px;
-			border: 1px solid var(--pp-border);
-			color: var(--pp-text);
-			text-decoration: none;
-			font-family: $font;
-			font-size: 13px;
-			font-weight: 600;
-			transition:
-				color 0.2s ease,
-				border-color 0.2s ease,
-				background 0.2s ease;
-
-			&:hover {
-				color: var(--pp-primary);
-				border-color: rgba(184, 92, 56, 0.38);
-				background: rgba(184, 92, 56, 0.06);
-			}
-		}
-
-		&__browse-icon {
-			font-size: 18px !important;
-			width: 1em !important;
-			height: 1em !important;
 		}
 
 		&__grid {
@@ -92,21 +17,16 @@
 			display: flex;
 			flex-direction: column;
 			overflow: hidden;
-			border-radius: 22px;
-			background: var(--pp-bg-elevated);
-			border: 1px solid rgba(42, 36, 30, 0.08);
-			box-shadow:
-				0 5px 12px rgba(42, 36, 30, 0.05),
-				0 14px 24px rgba(42, 36, 30, 0.08);
-			transition:
-				transform 0.3s ease,
-				box-shadow 0.3s ease;
+			border-radius: 20px;
+			background: #ffffff;
+			border: 1px solid rgba(0, 0, 0, 0.04);
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+			transition: all 0.3s ease;
+			height: 100%;
 
 			&:hover {
-				transform: translateY(-4px);
-				box-shadow:
-					0 9px 16px rgba(42, 36, 30, 0.07),
-					0 18px 28px rgba(42, 36, 30, 0.1);
+				transform: translateY(-6px);
+				box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 			}
 		}
 

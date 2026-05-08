@@ -28,29 +28,44 @@ const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {})
 		const [authHeader, setAuthHeader] = useState<boolean>(false);
 		const user = useReactiveVar(userVar);
 
-		const heroImage = layoutOptions.heroImage ?? '/images/hero/pawpal-hero.jpg';
 		const noHero = layoutOptions.noHero ?? false;
 
 		const memoizedValues = useMemo(() => {
-			const routeMap: Record<string, { title: string; breadcrumb: string }> = {
-				'/mypage': { title: 'My Account', breadcrumb: 'My Account' },
-				'/community': { title: 'Blog', breadcrumb: 'Blog' },
-			'/blog': { title: 'Blog', breadcrumb: 'Blog' },
-				'/specialist': { title: 'Our Specialists', breadcrumb: 'Specialists' },
-				'/about': { title: 'About Us', breadcrumb: 'About Us' },
-				'/cs': { title: 'Contact', breadcrumb: 'Contact' },
-				'/member': { title: 'Members', breadcrumb: 'Members' },
-				'/agent': { title: 'Our Specialists', breadcrumb: 'Specialists' },
-				'/listings': { title: 'All Listings', breadcrumb: 'All Listings' },
-				'/account/join': { title: 'Login/Signup', breadcrumb: 'Authentication' },
+			const routeMap: Record<string, { title: string; breadcrumb: string; bgImage?: string }> = {
+				'/mypage': { title: 'My Profile', breadcrumb: 'My Profile', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/community': { title: 'Community', breadcrumb: 'Community', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/blog': {
+					title: 'Pet Care Tips & Stories',
+					breadcrumb: 'Pet Care Tips & Stories',
+					bgImage: '/images/hero/pawpal-hero.jpg',
+				},
+				'/service': {
+					title: 'Find The Right Care For Your Pet',
+					breadcrumb: 'Find The Right Care For Your Pet',
+					bgImage: '/images/hero/pawpal-hero.jpg',
+				},
+				'/product': {
+					title: 'Everyday Essentials For Your Pet',
+					breadcrumb: 'Everyday Essentials For Your Pet',
+					bgImage: '/images/hero/pawpal-hero.jpg',
+				},
+				'/specialist': { title: 'Our Specialists', breadcrumb: 'Specialists', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/specialist/detail': { title: 'Specialist Profile', breadcrumb: 'Specialists', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/about': { title: 'About Us', breadcrumb: 'About Us', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/cs': { title: 'Customer Support', breadcrumb: 'Customer Support', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/member': { title: 'Members', breadcrumb: 'Members', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/agent': { title: 'Our Specialists', breadcrumb: 'Specialists', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/listings': { title: 'All Listings', breadcrumb: 'All Listings', bgImage: '/images/hero/pawpal-hero.jpg' },
+				'/account/join': { title: 'Welcome', breadcrumb: 'Welcome', bgImage: '/images/hero/pawpal-hero.jpg' },
 			};
 
 			const matchedKey =
 				Object.keys(routeMap).find((key) => router.pathname === key || router.pathname.startsWith(`${key}/`)) ?? '';
 			const matched = routeMap[matchedKey] ?? { title: 'PawPal', breadcrumb: 'PawPal' };
+			const computedHeroImage = layoutOptions.heroImage ?? matched.bgImage ?? '/images/hero/pawpal-hero.jpg';
 
-			return { title: matched.title, breadcrumb: matched.breadcrumb };
-		}, [router.pathname]);
+			return { title: matched.title, breadcrumb: matched.breadcrumb, heroImage: computedHeroImage };
+		}, [layoutOptions.heroImage, router.pathname]);
 
 		useEffect(() => {
 			setAuthHeader(router.pathname === '/account/join');
@@ -102,11 +117,11 @@ const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {})
 						    matching `#pc-wrap > #main:nth-child(2) { padding-top: 72px }` in top.scss.
 						    This gives the same navbar clearance as LayoutFull (service/product pages). */}
 						<Stack id={'main'}>
-							{!noHero && router.pathname !== '/about' && (
+							{!noHero && (
 								<div className={`header-basic${authHeader ? ' auth' : ''}`}>
 									<div
 										className="header-basic__bg"
-										style={{ backgroundImage: `url('${heroImage}')` }}
+										style={{ backgroundImage: `url('${memoizedValues.heroImage}')` }}
 										aria-hidden
 									/>
 									<div className="header-basic__content">

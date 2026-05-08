@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@apollo/client';
-import { Skeleton } from '@mui/material';
-import PhoneIcon from '@mui/icons-material/Phone';
-import NorthEastIcon from '@mui/icons-material/NorthEast';
-import FacebookIcon from '@mui/icons-material/Facebook';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
+import FacebookOutlinedIcon from '@mui/icons-material/FacebookOutlined';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import { GET_AGENTS } from '../../../apollo/user/query';
 import { Direction } from '../../enums/common.enum';
 import type { Member } from '../../types/member/member';
@@ -60,8 +58,6 @@ const SPECIALISTS = [
 	},
 ] as const;
 
-const BRAND_STRIP = ['PawPal', 'PetCare+', 'SafePaws', 'VetLink'] as const;
-
 /** Returns CDN URL or empty string when no profile image (placeholders use initials). */
 function backendMemberImageUrl(memberImage?: string | null): string {
 	if (!memberImage?.trim()) return '';
@@ -93,19 +89,6 @@ const initialsPlaceholderDivStyleLg: React.CSSProperties = {
 	color: '#E07B3A',
 };
 
-const initialsPlaceholderDivStyleRail: React.CSSProperties = {
-	width: 40,
-	height: 40,
-	borderRadius: '50%',
-	background: 'linear-gradient(135deg, #E07B3A22, #E07B3A55)',
-	display: 'flex',
-	alignItems: 'center',
-	justifyContent: 'center',
-	fontSize: 13,
-	fontWeight: 700,
-	color: '#E07B3A',
-};
-
 function initialsFromFallbackName(name: string): string {
 	const parts = name.trim().split(/\s+/).filter(Boolean);
 	if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -118,48 +101,61 @@ function initialsFromFallbackName(name: string): string {
 type TeamRow = {
 	id: string;
 	name: string;
-	subline: string;
+	role: string;
 	thumb: string;
 	featured: string;
 	initials: string;
 	bioParas: readonly string[];
 	profileHref: string;
+	jobsCount: number;
+	rating: number;
+	experienceYears: number;
 };
 
 function mapMemberToRow(m: Member): TeamRow {
 	const n = m.memberListings ?? 0;
-	const servicesLabel = `${n} ${n === 1 ? 'service' : 'services'}`;
 	const desc = m.memberDesc?.trim();
 	const img = backendMemberImageUrl(m.memberImage);
+	const rank = typeof m.memberRank === 'number' ? m.memberRank : 4.9;
+	const experienceYears = Math.max(1, Math.min(20, Math.round(n / 8) + 1));
 	return {
 		id: m._id,
 		name: m.memberFullName?.trim() || m.memberNick || 'Specialist',
-		subline: servicesLabel,
+		role: m.memberType ? String(m.memberType).toLowerCase().replaceAll('_', ' ') : 'Pet specialist',
 		thumb: img,
 		featured: img,
 		initials: initialsFromMember(m.memberFullName, m.memberNick),
 		bioParas: [desc || 'Pet care specialist'],
 		profileHref: `/specialist/detail?id=${m._id}`,
+		jobsCount: n,
+		rating: rank,
+		experienceYears,
 	};
 }
 
 function mapFallbackToRow(m: (typeof SPECIALISTS)[number]): TeamRow {
+	const jobsCount = 120 + Number(m.id) * 18;
+	const rating = 4.9;
+	const experienceYears = 7 + Number(m.id);
 	return {
 		id: m.id,
 		name: m.name,
-		subline: m.role,
+		role: m.role,
 		thumb: m.thumb,
 		featured: m.featured,
 		initials: initialsFromFallbackName(m.name),
 		bioParas: m.bio,
 		profileHref: '/specialist',
+		jobsCount,
+		rating,
+		experienceYears,
 	};
 }
 
 const AGENTS_QUERY_VARS = {
 	input: {
 		page: 1,
-		limit: 4,
+		limit: 8,
 		sort: 'memberRank',
 		direction: Direction.DESC,
 		search: {},
@@ -167,218 +163,179 @@ const AGENTS_QUERY_VARS = {
 };
 
 function TeamLoadingSkeleton() {
-	return (
-		<div className="team-pawpal__card">
-			<div className="team-pawpal__rail-col">
-				<div className="team-pawpal__rail-line" aria-hidden />
-				<div className="team-pawpal__rail" role="status" aria-label="Loading specialists">
-					{[0, 1, 2, 3].map((i) => (
-						<div
-							key={i}
-							className="team-pawpal__member"
-							style={{ pointerEvents: 'none', opacity: 0.85 }}
-						>
-							<Skeleton variant="text" width={28} height={20} sx={{ flexShrink: 0 }} />
-							<span className="team-pawpal__member-avatar">
-								<Skeleton variant="circular" width={40} height={40} />
-							</span>
-							<span className="team-pawpal__member-text" style={{ flex: 1, minWidth: 0 }}>
-								<Skeleton variant="text" width="80%" height={18} />
-								<Skeleton variant="text" width="55%" height={14} sx={{ mt: 0.5 }} />
-							</span>
-						</div>
-					))}
-				</div>
-			</div>
-
-			<div className="team-pawpal__photo" aria-hidden>
-				<div className="team-pawpal__photo-frame">
-					<div className="team-pawpal__photo-well">
-						<Skeleton
-							variant="rounded"
-							className="team-pawpal__photo-img"
-							width="100%"
-							height="100%"
-							sx={{ minHeight: 360, borderRadius: 2 }}
-						/>
-					</div>
-				</div>
-			</div>
-
-			<div className="team-pawpal__detail">
-				<div className="team-pawpal__detail-head">
-					<Skeleton variant="text" width="70%" height={36} />
-					<Skeleton variant="text" width="40%" height={22} sx={{ mt: 1 }} />
-				</div>
-				<div className="team-pawpal__detail-bio">
-					<Skeleton variant="text" width="100%" />
-					<Skeleton variant="text" width="100%" />
-					<Skeleton variant="text" width="85%" />
-				</div>
-				<Skeleton variant="rounded" width={200} height={44} sx={{ borderRadius: 999, mt: 1 }} />
-				<div className="team-pawpal__socials" style={{ marginTop: 12 }}>
-					{[0, 1, 2, 3].map((i) => (
-						<Skeleton key={i} variant="circular" width={36} height={36} />
-					))}
-				</div>
-			</div>
-		</div>
-	);
+	return <p className="section-subtitle">Loading specialists...</p>;
 }
 
 export default function TopPetSpecialists() {
-	const [active, setActive] = useState(0);
-
 	const { data, loading } = useQuery(GET_AGENTS, {
 		variables: AGENTS_QUERY_VARS,
 		fetchPolicy: 'cache-and-network',
 	});
 
-	const rows: TeamRow[] = useMemo(() => {
+	const specialists: TeamRow[] = useMemo(() => {
 		const list = data?.getAgents?.list;
+		const fallbackRows = SPECIALISTS.map(mapFallbackToRow);
 		if (list && list.length > 0) {
 			const activeSpecialists = list.filter((sp: Member) => (sp.memberListings ?? 0) > 0);
 			const specialistsToShow = activeSpecialists.length > 0 ? activeSpecialists : list;
-			return specialistsToShow.map(mapMemberToRow);
+			const apiRows = specialistsToShow.map(mapMemberToRow);
+			return apiRows.length > 0 ? apiRows : fallbackRows;
 		}
-		return SPECIALISTS.map(mapFallbackToRow);
+		return fallbackRows;
 	}, [data]);
 
+	const [selectedId, setSelectedId] = useState<string>('');
+
 	useEffect(() => {
-		setActive((a) => (a >= rows.length ? 0 : a));
-	}, [rows.length]);
+		if (!selectedId && specialists.length > 0) setSelectedId(specialists[0].id);
+	}, [selectedId, specialists]);
 
-	const person = rows[active];
-
-	const sectionBody = loading ? (
-		<TeamLoadingSkeleton />
-	) : (
-		<div className="team-pawpal__card">
-			<div className="team-pawpal__rail-col">
-				<div className="team-pawpal__rail-line" aria-hidden />
-				<div className="team-pawpal__rail" role="tablist" aria-label="Choose a specialist">
-					{rows.map((m, i) => (
-						<button
-							key={m.id}
-							type="button"
-							role="tab"
-							aria-selected={i === active}
-							className={`team-pawpal__member${i === active ? ' team-pawpal__member--active' : ''}`}
-							onClick={() => setActive(i)}
-						>
-							<span className="team-pawpal__member-idx" aria-hidden>
-								{String(i + 1).padStart(2, '0')}
-							</span>
-							<span className="team-pawpal__member-avatar">
-								{m.thumb ? (
-									<img src={m.thumb} alt="" width={40} height={40} loading="lazy" />
-								) : (
-									<div style={initialsPlaceholderDivStyleRail} aria-hidden>
-										{m.initials}
-									</div>
-								)}
-							</span>
-							<span className="team-pawpal__member-text">
-								<span className="team-pawpal__member-name">{m.name}</span>
-								<span className="team-pawpal__member-role">{m.subline}</span>
-							</span>
-						</button>
-					))}
-				</div>
-			</div>
-
-			<div className="team-pawpal__photo" aria-hidden={false}>
-				<div className="team-pawpal__photo-frame">
-					<div className="team-pawpal__photo-well">
-						<div key={person.id} className="team-pawpal__photo-panel">
-							{person.featured ? (
-								<img
-									className="team-pawpal__photo-img"
-									src={person.featured}
-									alt={`${person.name}, ${person.subline}`}
-									width={720}
-									height={900}
-								/>
-							) : (
-								<div className="team-pawpal__photo-img" style={initialsPlaceholderDivStyleLg} aria-hidden>
-									{person.initials}
-								</div>
-							)}
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div className="team-pawpal__detail">
-				<div className="team-pawpal__detail-head">
-					<h3 className="team-pawpal__detail-name">{person.name}</h3>
-					<p className="team-pawpal__detail-role">{person.subline}</p>
-				</div>
-				<div className="team-pawpal__detail-bio">
-					{person.bioParas.map((p, idx) => (
-						<p key={idx}>{p}</p>
-					))}
-				</div>
-				<Link href="/cs" className="team-pawpal__cta">
-					<PhoneIcon className="team-pawpal__cta-icon" aria-hidden />
-					Contact specialist
-				</Link>
-				<div className="team-pawpal__socials">
-					<button type="button" className="team-pawpal__social" aria-label="Facebook">
-						<FacebookIcon fontSize="small" />
-					</button>
-					<button type="button" className="team-pawpal__social" aria-label="X">
-						<TwitterIcon fontSize="small" />
-					</button>
-					<button type="button" className="team-pawpal__social" aria-label="LinkedIn">
-						<LinkedInIcon fontSize="small" />
-					</button>
-					<button type="button" className="team-pawpal__social" aria-label="Instagram">
-						<InstagramIcon fontSize="small" />
-					</button>
-				</div>
-				<Link
-					href={person.profileHref}
-					className="team-pawpal__corner"
-					aria-label="View profile"
-					style={{ textDecoration: 'none', color: 'inherit' }}
-				>
-					<NorthEastIcon fontSize="small" />
-				</Link>
-			</div>
-		</div>
+	const selectedSpecialist = specialists.find((s) => s.id === selectedId) ?? specialists[0];
+	const selectedIndex = Math.max(
+		0,
+		specialists.findIndex((s) => s.id === selectedId),
 	);
 
 	return (
-		<section className="pawpal-home-section team-pawpal animate-on-scroll" aria-labelledby="team-pawpal-title">
-			<div className="pawpal-home-section__inner team-pawpal__inner">
-				<header className="team-pawpal__head">
-					<div className="team-pawpal__head-main">
-						<p className="team-pawpal__eyebrow">Top pet specialists</p>
-						<h2 id="team-pawpal-title" className="team-pawpal__title">
-							Loyal, skilled, and trusted by pet parents
-						</h2>
-						<p className="team-pawpal__lead">
-							Meet the people behind PawPal’s trusted care experience.
-						</p>
-					</div>
-					<Link href="/specialist" className="team-pawpal__explore">
+		<section className="section-pawpal section-pawpal--white team-pawpal animate-on-scroll" aria-labelledby="team-pawpal-title">
+			<div className="section-container">
+				<header className="section-header">
+					<p className="section-label">OUR SPECIALISTS</p>
+					<h2 id="team-pawpal-title" className="section-title">
+						Loyal, Passionate, And Driven
+					</h2>
+					<p className="section-subtitle">Meet the experts who treat your pets like family.</p>
+					<Link href="/specialist" className="section-action">
 						Explore all specialists
+						<ArrowForwardOutlinedIcon fontSize="small" />
 					</Link>
 				</header>
 
-				{sectionBody}
+				{loading ? (
+					<TeamLoadingSkeleton />
+				) : (
+					<>
+						<div className="team-pawpal__showcase pawpal-card">
+							<div className="team-pawpal__list" role="list" aria-label="Specialist list">
+								{specialists.map((person) => (
+									<button
+										type="button"
+										key={person.id}
+										className={`team-pawpal__list-item ${person.id === selectedId ? 'is-active' : ''}`}
+										onClick={() => setSelectedId(person.id)}
+										role="listitem"
+									>
+										<div className="team-pawpal__mini-avatar">
+											{person.thumb ? (
+												<img
+													src={person.thumb}
+													alt=""
+													width={60}
+													height={60}
+													loading="lazy"
+													onError={(e) => {
+														e.currentTarget.src = '/img/listing/default-listing.webp';
+													}}
+												/>
+											) : (
+												<div className="team-pawpal__mini-initials" aria-hidden>
+													{person.initials}
+												</div>
+											)}
+										</div>
+										<div className="team-pawpal__mini-copy">
+											<span className="team-pawpal__mini-name">{person.name}</span>
+											<span className="team-pawpal__mini-role">{person.role}</span>
+										</div>
+									</button>
+								))}
+							</div>
 
-				<div className="team-pawpal__brands" aria-label="Partner brands">
-					<span className="team-pawpal__brands-label">Trusted by teams at</span>
-					<ul className="team-pawpal__brands-list">
-						{BRAND_STRIP.map((name) => (
-							<li key={name} className="team-pawpal__brands-item">
-								{name}
-							</li>
-						))}
-					</ul>
-				</div>
+							<div className="team-pawpal__featured-photo" aria-label="Featured specialist photo">
+								{selectedSpecialist?.featured ? (
+									<img
+										key={selectedSpecialist.id}
+										src={selectedSpecialist.featured}
+										alt={`${selectedSpecialist.name} with a pet`}
+										onError={(e) => {
+											e.currentTarget.src = '/img/listing/default-listing.webp';
+										}}
+									/>
+								) : (
+									<div style={initialsPlaceholderDivStyleLg} aria-hidden>
+										{selectedSpecialist?.initials}
+									</div>
+								)}
+							</div>
+
+							<div className="team-pawpal__details" aria-live="polite">
+								<div key={selectedSpecialist?.id} className="team-pawpal__details-inner">
+									<h3 className="team-pawpal__featured-name">{selectedSpecialist?.name}</h3>
+									<p className="team-pawpal__featured-role">{selectedSpecialist?.role}</p>
+									<p className="team-pawpal__featured-bio">
+										{selectedSpecialist?.bioParas?.[0] ?? 'Pet care specialist'}
+									</p>
+
+									<div className="team-pawpal__metrics" role="list" aria-label="Specialist stats">
+										<div className="team-pawpal__metric" role="listitem">
+											<strong>{selectedSpecialist?.experienceYears ?? 1}y</strong>
+											<span>Experience</span>
+										</div>
+										<div className="team-pawpal__metric" role="listitem">
+											<strong>{selectedSpecialist?.jobsCount ?? 0}+</strong>
+											<span>Jobs</span>
+										</div>
+										<div className="team-pawpal__metric" role="listitem">
+											<strong>{(selectedSpecialist?.rating ?? 4.9).toFixed(1)}★</strong>
+											<span>Rating</span>
+										</div>
+									</div>
+
+									<Link href={selectedSpecialist?.profileHref ?? '/specialist'} className="team-pawpal__contact">
+										Contact Specialist
+									</Link>
+
+									<div className="team-pawpal__social" aria-label="Social links">
+										<a className="team-pawpal__social-btn" href="#" aria-label="Facebook" onClick={(e) => e.preventDefault()}>
+											<FacebookOutlinedIcon fontSize="small" />
+										</a>
+										<a className="team-pawpal__social-btn" href="#" aria-label="Instagram" onClick={(e) => e.preventDefault()}>
+											<InstagramIcon fontSize="small" />
+										</a>
+										<a className="team-pawpal__social-btn" href="#" aria-label="Twitter" onClick={(e) => e.preventDefault()}>
+											<TwitterIcon fontSize="small" />
+										</a>
+										<a className="team-pawpal__social-btn" href="#" aria-label="LinkedIn" onClick={(e) => e.preventDefault()}>
+											<LinkedInIcon fontSize="small" />
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div className="team-pawpal__dots" role="tablist" aria-label="Specialist navigation">
+							{specialists.slice(0, 6).map((sp, idx) => (
+								<button
+									key={sp.id}
+									type="button"
+									className={`team-pawpal__dot ${idx === selectedIndex ? 'is-active' : ''}`}
+									onClick={() => setSelectedId(sp.id)}
+									aria-label={`Show ${sp.name}`}
+									role="tab"
+									aria-selected={idx === selectedIndex}
+								/>
+							))}
+						</div>
+
+						<div className="team-pawpal__logos pawpal-card" aria-label="Partner logos">
+							<span className="team-pawpal__logo team-pawpal__logo--serif">PETCARE</span>
+							<span className="team-pawpal__logo team-pawpal__logo--script">Pattie&apos;s</span>
+							<span className="team-pawpal__logo team-pawpal__logo--caps">Petshop</span>
+							<span className="team-pawpal__logo team-pawpal__logo--light">pets</span>
+							<span className="team-pawpal__logo team-pawpal__logo--mono">Pet Shop</span>
+						</div>
+					</>
+				)}
 			</div>
 		</section>
 	);
