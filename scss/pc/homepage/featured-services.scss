@@ -1,0 +1,32 @@
+#pc-wrap .home-page,
+#mobile-wrap .home-page {
+	.featured-services-pawpal {
+		.featured-products-pawpal__grid {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: clamp(16px, 2.2vw, 24px);
+		}
+	}
+}
+
+@media (max-width: 1023px) {
+	#pc-wrap .home-page,
+	#mobile-wrap .home-page {
+		.featured-services-pawpal {
+			.featured-products-pawpal__grid {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+		}
+	}
+}
+
+@media (max-width: 767px) {
+	#pc-wrap .home-page,
+	#mobile-wrap .home-page {
+		.featured-services-pawpal {
+			.featured-products-pawpal__grid {
+				grid-template-columns: 1fr;
+			}
+		}
+	}
+}

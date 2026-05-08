@@ -1,25 +1,40 @@
+import Link from 'next/link';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
+
+const BRAND_IMAGE = '/img/banner/services.webp';
+
 export default function BrandShowcase() {
 	return (
-		<section
-			className="pawpal-home-section pawpal-home-section--brand animate-on-scroll"
-			aria-labelledby="pawpal-home-brand-title"
-		>
-			<div className="pawpal-home-section__inner">
-				<h2 id="pawpal-home-brand-title" className="pawpal-home-section__title">
-					PawPal in motion
-				</h2>
-				<p className="pawpal-home-section__lead">
-					A quick look at how our team delivers calm, trusted care experiences for pets and their people.
-				</p>
-				<div className="pawpal-home-section__media-slot" aria-label="PawPal brand showcase video">
-					<video
-						className="pawpal-home-section__media-video"
-						src="/video/ads.mov"
-						autoPlay
-						muted
-						loop
-						playsInline
-					/>
+		<section className="section-pawpal section-pawpal--white brand-showcase-pawpal animate-on-scroll" aria-labelledby="brand-showcase-title">
+			<div className="section-container">
+				<div className="brand-showcase-pawpal__layout pawpal-card">
+					<div className="brand-showcase-pawpal__copy">
+						<p className="section-label">ABOUT PAWPAL</p>
+						<h2 id="brand-showcase-title" className="section-title">
+							Trusted pet care, made simple
+						</h2>
+						<p className="section-subtitle">
+							From everyday walks to specialist care, PawPal connects pet parents with warm, reliable
+							professionals in one easy experience.
+						</p>
+						<Link href="/about" className="section-action">
+							Learn more
+							<ArrowForwardOutlinedIcon fontSize="small" />
+						</Link>
+					</div>
+
+					<div className="brand-showcase-pawpal__media" aria-label="PawPal care video preview">
+						<img
+							src={BRAND_IMAGE}
+							alt="Happy pet receiving loving care from a PawPal specialist"
+							onError={(e) => {
+								e.currentTarget.src = '/img/listing/default-listing.webp';
+							}}
+						/>
+						<span className="brand-showcase-pawpal__play" aria-hidden>
+							▶
+						</span>
+					</div>
 				</div>
 			</div>
 		</section>
