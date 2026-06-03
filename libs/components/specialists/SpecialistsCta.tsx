@@ -1,15 +1,25 @@
 import React from 'react';
-import type { SpecialistsCtaContent } from '../../types/specialists/specialists.page';
 
-export interface SpecialistsCtaProps {
-	data: SpecialistsCtaContent;
+interface CtaData {
+	title: string;
+	lead: string;
+	primaryCta: string;
 }
 
-const SpecialistsCta: React.FC<SpecialistsCtaProps> = ({ data }) => (
+interface SpecialistsCtaProps {
+	data: CtaData;
+	onPrimaryClick?: () => void;
+}
+
+const SpecialistsCta: React.FC<SpecialistsCtaProps> = ({ data, onPrimaryClick }) => (
 	<section className="pawpal-static-page__cta">
 		<h2>{data.title}</h2>
 		<p>{data.lead}</p>
-		<button type="button">{data.primaryCta}</button>
+		<div className="pawpal-static-page__cta-actions">
+			<button type="button" onClick={onPrimaryClick}>
+				{data.primaryCta}
+			</button>
+		</div>
 	</section>
 );
 

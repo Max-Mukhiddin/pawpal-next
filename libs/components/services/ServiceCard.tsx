@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { userVar } from '../../../apollo/store';
 import type { Service } from '../../types/services/service';
 import { T } from '../../types/common';
-import { formatterStr } from '../../utils';
+import { formatterKrw } from '../../utils';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 export interface ServiceCardProps {
@@ -52,7 +52,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 					{service.listingTitle}
 				</Typography>
 				<Typography component="span" className="services-list-card__price">
-					${formatterStr(service.listingPrice)}
+					{formatterKrw(service.listingPrice)}
 				</Typography>
 				<Stack
 					className="services-list-card__actions"

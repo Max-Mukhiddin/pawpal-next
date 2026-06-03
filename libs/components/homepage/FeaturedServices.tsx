@@ -1,136 +1,129 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
-import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
 import type { Listing } from '../../types/listing/listing';
-import HomeFeaturedItemCard from './HomeFeaturedItemCard';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
-const FEATURED_SERVICES_INPUT = {
-	page: 1,
-	limit: 3,
-	sort: 'listingViews',
-	direction: 'DESC',
-	search: { typeList: [ListingType.SERVICE] },
-} as const;
+interface FeaturedCard {
+	_id: string;
+	title: string;
+	description: string;
+	image: string;
+	href: string;
+}
 
-const FALLBACK_SERVICES = [
+const FALLBACK_CARDS: FeaturedCard[] = [
 	{
-		_id: 'fs-1',
-		title: 'Gentle grooming session',
-		price: 55,
-		image: '/images/services/service-grooming.jpg',
+		_id: 'fb-1',
+		title: 'Spa & Wellness Journeys',
+		description: 'Hand-crafted grooming rituals tailored for serene companions.',
+		image: '/images/services/service-spa.jpg',
+		href: '/service',
 	},
 	{
-		_id: 'fs-2',
-		title: 'Personalized dog training',
-		price: 75,
+		_id: 'fb-2',
+		title: 'Culinary Pet Dining',
+		description: 'Nutritionist-designed menus with fresh, seasonal ingredients.',
+		image: '/images/services/service-dining.jpg',
+		href: '/service',
+	},
+	{
+		_id: 'fb-3',
+		title: 'Luxury Accommodation',
+		description: 'Quiet, climate-controlled overnight stays for restful nights.',
+		image: '/images/services/service-boarding.jpg',
+		href: '/service',
+	},
+	{
+		_id: 'fb-4',
+		title: 'Behavioral Architecture',
+		description: 'One-on-one training to shape confident, well-adjusted behavior.',
 		image: '/images/services/service-training.jpg',
+		href: '/service',
 	},
-	{
-		_id: 'fs-3',
-		title: 'Daily walk package',
-		price: 30,
-		image: '/images/services/service-walking.jpg',
-	},
-] as const;
+];
 
-const getImageUrl = (imagePath: string | undefined): string =>
-	resolveListingImageUrl(imagePath, '/img/listing/default-listing.webp');
+const truncate = (text: string, max = 90): string => {
+	const clean = (text || '').trim();
+	if (!clean) return 'Premium care crafted with attention to every detail.';
+	if (clean.length <= max) return clean;
+	return `${clean.slice(0, max).trimEnd()}…`;
+};
 
 export default function FeaturedServices() {
-	const variables = useMemo(() => ({ input: FEATURED_SERVICES_INPUT }), []);
+	const variables = useMemo(
+		() => ({
+			input: {
+				page: 1,
+				limit: 4,
+				sort: 'listingViews',
+				direction: 'DESC',
+				search: { typeList: [ListingType.SERVICE] },
+			},
+		}),
+		[],
+	);
 
-	const { data, loading, error } = useQuery(GET_LISTINGS, {
+	const { data } = useQuery(GET_LISTINGS, {
 		variables,
 		fetchPolicy: 'cache-and-network',
 	});
 
 	const listings: Listing[] = data?.getListings?.list ?? [];
-	const normalizedListings = listings.map((listing) => ({
-		...listing,
-		listingImages: listing.listingImages?.length
-			? [getImageUrl(listing.listingImages[0]), ...listing.listingImages.slice(1)]
-			: [],
-	}));
-	const showLoading = loading && normalizedListings.length === 0;
-	const showEmpty = !loading && error && normalizedListings.length === 0;
+
+	const cards: FeaturedCard[] = listings.length >= 4
+		? listings.slice(0, 4).map((l) => ({
+				_id: l._id,
+				title: l.listingTitle,
+				description: truncate((l as any).listingDesc),
+				image: l.listingImages?.[0] ?? '',
+				href: `/service/detail?id=${l._id}`,
+			}))
+		: FALLBACK_CARDS;
 
 	return (
-		<section className="section-pawpal section-pawpal--cream featured-services-pawpal animate-on-scroll" aria-labelledby="featured-services-title">
-			<div className="section-container featured-products-pawpal__inner">
-				<header className="section-header">
-					<p className="section-label">FEATURED SERVICES</p>
-					<h2 id="featured-services-title" className="section-title">
-						Our most-loved care services
+		<section className="featured-services animate-on-scroll" aria-labelledby="featured-services-title">
+			<div className="featured-services__shapes" aria-hidden>
+				<span className="featured-services__shape featured-services__shape--1" />
+				<span className="featured-services__shape featured-services__shape--2" />
+				<span className="featured-services__shape featured-services__shape--3" />
+			</div>
+			<div className="featured-services__container">
+				<header className="featured-services__header">
+					<p className="featured-services__label">FEATURED SERVICES</p>
+					<h2 id="featured-services-title" className="featured-services__title">
+						Premium Pet Care Atelier
 					</h2>
-					<p className="section-subtitle">
-						Top performing services trusted by pet parents, selected by real views and repeat bookings.
-					</p>
-					<Link href="/service" className="section-action">
-						View all services
-						<ArrowForwardOutlinedIcon className="featured-products-pawpal__browse-icon" aria-hidden />
-					</Link>
 				</header>
 
-				{showLoading && (
-					<p className="section-subtitle" style={{ marginTop: 0 }}>
-						Loading featured services…
-					</p>
-				)}
-
-				{showEmpty && (
-					<p className="section-subtitle" style={{ marginTop: 0 }}>
-						Featured services will appear here soon.
-					</p>
-				)}
-
-				<div className="featured-products-pawpal__grid">
-					{(normalizedListings.length > 0 ? normalizedListings.slice(0, 3) : []).map((listing) => (
-						<HomeFeaturedItemCard
-							key={listing._id}
-							listing={listing}
-							detailBasePath="/service/detail"
-							viewLabel="View service"
-						/>
-					))}
-					{normalizedListings.length === 0 &&
-						FALLBACK_SERVICES.map((service) => (
+				<div className="featured-services__grid">
+					{cards.map((card, index) => {
+						const imageUrl = resolveListingImageUrl(card.image, '/img/listing/default-listing.webp');
+						return (
 							<Link
-								href="/service"
-								key={service._id}
-								className="featured-products-pawpal__card-link"
-								style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+								href={card.href}
+								className={`featured-services__card featured-services__card--${index + 1}`}
+								key={card._id}
 							>
-								<article className="featured-products-pawpal__card">
-									<div className="featured-products-pawpal__media">
-										<img
-											src={service.image}
-											alt={service.title}
-											className="featured-products-pawpal__img"
-											onError={(e) => {
-												e.currentTarget.src = '/img/listing/default-listing.webp';
-											}}
-										/>
-									</div>
-									<div className="featured-products-pawpal__body">
-										<h3 className="featured-products-pawpal__name">{service.title}</h3>
-										<div className="featured-products-pawpal__meta">
-											<span className="featured-products-pawpal__price">${service.price}</span>
-										</div>
-										<div className="featured-products-pawpal__footer">
-											<span className="featured-products-pawpal__rating">Top service</span>
-											<span className="featured-products-pawpal__cta">
-												<ArrowForwardOutlinedIcon className="featured-products-pawpal__cta-icon" aria-hidden />
-												Explore
-											</span>
-										</div>
-									</div>
-								</article>
+								<div className="featured-services__media">
+									<img
+										src={imageUrl}
+										alt={card.title}
+										className="featured-services__img"
+										loading="lazy"
+										onError={(e) => {
+											e.currentTarget.src = '/img/listing/default-listing.webp';
+										}}
+									/>
+								</div>
+								<h3 className="featured-services__card-title">{card.title}</h3>
+								<p className="featured-services__card-desc">{card.description}</p>
+								<span className="featured-services__cta">Explore Service</span>
 							</Link>
-						))}
+						);
+					})}
 				</div>
 			</div>
 		</section>

@@ -32,7 +32,7 @@
       justify-content: center;
       border-radius: 50px;
       padding: 11px 22px;
-      background: #e07b3a;
+      background: var(--pp-primary);
       color: #fff;
       font-weight: 700;
       text-decoration: none;
@@ -137,25 +137,29 @@
       background-color: transparent;
     }
 
-    /* breadcrumb — matches header-basic span pill style exactly */
+    /* breadcrumb — legacy class; matches HeroBreadcrumb glass row */
     .about-page__hero-curve {
-      color: rgba(255, 255, 255, 0.78);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.92);
       font-family: $font;
       font-size: 15px;
-      font-weight: 400;
+      font-weight: 500;
       line-height: 1.5;
       margin-top: 12px;
-      background: rgba(0, 0, 0, 0.22);
-      padding: 6px 20px;
-      border-radius: 999px;
-      backdrop-filter: blur(4px);
-      /* remove the old absolute-position floating tab */
+      padding: 6px 16px;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
       position: static;
       transform: none;
       left: auto;
       bottom: auto;
-      box-shadow: none;
       text-align: center;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
     }
 
     @media (max-width: 1023px) {
@@ -289,7 +293,7 @@
         width: 100%;
         height: 175px;
         border-radius: 16px;
-        background-color: #e07b3a22;
+        background-color: rgba(255, 122, 26, 0.13);
         color: #c45f28;
 
         .about-page__mission-paw {
@@ -298,6 +302,15 @@
         }
       }
     }
+  }
+
+  .about-page__history,
+  .about-page__services,
+  .about-page__help,
+  .about-page__testimonials {
+    display: block;
+    width: 100%;
+    clear: both;
   }
 
   .about-page__history {
@@ -476,12 +489,20 @@
   }
 
   .about-page__team {
+    display: block;
+    width: 100%;
+    clear: both;
+    overflow: hidden;
     margin-top: clamp(56px, 7vw, 88px);
 
     .section-head {
+      display: flex;
+      width: 100%;
+      box-sizing: border-box;
       align-items: flex-start;
 
       h2 {
+        color: #181a20 !important;
         flex: 1 1 220px;
         min-width: 0;
       }
@@ -494,10 +515,11 @@
 
     .team-layout {
       display: grid;
-      grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+      grid-template-columns: 300px 1fr;
       gap: 20px;
-      min-width: 0;
       width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
       overflow: hidden;
     }
 
@@ -550,11 +572,13 @@
 
       img {
         width: 100%;
+        min-height: 180px;
         height: min(290px, 40vh);
         border-radius: 16px;
         object-fit: cover;
         object-position: center top;
         display: block;
+        background: #f3ede5;
       }
 
       .copy {
@@ -617,6 +641,9 @@
 
     /* Replaces legacy third-party brand chips — PawPal trust signals */
     .about-pawpal-trust {
+      display: block;
+      width: 100%;
+      clear: both;
       margin-top: clamp(24px, 4vw, 40px);
       padding: clamp(20px, 3vw, 28px) clamp(16px, 3vw, 24px);
       border-radius: var(--pp-our-services-card-radius, 20px);
@@ -624,7 +651,6 @@
       background: var(--pp-bg-elevated, #fffefb);
       box-shadow: var(--pp-our-services-card-shadow, 0 6px 24px rgba(42, 36, 30, 0.07));
       box-sizing: border-box;
-      width: 100%;
       max-width: 100%;
     }
 
@@ -674,6 +700,17 @@
         object-fit: contain;
       }
 
+      .about-pawpal-trust__badge-icon {
+        font-size: 24px;
+        line-height: 1;
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       span {
         line-height: 1.35;
       }
@@ -684,6 +721,8 @@
     margin-top: clamp(56px, 7vw, 88px);
 
     h2 {
+      display: block;
+      width: 100%;
       text-align: center;
       font-family: $font;
       font-size: clamp(26px, 3.2vw, 34px);
@@ -864,10 +903,9 @@
         }
       }
 
-      /* Breadcrumb pill — same as header-basic span in dark mode */
       .about-page__hero-curve {
-        background: rgba(0, 0, 0, 0.22) !important;
-        color: rgba(255, 255, 255, 0.78) !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: rgba(255, 255, 255, 0.92) !important;
       }
 
       /* Hero title stays white on the image — no dark box */

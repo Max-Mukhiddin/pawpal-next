@@ -22,6 +22,10 @@ export const GET_AGENTS = gql`
 				memberRank
 				memberPoints
 				memberLikes
+				totalEngagement
+				specialistScore
+				jobsCount
+				articlesCount
 				memberViews
 				createdAt
 				updatedAt

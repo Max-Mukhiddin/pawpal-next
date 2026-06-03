@@ -1,5 +1,6 @@
 /** IMPORTS **/
 @import '/scss/variables.scss';
+@import '/scss/pc/common/pawpal-media-card.scss';
 @import '/scss/pc/general.scss';
 @import '/scss/pc/top.scss';
 @import '/scss/pc/footer-pawpal.scss';
@@ -16,10 +17,7 @@
 @import '/scss/pc/mypage/specialistCatalog.scss';
 @import '/scss/pc/mypage/myFavorites.scss';
 @import '/scss/pc/mypage/mySaved.scss';
-@import '/scss/pc/mypage/myProfile.scss';
 @import '/scss/pc/mypage/myArticles.scss';
-@import '/scss/pc/mypage/writeArticle.scss';
-@import '/scss/pc/mypage/mypage-redesign.scss';
 
 @import '/scss/pc/community/community.scss';
 @import '/scss/pc/community/detail.scss';
@@ -492,17 +490,77 @@ body::-webkit-scrollbar {
 				background-image: none !important;
 			}
 
-			span {
-				color: rgba(255, 255, 255, 0.78) !important;
-				font-family: $font;
-				font-size: 15px;
-				font-weight: 400;
-				line-height: 1.5;
+			/* Breadcrumb — single glass row; children must not inherit pill styles */
+			.breadcrumb {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
 				margin-top: 12px;
-				background: rgba(0, 0, 0, 0.22) !important;
-				padding: 6px 20px;
-				border-radius: 999px;
-				backdrop-filter: blur(4px);
+				padding: 6px 16px;
+				border-radius: 50px;
+				background: rgba(255, 255, 255, 0.2);
+				backdrop-filter: blur(8px);
+				-webkit-backdrop-filter: blur(8px);
+				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+
+				&__list {
+					display: flex;
+					align-items: center;
+					gap: 10px;
+					margin: 0;
+					padding: 0;
+					list-style: none;
+				}
+
+				&__item {
+					display: flex;
+					align-items: center;
+					margin: 0;
+					padding: 0;
+					background: none;
+					border-radius: 0;
+				}
+
+				&__link {
+					color: rgba(255, 255, 255, 0.95);
+					font-family: $font;
+					font-size: 15px;
+					font-weight: 500;
+					line-height: 1.4;
+					text-decoration: none;
+					text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+					transition: color 0.15s ease;
+
+					&:hover {
+						color: #fff;
+					}
+				}
+
+				&__sep {
+					display: inline-block;
+					color: var(--pp-primary, #ff7a1a);
+					font-family: $font;
+					font-size: 14px;
+					font-weight: 600;
+					line-height: 1;
+					background: none !important;
+					padding: 0 !important;
+					border-radius: 0 !important;
+					backdrop-filter: none !important;
+					box-shadow: none !important;
+				}
+
+				&__current {
+					color: rgba(255, 255, 255, 0.92);
+					font-family: $font;
+					font-size: 15px;
+					font-weight: 500;
+					line-height: 1.4;
+					text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+					background: none !important;
+					padding: 0 !important;
+					border-radius: 0 !important;
+				}
 			}
 
 			@media (max-width: 1023px) {
@@ -546,6 +604,14 @@ body::-webkit-scrollbar {
 			&__content strong {
 				font-size: 2rem !important;
 			}
+		}
+	}
+
+	.header-basic--personal {
+		.header-basic__bg {
+			filter: blur(24px) brightness(0.45) saturate(1.2);
+			transform: scale(1.08);
+			background-position: center top;
 		}
 	}
 

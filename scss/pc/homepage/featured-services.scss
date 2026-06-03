@@ -1,32 +1,282 @@
-#pc-wrap .home-page,
-#mobile-wrap .home-page {
-	.featured-services-pawpal {
-		.featured-products-pawpal__grid {
-			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: clamp(16px, 2.2vw, 24px);
-		}
-	}
-}
+/**
+ * Homepage — Premium Pet Care Atelier
+ * Seamless layout blend (matches about section)
+ * Clean warm bone background, matte cream cards
+ * with champagne-gold borders, gold gradient pill buttons.
+ */
 
-@media (max-width: 1023px) {
-	#pc-wrap .home-page,
-	#mobile-wrap .home-page {
-		.featured-services-pawpal {
-			.featured-products-pawpal__grid {
-				grid-template-columns: repeat(2, minmax(0, 1fr));
-			}
-		}
-	}
-}
-
-@media (max-width: 767px) {
-	#pc-wrap .home-page,
-	#mobile-wrap .home-page {
-		.featured-services-pawpal {
-			.featured-products-pawpal__grid {
-				grid-template-columns: 1fr;
-			}
-		}
-	}
-}
+ #pc-wrap .home-page,
+ #mobile-wrap .home-page {
+	 .featured-services {
+		 position: relative;
+		 width: 100%;
+		 // Replaced rich copper linear-gradient with a clean luxury warm bone background to match the rest of your page sections
+		 background: linear-gradient(180deg, #f3ece3 0%, #faf6f0 100%);
+		 padding: clamp(70px, 8vw, 120px) 0 clamp(90px, 10vw, 140px);
+		 overflow: hidden;
+		 isolation: isolate;
+ 
+		 &__shapes {
+			 position: absolute;
+			 inset: 0;
+			 pointer-events: none;
+			 z-index: 0;
+		 }
+ 
+		 &__shape {
+			 position: absolute;
+			 display: block;
+			 filter: blur(44px);
+			 opacity: 0.45; // Softened opacity so the shapes act as extremely faint organic textures instead of bright copper bursts
+ 
+			 &--1 {
+				 top: -120px;
+				 left: -100px;
+				 width: 480px;
+				 height: 480px;
+				 background: rgba(224, 196, 171, 0.35);
+				 border-radius: 60% 40% 50% 50% / 48% 52% 48% 52%;
+			 }
+ 
+			 &--2 {
+				 top: 25%;
+				 right: -140px;
+				 width: 540px;
+				 height: 480px;
+				 background: rgba(212, 185, 158, 0.3);
+				 border-radius: 44% 56% 38% 62% / 56% 42% 58% 44%;
+			 }
+ 
+			 &--3 {
+				 bottom: -120px;
+				 left: 28%;
+				 width: 520px;
+				 height: 400px;
+				 background: rgba(235, 215, 193, 0.3);
+				 border-radius: 58% 42% 64% 36% / 42% 58% 42% 58%;
+			 }
+		 }
+ 
+		 &__container {
+			 position: relative;
+			 z-index: 1;
+			 max-width: 1400px;
+			 margin: 0 auto;
+			 padding: 0 clamp(28px, 5vw, 80px);
+			 box-sizing: border-box;
+		 }
+ 
+		 &__header {
+			 text-align: center;
+			 margin-bottom: clamp(48px, 6vw, 80px);
+		 }
+ 
+		 &__label {
+			 margin: 0 0 14px;
+			 color: var(--pp-primary);
+			 font-family: $font;
+			 font-size: clamp(11px, 0.85vw, 13px);
+			 font-weight: 700;
+			 letter-spacing: 0.22em;
+			 text-transform: uppercase;
+		 }
+ 
+		 &__title {
+			 margin: 0;
+			 color: #2a1810;
+			 font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+			 font-size: clamp(2.4rem, 5vw, 4.2rem);
+			 font-weight: 700;
+			 line-height: 1.04;
+			 letter-spacing: -0.015em;
+		 }
+ 
+		 &__grid {
+			 display: grid;
+			 grid-template-columns: repeat(4, minmax(0, 1fr));
+			 gap: clamp(20px, 2vw, 32px);
+			 align-items: flex-start;
+		 }
+ 
+		 &__card {
+			 position: relative;
+			 display: flex;
+			 flex-direction: column;
+			 align-items: center;
+			 text-align: center;
+			 gap: 14px;
+			 padding: 20px 20px 24px;
+			 border-radius: 22px;
+			 background: linear-gradient(180deg, #ffffff 0%, #fbf6ee 100%); // Brightened up cards slightly for crisp contrast against the bone floor
+			 border: 1px solid rgba(196, 145, 95, 0.35);
+			 text-decoration: none;
+			 box-shadow:
+				 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+				 0 14px 28px -10px rgba(70, 35, 12, 0.12),
+				 0 4px 10px -4px rgba(70, 35, 12, 0.05);
+			 transition: transform 0.4s ease, box-shadow 0.4s ease;
+			 box-sizing: border-box;
+			 overflow: hidden;
+			 color: inherit;
+ 
+			 &--1 { margin-top: 0; }
+			 &--2 { margin-top: 80px; }
+			 &--3 { margin-top: 0; }
+			 &--4 { margin-top: 80px; }
+ 
+			 &:hover {
+				 transform: translateY(-10px);
+				 box-shadow:
+					 0 1px 0 rgba(255, 255, 255, 0.8) inset,
+					 0 24px 38px -12px rgba(70, 35, 12, 0.22),
+					 0 6px 14px -4px rgba(70, 35, 12, 0.1);
+			 }
+		 }
+ 
+		 &__media {
+			 width: 100%;
+			 aspect-ratio: 3 / 3.4;
+			 border-radius: 50% 50% 14px 14px / 50% 50% 0 0;
+			 overflow: hidden;
+			 border: 1px solid rgba(196, 145, 95, 0.25);
+			 background: rgba(255, 255, 255, 0.3);
+		 }
+ 
+		 &__img {
+			 width: 100%;
+			 height: 100%;
+			 object-fit: cover;
+			 display: block;
+			 transition: transform 0.6s ease;
+		 }
+ 
+		 &__card:hover &__img {
+			 transform: scale(1.05);
+		 }
+ 
+		 &__card-title {
+			 width: 100%;
+			 margin: 4px 0 0;
+			 padding: 0 6px;
+			 color: #2a1810;
+			 font-family: 'Playfair Display', Georgia, serif;
+			 font-size: clamp(15px, 1.15vw, 18px);
+			 font-weight: 700;
+			 line-height: 1.2;
+			 word-break: break-word;
+			 box-sizing: border-box;
+		 }
+ 
+		 &__card-desc {
+			 width: 100%;
+			 margin: 0;
+			 padding: 0 8px;
+			 color: rgba(60, 35, 18, 0.75);
+			 font-family: $font;
+			 font-size: clamp(11px, 0.78vw, 12.5px);
+			 font-weight: 400;
+			 line-height: 1.45;
+			 word-break: break-word;
+			 box-sizing: border-box;
+			 display: -webkit-box;
+			 line-clamp: 2;
+			 -webkit-line-clamp: 2;
+			 -webkit-box-orient: vertical;
+			 overflow: hidden;
+			 text-overflow: ellipsis;
+			 min-height: calc(1.45em * 2);
+		 }
+ 
+		 &__cta {
+			 margin-top: 6px;
+			 display: inline-flex;
+			 align-items: center;
+			 justify-content: center;
+			 padding: 10px 24px;
+			 border-radius: 999px;
+			 background: linear-gradient(135deg, #e0b27e 0%, #c89464 50%, #a87544 100%);
+			 color: #fff;
+			 font-family: $font;
+			 font-size: 10.5px;
+			 font-weight: 700;
+			 letter-spacing: 0.18em;
+			 text-transform: uppercase;
+			 text-decoration: none;
+			 box-shadow:
+				 0 1px 0 rgba(255, 255, 255, 0.35) inset,
+				 0 6px 14px -4px rgba(120, 70, 20, 0.25);
+			 transition: transform 0.25s ease, box-shadow 0.25s ease;
+		 }
+ 
+		 &__card:hover &__cta {
+			 transform: translateY(-1px);
+			 box-shadow:
+				 0 1px 0 rgba(255, 255, 255, 0.45) inset,
+				 0 10px 18px -4px rgba(120, 70, 20, 0.4);
+		 }
+	 }
+ }
+ 
+ /* Tablet */
+ @media (max-width: 1023px) {
+	 #pc-wrap .home-page,
+	 #mobile-wrap .home-page {
+		 .featured-services {
+			 &__grid {
+				 grid-template-columns: repeat(2, minmax(0, 1fr));
+				 gap: 32px 20px;
+			 }
+ 
+			 &__card {
+				 padding: 18px 18px 22px;
+ 
+				 &--1 { margin-top: 0; }
+				 &--2 { margin-top: 60px; }
+				 &--3 { margin-top: 0; }
+				 &--4 { margin-top: 60px; }
+			 }
+ 
+			 &__shape {
+				 &--1 { width: 340px; height: 360px; }
+				 &--2 { width: 380px; height: 340px; }
+				 &--3 { width: 420px; height: 300px; }
+			 }
+		 }
+	 }
+ }
+ 
+ /* Mobile */
+ @media (max-width: 767px) {
+	 #pc-wrap .home-page,
+	 #mobile-wrap .home-page {
+		 .featured-services {
+			 padding: 64px 0 80px;
+ 
+			 &__title {
+				 font-size: clamp(2rem, 9vw, 2.6rem);
+			 }
+ 
+			 &__grid {
+				 grid-template-columns: 1fr;
+				 gap: 24px;
+				 max-width: 380px;
+				 margin: 0 auto;
+			 }
+ 
+			 &__card {
+				 margin-top: 0 !important;
+				 padding: 18px 18px 22px;
+			 }
+ 
+			 &__media {
+				 border-radius: 50% 50% 14px 14px / 40% 40% 0 0;
+			 }
+ 
+			 &__shape {
+				 &--1 { width: 260px; height: 280px; }
+				 &--2 { width: 280px; height: 260px; }
+				 &--3 { width: 300px; height: 220px; }
+			 }
+		 }
+	 }
+ }

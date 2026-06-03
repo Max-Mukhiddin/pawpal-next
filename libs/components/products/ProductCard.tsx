@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { userVar } from '../../../apollo/store';
 import type { Product } from '../../types/products/product';
 import { T } from '../../types/common';
-import { formatterStr } from '../../utils';
+import { formatterKrw } from '../../utils';
 import { ListingStatus } from '../../enums/listing.enum';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
@@ -56,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onLike }) => {
 					{statusBadgeLabel(product?.listingStatus)}
 				</Typography>
 				<Typography className="products-list-card__title">{product.listingTitle}</Typography>
-				<Typography className="products-list-card__price">${formatterStr(product.listingPrice)}</Typography>
+				<Typography className="products-list-card__price">{formatterKrw(product.listingPrice)}</Typography>
 				<Typography className="products-list-card__desc">{description}</Typography>
 				<Stack className="products-list-card__stats" direction="row" alignItems="center" spacing={1.5}>
 					<Typography component="span" className="products-list-card__stat">

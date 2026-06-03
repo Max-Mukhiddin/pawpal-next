@@ -1,13 +1,29 @@
 /**
  * PawPal global navigation (libs/components/Top.tsx)
- * Uses --pp-nav-* tokens from _theme.tokens.scss
+ * Desktop: horizontal bar | Mobile/Tablet: compact bar + slide-in drawer
  */
 
-/* LayoutHome / LayoutFull: offset the fixed navbar so content is not hidden behind it */
-#pc-wrap > #main:nth-child(2) {
+/* ===========================================================
+   LAYOUT OFFSETS — keep content below the fixed navbar
+   =========================================================== */
+   #pc-wrap > #main:nth-child(2) {
 	padding-top: 72px;
 }
 
+#mobile-wrap > #main:nth-child(2) {
+	padding-top: 70px;
+}
+
+/* LayoutHome / LayoutBasic hero: navbar floats transparently over hero — no offset */
+#pc-wrap.layout-home > #main:nth-child(2),
+#pc-wrap.layout-home--mobile > #main:nth-child(2),
+#pc-wrap.layout-basic-hero > #main:nth-child(2) {
+	padding-top: 0;
+}
+
+/* ===========================================================
+   DESKTOP BAR
+   =========================================================== */
 #pc-wrap #pawpal-header .navbar.navbar-pawpal {
 	.navbar-pawpal__bar {
 		position: fixed;
@@ -16,83 +32,93 @@
 		right: 0;
 		width: 100%;
 		z-index: 1000;
-		padding: 16px 40px;
+		padding: 14px 40px;
 		box-sizing: border-box;
-		background: rgba(255, 248, 240, 0.85) !important;
-		backdrop-filter: blur(16px) !important;
-		-webkit-backdrop-filter: blur(16px) !important;
-		border-bottom: 1px solid rgba(232, 115, 74, 0.08);
-		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
-		transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+		background: transparent !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		border-bottom: 1px solid transparent;
+		box-shadow: none;
+		transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
 
 		&.is-scrolled {
-			background: rgba(255, 248, 240, 0.9);
-			box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
-			border-bottom-color: transparent;
+			background: rgba(255, 245, 235, 0.82) !important;
+			backdrop-filter: blur(20px) saturate(180%) !important;
+			-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+			box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+			border-bottom-color: rgba(255, 122, 26, 0.12);
+			padding: 10px 40px;
 		}
 	}
 
-	.navbar-pawpal__inner.container {
+	.navbar-pawpal__inner {
+		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		gap: 28px;
-		flex-wrap: wrap;
 		width: 100%;
-		max-width: 1300px;
+		max-width: 1500px;
+		margin: 0 auto;
+		padding: 0 48px;
 		box-sizing: border-box;
+		gap: 24px;
 	}
 
 	.navbar-pawpal__brand {
 		flex-shrink: 0;
 		display: inline-flex;
 		align-items: center;
-		gap: 2px;
 		font-family: $font;
-		font-size: 26px;
-		font-weight: 900;
+		font-size: clamp(22px, 2vw, 30px);
+		font-weight: 800;
 		letter-spacing: -0.5px;
-		color: var(--color-text-primary);
+		color: var(--pp-primary);
 		text-decoration: none;
 		line-height: 1.1;
+		white-space: nowrap;
+
+		&-text {
+			color: var(--pp-primary);
+		}
 
 		&:hover {
-			color: var(--color-text-primary);
+			color: var(--pp-primary);
+			filter: brightness(1.05);
 		}
-	}
-
-	.navbar-pawpal__brand-paw {
-		color: #e07b3a;
-		font-weight: 900;
-	}
-
-	.navbar-pawpal__brand-pal {
-		color: var(--color-text-primary);
-		font-weight: 900;
 	}
 
 	.navbar-pawpal__brand-icon {
 		display: inline-flex;
 		align-items: center;
-		margin-right: 4px;
+		margin-right: 8px;
+		line-height: 0;
+
+		svg {
+			display: block;
+			width: 24px;
+			height: 24px;
+		}
 	}
 
 	.navbar-pawpal__nav {
-		flex: 1;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: center;
-		gap: 8px 28px;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
 		min-width: 0;
+
+		&--center {
+			flex: 1;
+			justify-content: center;
+			gap: clamp(16px, 2.2vw, 36px);
+		}
 	}
 
 	.navbar-pawpal__link {
 		position: relative;
 		padding: 8px 2px;
 		font-family: $font;
-		font-size: 15px;
+		font-size: clamp(13px, 1vw, 15px);
 		font-weight: 600;
 		letter-spacing: 0.2px;
 		color: var(--color-text-primary);
@@ -100,16 +126,29 @@
 		white-space: nowrap;
 		transition: color 0.2s ease;
 
+		&::after {
+			content: '';
+			position: absolute;
+			left: 50%;
+			bottom: -2px;
+			transform: translateX(-50%) scaleX(0);
+			width: 24px;
+			height: 2px;
+			background: var(--pp-primary);
+			border-radius: 2px;
+			transition: transform 0.25s ease;
+			transform-origin: center;
+		}
+
 		&:hover {
-			color: #e07b3a;
+			color: var(--pp-primary);
 		}
 
 		&.is-active {
-			color: #e07b3a;
-			border-bottom: 2px solid #e07b3a;
+			color: var(--pp-primary);
 
 			&::after {
-				display: none;
+				transform: translateX(-50%) scaleX(1);
 			}
 		}
 	}
@@ -119,41 +158,21 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: flex-end;
-		gap: 12px;
+		gap: 8px;
 	}
 
 	.navbar-pawpal__icon-btn {
 		color: var(--color-text-primary);
+		width: 38px;
+		height: 38px;
 
 		.MuiSvgIcon-root {
 			font-size: 20px;
 		}
 
 		&:hover {
-			color: #e07b3a;
-			background: var(--pp-nav-link-hover);
-		}
-	}
-
-	.navbar-pawpal__book-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 8px 20px;
-		border-radius: 50px;
-		background: #e07b3a;
-		color: #fff;
-		font-family: $font;
-		font-size: 14px;
-		font-weight: 600;
-		line-height: 1;
-		text-decoration: none;
-		transition: background 0.2s ease, transform 0.2s ease;
-
-		&:hover {
-			background: #cf6e33;
-			transform: translateY(-1px);
+			color: var(--pp-primary);
+			background: rgba(255, 122, 26, 0.08);
 		}
 	}
 
@@ -162,28 +181,35 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		padding: 10px 18px;
+		gap: 6px;
+		padding: 8px 16px;
 		border-radius: 999px;
-		border: 1px solid var(--pp-nav-border);
+		border: 1px solid rgba(255, 122, 26, 0.4);
+		background: transparent;
 		cursor: pointer;
 		text-decoration: none;
-		transition: border-color 0.15s ease, background 0.15s ease;
+		transition: all 0.2s ease;
+		white-space: nowrap;
 
 		svg {
-			color: var(--pp-nav-accent);
+			color: var(--pp-primary);
+			font-size: 18px;
 		}
 
 		span {
 			font-family: $font;
 			font-size: 14px;
 			font-weight: 600;
-			color: var(--pp-nav-text);
+			color: var(--color-text-primary);
 		}
 
 		&:hover {
-			border-color: var(--pp-nav-accent);
-			background: var(--pp-nav-link-hover);
+			background: var(--pp-primary);
+			border-color: var(--pp-primary);
+
+			svg, span {
+				color: #fff;
+			}
 		}
 	}
 
@@ -198,11 +224,16 @@
 		border-radius: 50%;
 
 		img {
-			width: 40px;
-			height: 40px;
+			width: 38px;
+			height: 38px;
 			border-radius: 50%;
 			object-fit: cover;
-			border: 2px solid var(--pp-nav-border);
+			border: 2px solid rgba(255, 122, 26, 0.3);
+			transition: border-color 0.2s ease;
+		}
+
+		&:hover img {
+			border-color: var(--pp-primary);
 		}
 	}
 
@@ -214,17 +245,21 @@
 	.navbar-pawpal__lan-box {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		margin-left: 4px;
+		gap: 4px;
 	}
 
 	.navbar-pawpal__lang-btn {
 		min-width: 0;
-		padding: 6px 8px;
-		color: var(--pp-nav-text-muted);
+		padding: 6px 6px;
+		color: var(--color-text-primary);
 
 		.MuiButton-endIcon {
-			color: var(--pp-nav-text-muted);
+			color: var(--color-text-primary);
+			margin-left: 4px;
+		}
+
+		&:hover {
+			background: rgba(255, 122, 26, 0.06);
 		}
 	}
 
@@ -234,21 +269,126 @@
 		border-radius: 2px;
 		margin-right: 10px;
 	}
+}
 
-	.navbar-pawpal__menu-icon {
-		margin-right: 10px;
-		color: var(--pp-primary);
+/* ===========================================================
+   HERO PAGES (layout-home + layout-basic-hero)
+   Pre-scroll: fully transparent, white text
+   =========================================================== */
+#pc-wrap.layout-home #pawpal-header .navbar.navbar-pawpal,
+#pc-wrap.layout-basic-hero #pawpal-header .navbar.navbar-pawpal {
+	.navbar-pawpal__link {
+		color: #fff;
+		text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+
+		&:hover,
+		&.is-active {
+			color: var(--pp-primary);
+			text-shadow: none;
+		}
+	}
+
+	.navbar-pawpal__icon-btn,
+	.navbar-pawpal__notify,
+	.navbar-pawpal__lang-btn {
+		color: #fff;
+
+		.MuiButton-endIcon {
+			color: #fff;
+		}
+	}
+
+	.navbar-pawpal__join {
+		border-color: rgba(255, 255, 255, 0.7);
+
+		span {
+			color: #fff;
+			text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+		}
+
+		svg {
+			color: #fff;
+		}
+
+		&:hover {
+			background: var(--pp-primary);
+			border-color: var(--pp-primary);
+
+			span, svg {
+				color: #fff;
+				text-shadow: none;
+			}
+		}
 	}
 }
 
-:root[data-theme='dark'] {
-	#pc-wrap #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar,
-	#mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile {
-		background: rgba(26, 26, 26, 0.9) !important;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+/* Pre-scroll bar: fully transparent */
+#pc-wrap.layout-home #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar,
+#pc-wrap.layout-basic-hero #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar {
+	background: transparent !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border-bottom-color: transparent;
+	box-shadow: none;
+
+	&.is-scrolled {
+		background: rgba(255, 245, 235, 0.82) !important;
+		backdrop-filter: blur(20px) saturate(180%) !important;
+		-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+		border-bottom-color: rgba(255, 122, 26, 0.12);
 	}
 }
 
+/* Post-scroll: revert to dark text over warm frosted glass */
+#pc-wrap.layout-home #pawpal-header .navbar.navbar-pawpal.is-page-scrolled,
+#pc-wrap.layout-basic-hero #pawpal-header .navbar.navbar-pawpal.is-page-scrolled {
+	.navbar-pawpal__link {
+		color: #1A1A1A !important;
+		text-shadow: none !important;
+
+		&:hover,
+		&.is-active {
+			color: var(--pp-primary) !important;
+		}
+	}
+
+	.navbar-pawpal__icon-btn,
+	.navbar-pawpal__notify,
+	.navbar-pawpal__lang-btn {
+		color: #1A1A1A !important;
+
+		.MuiButton-endIcon {
+			color: #1A1A1A !important;
+		}
+	}
+
+	.navbar-pawpal__join {
+		border-color: rgba(255, 122, 26, 0.4);
+
+		span {
+			color: #1A1A1A !important;
+			text-shadow: none !important;
+		}
+
+		svg {
+			color: var(--pp-primary) !important;
+		}
+
+		&:hover {
+			background: var(--pp-primary);
+			border-color: var(--pp-primary);
+
+			span, svg {
+				color: #fff !important;
+			}
+		}
+	}
+}
+
+/* ===========================================================
+   MOBILE / TABLET BAR
+   =========================================================== */
 #mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile,
 #pc-wrap.layout-home--mobile #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile {
 	position: fixed;
@@ -257,123 +397,450 @@
 	right: 0;
 	width: 100%;
 	z-index: 1000;
-	padding: 12px 14px 10px;
-	background: rgba(245, 239, 230, 0.95);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	border-bottom: 1px solid var(--pp-nav-border);
-	box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
 
-	.navbar-pawpal__mobile-top {
-		margin-bottom: 10px;
+	.navbar-pawpal__bar-mobile {
+		padding: 12px 16px;
+		background: transparent;
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		border-bottom: 1px solid transparent;
+		box-shadow: none;
+		transition: background 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
+
+		&.is-scrolled {
+			background: rgba(255, 245, 235, 0.82);
+			backdrop-filter: blur(18px) saturate(180%);
+			-webkit-backdrop-filter: blur(18px) saturate(180%);
+			box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+			border-bottom-color: rgba(255, 122, 26, 0.12);
+		}
 	}
 
 	.navbar-pawpal__brand {
 		font-family: $font;
-		font-size: 26px;
-		font-weight: 900;
+		font-size: 22px;
+		font-weight: 800;
 		letter-spacing: -0.5px;
-		color: var(--color-text-primary);
+		color: var(--pp-primary);
 		text-decoration: none;
 		display: inline-flex;
 		align-items: center;
-		gap: 2px;
+		line-height: 1.1;
+
+		.navbar-pawpal__brand-text {
+			color: var(--pp-primary);
+		}
 
 		&:hover {
-			color: var(--color-text-primary);
+			color: var(--pp-primary);
+			filter: brightness(1.05);
 		}
 	}
 
 	.navbar-pawpal__mobile-actions {
-		gap: 12px;
-	}
-
-	.navbar-pawpal__mobile-nav {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 6px 14px;
-		margin-bottom: 12px;
-	}
-
-	.navbar-pawpal__mobile-nav .navbar-pawpal__link {
-		font-family: $font;
-		font-size: 15px;
-		font-weight: 600;
-		letter-spacing: 0.2px;
-		color: var(--color-text-primary);
-		text-decoration: none;
-		transition: color 0.2s ease;
-
-		&:hover {
-			color: #e07b3a;
-		}
-
-		&.is-active {
-			color: #e07b3a;
-		}
-	}
-
-	.navbar-pawpal__mobile-meta {
-		padding-top: 8px;
-		border-top: 1px solid var(--pp-nav-border);
-		gap: 12px;
-	}
-
-	.navbar-pawpal__join {
-		display: inline-flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 6px;
-		text-decoration: none;
-
-		svg {
-			color: var(--pp-nav-accent);
-		}
-
-		span {
-			font-size: 13px;
-			font-weight: 600;
-			color: var(--pp-nav-text);
-		}
-	}
-
-	.navbar-pawpal__avatar img {
-		width: 36px;
-		height: 36px;
-		border-radius: 50%;
-		object-fit: cover;
-		border: 2px solid var(--pp-nav-border);
+		gap: 2px;
 	}
 
 	.navbar-pawpal__icon-btn {
 		color: var(--color-text-primary);
+		width: 38px;
+		height: 38px;
 
 		.MuiSvgIcon-root {
 			font-size: 20px;
 		}
 
 		&:hover {
-			color: #e07b3a;
+			color: var(--pp-primary);
+			background: rgba(255, 122, 26, 0.08);
 		}
 	}
 
-	/* Same as desktop bar: mobile nav does not inherit #pc-wrap rules — flag must stay bounded */
-	.navbar-pawpal__flag img {
-		width: 24px;
-		height: 17px;
-		border-radius: 2px;
-		display: block;
-		object-fit: cover;
+	.navbar-pawpal__menu-btn {
+		color: var(--color-text-primary);
+		width: 40px;
+		height: 40px;
+		margin-left: 4px;
+
+		.MuiSvgIcon-root {
+			font-size: 24px;
+		}
+
+		&:hover {
+			color: var(--pp-primary);
+			background: rgba(255, 122, 26, 0.08);
+		}
 	}
 }
 
-#mobile-wrap > #main:nth-child(2),
-#pc-wrap.layout-home--mobile > #main:nth-child(2) {
-	padding-top: 130px;
+/* ===========================================================
+   SLIDE-IN DRAWER
+   =========================================================== */
+.navbar-pawpal__drawer-root {
+	.MuiBackdrop-root {
+		background: rgba(0, 0, 0, 0.4);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+
+	.navbar-pawpal__drawer-paper {
+		width: min(85vw, 360px);
+		background: rgba(255, 248, 240, 0.98) !important;
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		border-left: 1px solid rgba(255, 122, 26, 0.1);
+	}
 }
 
-/* MUI Menu is rendered in a body-level portal, so this must stay global. */
+.navbar-pawpal__drawer {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 20px 0;
+	box-sizing: border-box;
+}
+
+.navbar-pawpal__drawer-head {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 20px 16px;
+	gap: 12px;
+
+	.navbar-pawpal__brand {
+		font-family: $font;
+		font-size: 22px;
+		font-weight: 800;
+		letter-spacing: -0.5px;
+		text-decoration: none;
+		display: inline-flex;
+		align-items: center;
+		color: var(--pp-primary);
+		line-height: 1.1;
+
+		.navbar-pawpal__brand-text {
+			color: var(--pp-primary);
+		}
+	}
+}
+
+.navbar-pawpal__drawer-close {
+	color: var(--color-text-primary);
+	width: 36px;
+	height: 36px;
+
+	&:hover {
+		color: var(--pp-primary);
+		background: rgba(255, 122, 26, 0.08);
+	}
+}
+
+.navbar-pawpal__drawer-divider {
+	background-color: rgba(255, 122, 26, 0.08) !important;
+	margin: 0 !important;
+}
+
+.navbar-pawpal__drawer-nav {
+	display: flex;
+	flex-direction: column;
+	padding: 8px 0;
+	flex: 1;
+}
+
+.navbar-pawpal__drawer-link {
+	display: flex;
+	align-items: center;
+	padding: 14px 24px;
+	font-family: $font;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--color-text-primary);
+	text-decoration: none;
+	transition: all 0.2s ease;
+	border-left: 3px solid transparent;
+
+	&:hover {
+		background: rgba(255, 122, 26, 0.06);
+		color: var(--pp-primary);
+		padding-left: 28px;
+	}
+
+	&.is-active {
+		color: var(--pp-primary);
+		background: rgba(255, 122, 26, 0.08);
+		border-left-color: var(--pp-primary);
+	}
+}
+
+.navbar-pawpal__drawer-footer {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 16px 20px 8px;
+}
+
+.navbar-pawpal__drawer-login {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 12px 20px;
+	border-radius: 999px;
+	border: 1.5px solid var(--pp-primary);
+	background: transparent;
+	color: var(--pp-primary);
+	font-family: $font;
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.2s ease;
+	width: 100%;
+	box-sizing: border-box;
+
+	svg {
+		font-size: 20px;
+	}
+
+	&:hover {
+		background: var(--pp-primary);
+		color: #fff;
+	}
+}
+
+.navbar-pawpal__drawer-account {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: 12px;
+	background: rgba(255, 122, 26, 0.06);
+	text-decoration: none;
+	transition: background 0.2s ease;
+
+	img {
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 2px solid rgba(255, 122, 26, 0.3);
+	}
+
+	div {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.navbar-pawpal__drawer-account-name {
+		font-family: $font;
+		font-size: 15px;
+		font-weight: 700;
+		color: var(--color-text-primary);
+	}
+
+	.navbar-pawpal__drawer-account-meta {
+		font-family: $font;
+		font-size: 12px;
+		color: var(--color-text-secondary, #6b6b6b);
+		margin-top: 2px;
+	}
+
+	&:hover {
+		background: rgba(255, 122, 26, 0.1);
+	}
+}
+
+.navbar-pawpal__drawer-logout {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 10px 16px;
+	border-radius: 999px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: $font;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+
+	&:hover {
+		background: rgba(0, 0, 0, 0.04);
+		border-color: rgba(0, 0, 0, 0.2);
+	}
+}
+
+.navbar-pawpal__drawer-lang {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.navbar-pawpal__drawer-lang-label {
+	font-family: $font;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	color: var(--color-text-secondary, #6b6b6b);
+}
+
+.navbar-pawpal__drawer-lang-options {
+	display: flex;
+	gap: 8px;
+}
+
+.navbar-pawpal__drawer-lang-btn {
+	flex: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 8px 12px;
+	border-radius: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: transparent;
+	cursor: pointer;
+	transition: all 0.2s ease;
+
+	img {
+		width: 20px;
+		height: 14px;
+		border-radius: 2px;
+		object-fit: cover;
+	}
+
+	span {
+		font-family: $font;
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text-primary);
+	}
+
+	&:hover {
+		border-color: var(--pp-primary);
+		background: rgba(255, 122, 26, 0.06);
+	}
+
+	&.is-active {
+		border-color: var(--pp-primary);
+		background: rgba(255, 122, 26, 0.12);
+
+		span {
+			color: var(--pp-primary);
+		}
+	}
+}
+
+/* ===========================================================
+   DARK MODE
+   =========================================================== */
+:root[data-theme='dark'] {
+	#pc-wrap #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar {
+		background: transparent !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		border-bottom: 1px solid transparent !important;
+
+		&.is-scrolled {
+			background: rgba(20, 20, 20, 0.85) !important;
+			backdrop-filter: blur(20px) saturate(160%) !important;
+			-webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+			border-bottom-color: rgba(255, 122, 26, 0.15);
+		}
+	}
+
+	#pc-wrap.layout-home #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar,
+	#pc-wrap.layout-basic-hero #pawpal-header .navbar.navbar-pawpal .navbar-pawpal__bar {
+		background: transparent !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		border-bottom-color: transparent;
+
+		&.is-scrolled {
+			background: rgba(20, 20, 20, 0.85) !important;
+			backdrop-filter: blur(20px) saturate(160%) !important;
+			-webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+		}
+	}
+
+	#pc-wrap.layout-home #pawpal-header .navbar.navbar-pawpal.is-page-scrolled,
+	#pc-wrap.layout-basic-hero #pawpal-header .navbar.navbar-pawpal.is-page-scrolled {
+		.navbar-pawpal__link {
+			color: #fff !important;
+			text-shadow: none !important;
+
+			&:hover, &.is-active {
+				color: var(--pp-primary) !important;
+			}
+		}
+
+		.navbar-pawpal__icon-btn,
+		.navbar-pawpal__notify,
+		.navbar-pawpal__lang-btn {
+			color: #fff !important;
+
+			.MuiButton-endIcon {
+				color: #fff !important;
+			}
+		}
+	}
+
+	#mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile .navbar-pawpal__bar-mobile,
+	#pc-wrap.layout-home--mobile #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile .navbar-pawpal__bar-mobile {
+		background: transparent !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		border-bottom: 1px solid transparent !important;
+
+		&.is-scrolled {
+			background: rgba(20, 20, 20, 0.85) !important;
+			backdrop-filter: blur(18px) saturate(160%) !important;
+			-webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+		}
+	}
+
+	.navbar-pawpal__drawer-root .navbar-pawpal__drawer-paper {
+		background: rgba(26, 26, 26, 0.98) !important;
+		border-left: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.navbar-pawpal__drawer-divider {
+		background-color: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	.navbar-pawpal__drawer-account {
+		background: rgba(255, 122, 26, 0.1);
+
+		&:hover {
+			background: rgba(255, 122, 26, 0.15);
+		}
+	}
+
+	.navbar-pawpal__drawer-logout {
+		border-color: rgba(255, 255, 255, 0.1);
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.04);
+			border-color: rgba(255, 255, 255, 0.2);
+		}
+	}
+
+	.navbar-pawpal__drawer-lang-btn {
+		border-color: rgba(255, 255, 255, 0.08);
+
+		&:hover {
+			background: rgba(255, 122, 26, 0.1);
+		}
+	}
+}
+
+/* ===========================================================
+   PORTAL-LEVEL utility
+   =========================================================== */
 .navbar-pawpal__img-flag {
 	width: 24px;
 	height: 17px;
@@ -383,7 +850,6 @@
 	object-fit: cover;
 }
 
-/* Language button flag: must apply on all breakpoints (mobile bar is outside #pc-wrap desktop block). */
 .navbar-pawpal__flag img {
 	width: 24px;
 	height: 17px;
@@ -392,52 +858,33 @@
 	object-fit: cover;
 }
 
-/* Tablet: keep logo + actions on row; nav wraps or scrolls without overflowing */
+/* ===========================================================
+   TABLET — desktop navbar collapses to drawer trigger
+   =========================================================== */
 @media (max-width: $bp-tablet-max) {
 	#pc-wrap #pawpal-header .navbar.navbar-pawpal:not(.navbar-pawpal--mobile) {
-		.navbar-pawpal__inner.container {
-			row-gap: 12px;
+		.navbar-pawpal__bar {
+			padding: 12px 20px;
+
+			&.is-scrolled {
+				padding: 10px 20px;
+			}
 		}
 
 		.navbar-pawpal__brand {
-			font-size: 20px;
+			font-size: 22px;
 		}
 
-		.navbar-pawpal__nav {
-			flex: 1 1 100%;
-			order: 3;
-			justify-content: flex-start;
-			overflow-x: auto;
-			-webkit-overflow-scrolling: touch;
-			flex-wrap: nowrap;
-			gap: 8px 20px;
-			padding-bottom: 6px;
-			scrollbar-width: thin;
+		.navbar-pawpal__inner {
+			padding: 0 20px;
+		}
 
-			&::-webkit-scrollbar {
-				height: 4px;
-			}
+		.navbar-pawpal__nav--center {
+			display: none;
 		}
 
 		.navbar-pawpal__actions {
-			order: 2;
 			margin-left: auto;
-			flex-wrap: wrap;
-		}
-	}
-}
-
-@media (max-width: $bp-mobile-max) {
-	#mobile-wrap #pawpal-header .navbar.navbar-pawpal.navbar-pawpal--mobile {
-		.navbar-pawpal__mobile-nav {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 4px;
-
-			.navbar-pawpal__link {
-				padding: 8px 4px;
-				border-radius: 8px;
-			}
 		}
 	}
 }

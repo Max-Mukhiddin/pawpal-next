@@ -20,6 +20,10 @@ export interface Member {
 	memberArticles: number;
 	memberPoints: number;
 	memberLikes: number;
+	totalEngagement?: number;
+	specialistScore?: number;
+	jobsCount?: number;
+	articlesCount?: number;
 	memberFollowers?: number;
 	memberFollowings?: number;
 	memberViews: number;
