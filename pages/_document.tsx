@@ -11,7 +11,11 @@ export default function Document() {
 				<script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
 				<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 				<meta name="robots" content="index,follow" />
-				<link rel="icon" type="image/png" href="/img/logo/favicon.svg" />
+				<link rel="icon" type="image/svg+xml" href="/img/logo/logo-icon.svg" />
+				<link
+					href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap"
+					rel="stylesheet"
+				/>
 
 				{/* SEO */}
 				<meta name="keyword" content={'pawpal, pawpal.uz, devex mern, mern nestjs fullstack'} />

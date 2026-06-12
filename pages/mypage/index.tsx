@@ -112,15 +112,15 @@ const MyPage: NextPage = () => {
 
 	return (
 		<div id="my-page">
-				<div className="container">
-					<Stack className={'my-page'} sx={{ pt: '40px' }}>
-						<Stack className={'back-frame mypage-content'}>
-							<Stack className={'left-config mypage-sidebar'}>
-								<MyMenu />
-							</Stack>
-							<Stack className="main-config mypage-main" mb={'76px'}>
-								<div className="mypage-content-fade">
-								<Stack className={'list-config'}>
+			<div className="container">
+				<Stack className="mypage-body">
+					<Stack className="back-frame mypage-content">
+						<Stack className="left-config mypage-sidebar">
+							<MyMenu />
+						</Stack>
+						<Stack className="main-config mypage-main" mb={'76px'}>
+							<div className="mypage-content-fade">
+								<Stack className="list-config">
 									{category === 'addListing' && <AddNewListing />}
 									{(category === 'myProducts' ||
 										category === 'myServices' ||
@@ -158,11 +158,11 @@ const MyPage: NextPage = () => {
 										/>
 									)}
 								</Stack>
-								</div>
-							</Stack>
+							</div>
 						</Stack>
 					</Stack>
-				</div>
+				</Stack>
+			</div>
 		</div>
 	);
 };

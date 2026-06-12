@@ -28,362 +28,292 @@ import ProductDetailMobile from '../../libs/components/products/ProductDetailMob
 import { resolveListingImageUrl, resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: {
-		...(await serverSideTranslations(locale, ['common'])),
-	},
+    props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
 const ProductDetail: NextPage = ({ initialComment }: any) => {
-	const device = useDeviceDetect();
-	const router = useRouter();
-	const user = useReactiveVar(userVar);
-	const [productId, setProductId] = useState<string | null>(null);
-	const [product, setProduct] = useState<Product | null>(null);
-	const [slideImage, setSlideImage] = useState<string>('');
-	const [activeTab, setActiveTab] = useState<'about' | 'details'>('about');
-	const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
-	const [productComments, setProductComments] = useState<Comment[]>([]);
-	const [commentTotal, setCommentTotal] = useState<number>(0);
-	const [insertCommentData, setInsertCommentData] = useState<CommentInput>({
-		commentGroup: CommentGroup.PROPERTY,
-		commentContent: '',
-		commentRefId: '',
-	});
+    const device = useDeviceDetect();
+    const router = useRouter();
+    const user = useReactiveVar(userVar);
+    const [productId, setProductId] = useState<string | null>(null);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [slideImage, setSlideImage] = useState<string>('');
+    const [activeTab, setActiveTab] = useState<'about' | 'details'>('about');
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+    const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
+    const [productComments, setProductComments] = useState<Comment[]>([]);
+    const [commentTotal, setCommentTotal] = useState<number>(0);
+    const [insertCommentData, setInsertCommentData] = useState<CommentInput>({
+        commentGroup: CommentGroup.LISTING,
+        commentContent: '',
+        commentRefId: '',
+    });
 
-	/** APOLLO REQUESTS **/
-	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
-	const [createComment] = useMutation(CREATE_COMMENT);
+    const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
+    const [createComment] = useMutation(CREATE_COMMENT);
 
-	const relatedProductCatalogInquiry = useMemo(
-		() => ({
-			input: {
-				page: 1,
-				limit: 4,
-				sort: 'createdAt',
-				direction: 'DESC',
-				search: { typeList: [ListingType.PRODUCT] },
-			},
-		}),
-		[],
-	);
+    const relatedProductCatalogInquiry = useMemo(
+        () => ({ input: { page: 1, limit: 4, sort: 'createdAt', direction: 'DESC', search: { typeList: [ListingType.PRODUCT] } } }),
+        [],
+    );
 
-	const listingId = useMemo(() => {
-		if (!router.isReady) return undefined;
-		const raw = router.query.id;
-		return typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
-	}, [router.isReady, router.query.id]);
+    const listingId = useMemo(() => {
+        if (!router.isReady) return undefined;
+        const raw = router.query.id;
+        return typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
+    }, [router.isReady, router.query.id]);
 
-	const commentsQueryInput = useMemo(
-		() => ({
-			...commentInquiry,
-			search: {
-				...commentInquiry.search,
-				commentRefId: listingId && listingId.length === 24 ? listingId : commentInquiry.search.commentRefId,
-			},
-		}),
-		[commentInquiry, listingId],
-	);
+    const commentsQueryInput = useMemo(
+        () => ({ ...commentInquiry, search: { ...commentInquiry.search, commentRefId: listingId && listingId.length === 24 ? listingId : commentInquiry.search.commentRefId } }),
+        [commentInquiry, listingId],
+    );
 
-	const { loading: productDetailLoading, refetch: getProductRefetch } = useQuery(GET_LISTING, {
-		fetchPolicy: 'network-only',
-		variables: { input: listingId },
-		skip: !listingId || listingId.length !== 24,
-		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			if (data?.getListing) setProduct(data.getListing);
-			if (data?.getListing?.listingImages?.length) setSlideImage(data.getListing.listingImages[0]);
-		},
-	});
+    const { loading: productDetailLoading, refetch: getProductRefetch } = useQuery(GET_LISTING, {
+        fetchPolicy: 'cache-and-network',
+        variables: { input: listingId },
+        skip: !listingId || listingId.length !== 24,
+        notifyOnNetworkStatusChange: false,
+        onCompleted: (data: T) => {
+            if (data?.getListing) setProduct(data.getListing);
+            if (data?.getListing?.listingImages?.length) setSlideImage(data.getListing.listingImages[0]);
+        },
+    });
 
-	const { refetch: getProductsCatalogRefetch } = useQuery(GET_LISTINGS, {
-		fetchPolicy: 'cache-and-network',
-		variables: relatedProductCatalogInquiry,
-		skip: !productId && !product,
-		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			if (data?.getListings?.list) setRelatedProducts(data?.getListings?.list);
-		},
-	});
+    useQuery(GET_LISTINGS, {
+        fetchPolicy: 'cache-and-network',
+        variables: relatedProductCatalogInquiry,
+        skip: !productId && !product,
+        notifyOnNetworkStatusChange: false,
+        onCompleted: (data: T) => {
+            if (data?.getListings?.list) setRelatedProducts(data?.getListings?.list);
+        },
+    });
 
-	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
-		fetchPolicy: 'cache-and-network',
-		variables: { input: commentsQueryInput },
-		skip: !listingId || listingId.length !== 24,
-		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			if (data?.getComments?.list) setProductComments(data?.getComments?.list);
-			setCommentTotal(data?.getComments?.metaCounter[0]?.total ?? 0);
-		},
-	});
+    const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
+        fetchPolicy: 'cache-and-network',
+        variables: { input: commentsQueryInput },
+        skip: !listingId || listingId.length !== 24,
+        notifyOnNetworkStatusChange: false,
+        onCompleted: (data: T) => {
+            if (data?.getComments?.list) setProductComments(data?.getComments?.list);
+            setCommentTotal(data?.getComments?.metaCounter[0]?.total ?? 0);
+        },
+    });
 
-	/** LIFECYCLES **/
-	useEffect(() => {
-		if (!router.isReady) return;
-		const raw = router.query.id;
-		const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
-		if (!id) return;
+    useEffect(() => {
+        if (!router.isReady) return;
+        const raw = router.query.id;
+        const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : null;
+        if (!id) return;
+        setProductId(id);
+        setCommentInquiry((prev) => ({ ...prev, search: { ...prev.search, commentRefId: id } }));
+        setInsertCommentData((prev) => ({ ...prev, commentRefId: id }));
+    }, [router.isReady, router.query.id]);
 
-		setProductId(id);
-		setCommentInquiry((prev) => ({
-			...prev,
-			search: { ...prev.search, commentRefId: id },
-		}));
-		setInsertCommentData((prev) => ({ ...prev, commentRefId: id }));
-	}, [router.isReady, router.query.id]);
+    useEffect(() => {
+        const refId = commentInquiry.search.commentRefId;
+        if (refId && refId.length === 24) getCommentsRefetch({ input: commentInquiry });
+    }, [commentInquiry]);
 
-	useEffect(() => {
-		const refId = commentInquiry.search.commentRefId;
-		if (refId && refId.length === 24) {
-			getCommentsRefetch({ input: commentInquiry });
-		}
-	}, [commentInquiry]);
+    const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
+    const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
+    const heroImage = product?.listingImages?.[0]
+        ? resolveListingImageUrl(product.listingImages[0], '/img/banner/products.webp')
+        : '/img/banner/products.webp';
 
-	/** HANDLERS **/
-	const changeImageHandler = (image: string) => setSlideImage(image);
-	const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
-	const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
-	const heroImage = product?.listingImages?.[0]
-		? resolveListingImageUrl(product.listingImages[0], '/img/banner/products.webp')
-		: '/img/banner/products.webp';
+    // Optimistic like — no page reload
+    const likeProductHandler = async (userData: T, id: string) => {
+        try {
+            if (!id) return;
+            if (!userData._id) throw new Error(Message.NOT_AUTHENTICATED);
+            const wasLiked = product?.meLiked?.[0]?.myFavorite;
+            setProduct((prev) => prev ? {
+                ...prev,
+                listingLikes: wasLiked ? Math.max(0, (prev.listingLikes ?? 0) - 1) : (prev.listingLikes ?? 0) + 1,
+                meLiked: [{ memberId: userData._id, likeRefId: id, myFavorite: !wasLiked }],
+            } : prev);
+            await likeTargetListing({ variables: { input: id } });
+            await sweetTopSmallSuccessAlert('success', 800);
+        } catch (err: any) {
+            void getProductRefetch({ input: productId });
+            sweetMixinErrorAlert(err.message).then();
+        }
+    };
 
-	const likeProductHandler = async (userData: T, id: string) => {
-		try {
-			if (!id) return;
-			if (!userData._id) throw new Error(Message.NOT_AUTHENTICATED);
+    const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
+        commentInquiry.page = value;
+        setCommentInquiry({ ...commentInquiry });
+    };
 
-			await likeTargetListing({ variables: { input: id } });
-			await getProductRefetch({ input: productId });
-			await getProductsCatalogRefetch(relatedProductCatalogInquiry);
-			await sweetTopSmallSuccessAlert('success', 800);
-		} catch (err: any) {
-			console.log('ERROR likeProductHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
-	};
+    const createCommentHandler = async () => {
+        try {
+            if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
+            await createComment({ variables: { input: insertCommentData } });
+            setInsertCommentData({ ...insertCommentData, commentContent: '' });
+            await getCommentsRefetch({ input: commentInquiry });
+        } catch (err: any) {
+            await sweetErrorHandling(err);
+        }
+    };
 
-	const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		commentInquiry.page = value;
-		setCommentInquiry({ ...commentInquiry });
-	};
+    const isLiked = product?.meLiked?.[0]?.myFavorite;
 
-	const createCommentHandler = async () => {
-		try {
-			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-			await createComment({ variables: { input: insertCommentData } });
-			setInsertCommentData({ ...insertCommentData, commentContent: '' });
-			await getCommentsRefetch({ input: commentInquiry });
-		} catch (err: any) {
-			await sweetErrorHandling(err);
-		}
-	};
+    if (productDetailLoading && !product) {
+        return (
+            <Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '1080px' }}>
+                <CircularProgress size={'4rem'} />
+            </Stack>
+        );
+    }
 
-	if (productDetailLoading) {
-		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '1080px' }}>
-				<CircularProgress size={'4rem'} />
-			</Stack>
-		);
-	}
+    if (device === 'mobile') {
+        return (
+            <>
+                <ProductDetailMobile
+                    product={product} user={user} slideImage={slideImage}
+                    onSlideImageChange={(img: string) => setSlideImage(img)}
+                    onLike={likeProductHandler} relatedProducts={relatedProducts}
+                    productComments={productComments} commentTotal={commentTotal}
+                    commentInquiry={commentInquiry} onCommentPageChange={commentPaginationChangeHandler}
+                    insertCommentData={insertCommentData}
+                    onCommentTextChange={(value: string) => setInsertCommentData((prev) => ({ ...prev, commentContent: value }))}
+                    onSubmitComment={createCommentHandler}
+                />
+                <div className="container" style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 32 }}>
+                    <ProductDetailInquirySidebar product={product} user={user} />
+                </div>
+            </>
+        );
+    }
 
-	if (device === 'mobile') {
-		return (
-			<>
-				<ProductDetailMobile
-					product={product}
-					user={user}
-					slideImage={slideImage}
-					onSlideImageChange={changeImageHandler}
-					onLike={likeProductHandler}
-					relatedProducts={relatedProducts}
-					productComments={productComments}
-					commentTotal={commentTotal}
-					commentInquiry={commentInquiry}
-					onCommentPageChange={commentPaginationChangeHandler}
-					insertCommentData={insertCommentData}
-					onCommentTextChange={(value) => setInsertCommentData((prev) => ({ ...prev, commentContent: value }))}
-					onSubmitComment={createCommentHandler}
-				/>
-				<div className="container" style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 32 }}>
-					<ProductDetailInquirySidebar product={product} user={user} />
-				</div>
-			</>
-		);
-	}
+    return (
+        <div className="detail-page">
 
-	return (
-		<div className="product-detail-revamp">
-			<section
-				className="product-detail-revamp__hero"
-				style={{
-					backgroundImage: `url('${heroImage}')`,
-					backgroundSize: 'cover',
-					backgroundPosition: 'center',
-				}}
-			>
-				<div className="product-detail-revamp__hero-inner">
-					<h1>{product?.listingTitle}</h1>
-					<p>{`Home / Products / ${product?.listingTitle ?? ''}`}</p>
-				</div>
-			</section>
+            {/* ── MAIN: left panel | right sidebar ── */}
+            <div className="detail-page__main">
 
-			<div className="product-detail-revamp__container">
-				<div className="product-detail-revamp__grid">
-					<div className="product-detail-revamp__left">
-						<div className="media-card">
-							<img src={getListingImg(slideImage || product?.listingImages?.[0])} alt="" className="main-image" />
-							{(product?.listingImages?.length ?? 0) > 1 && (
-								<div className="thumb-row">
-									{product?.listingImages?.slice(0, 3).map((img) => (
-										<button
-											key={img}
-											type="button"
-											className={slideImage === img ? 'thumb is-active' : 'thumb'}
-											onClick={() => changeImageHandler(img)}
-										>
-											<img src={getListingImg(img)} alt="" />
-										</button>
-									))}
-								</div>
-							)}
-						</div>
+                {/* LEFT: hero bg + floating card */}
+                <div className="detail-page__left-panel">
+                    <div className="detail-page__hero-bg" style={{ backgroundImage: `url('${heroImage}')` }} />
 
-						<div className="tabs-card">
-							<div className="tabs">
-								<button type="button" className={activeTab === 'about' ? 'is-active' : ''} onClick={() => setActiveTab('about')}>
-									About
-								</button>
-								<button
-									type="button"
-									className={activeTab === 'details' ? 'is-active' : ''}
-									onClick={() => setActiveTab('details')}
-								>
-									Details
-								</button>
-							</div>
-							{activeTab === 'about' ? (
-								<p className="tab-copy">{product?.listingDesc ?? 'No product description yet.'}</p>
-							) : (
-								<div className="tab-details">
-									<p>
-										<strong>Location:</strong> {product?.listingLocation || '-'}
-									</p>
-									<p>
-										<strong>Status:</strong> {product?.listingStatus || '-'}
-									</p>
-									<p>
-										<strong>Views:</strong> {product?.listingViews ?? 0}
-									</p>
-								</div>
-							)}
-						</div>
-					</div>
+                    <div className="detail-card detail-card--main">
+                        {/* Product image */}
+                        <div className="detail-card__product-image">
+                            <img
+                                src={getListingImg(slideImage || product?.listingImages?.[0])}
+                                alt={product?.listingTitle}
+                                onError={(e) => { e.currentTarget.src = '/img/listing/default-listing.webp'; }}
+                            />
+                        </div>
 
-					<div className="product-detail-revamp__right">
-						<div className="summary-card">
-							<h2>{product?.listingTitle}</h2>
-							<p className="price">From ${formatterStr(product?.listingPrice)}</p>
-							{product?.listingLocation ? <span className="location-badge">📍 {product.listingLocation}</span> : null}
-							<div className="stats">
-								<span>👁 {product?.listingViews ?? 0}</span>
-								<button type="button" onClick={() => likeProductHandler(user, product?._id as string)} aria-label="Like product">
-									{product?.meLiked && product?.meLiked[0]?.myFavorite ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon />}
-								</button>
-								<span>{product?.listingLikes ?? 0}</span>
-							</div>
-						</div>
+                        {(product?.listingImages?.length ?? 0) > 1 && (
+                            <div className="detail-card__thumbs">
+                                {product?.listingImages?.slice(0, 4).map((img) => (
+                                    <button key={img} type="button" className={`detail-card__thumb ${slideImage === img ? 'is-active' : ''}`} onClick={() => setSlideImage(img)}>
+                                        <img src={getListingImg(img)} alt="" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
-						<div className="specialist-card">
-							<img src={getMemberImg(product?.memberData?.memberImage ?? undefined)} alt="" />
-							<div>
-								<strong>{product?.memberData?.memberNick || 'Specialist'}</strong>
-								<Link href={`/specialist/detail?id=${product?.memberData?._id}`}>View Profile →</Link>
-							</div>
-						</div>
+                        <h1 className="detail-card__title">{product?.listingTitle ?? 'Product'}</h1>
+                        <p className="detail-card__price">From ₩{formatterStr(product?.listingPrice)}</p>
 
-						<div className="inquiry-card">
-							<ProductDetailInquirySidebar product={product} user={user} />
-						</div>
-					</div>
-				</div>
+                        <div className="detail-card__meta">
+                            {product?.listingLocation && <span className="detail-card__location">📍 {product.listingLocation}</span>}
+                            <span className="detail-card__stats">
+                                <span className="detail-card__stat">
+                                    <svg width="14" height="10" viewBox="0 0 24 16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 8s4-7 11-7 11 7 11 7-4 7-11 7S1 8 1 8z"/><circle cx="12" cy="8" r="3"/></svg>
+                                    {product?.listingViews ?? 0}
+                                </span>
+                                <button type="button" className="detail-card__like-btn" onClick={() => likeProductHandler(user, product?._id as string)}>
+                                    {isLiked ? <FavoriteIcon sx={{ fontSize: 14 }} htmlColor="var(--pp-primary)" /> : <FavoriteBorderIcon sx={{ fontSize: 14 }} htmlColor="#888" />}
+                                    <span>{product?.listingLikes ?? 0}</span>
+                                </button>
+                            </span>
+                        </div>
 
-				{commentTotal !== 0 && (
-					<Stack className={'reviews-config'}>
-						<Stack className={'filter-box'}>
-							<Stack className={'review-cnt'}>
-								<Typography className={'reviews'}>{commentTotal} shopper reviews for this product</Typography>
-							</Stack>
-						</Stack>
-						<Stack className={'review-list'}>
-							{productComments?.map((comment: Comment) => {
-								return <ProductReviewCard comment={comment} key={comment?._id} />;
-							})}
-							<Box component={'div'} className={'pagination-box'}>
-								<MuiPagination
-									page={commentInquiry.page}
-									count={Math.ceil(commentTotal / commentInquiry.limit)}
-									onChange={commentPaginationChangeHandler}
-									shape="circular"
-									color="primary"
-								/>
-							</Box>
-						</Stack>
-					</Stack>
-				)}
-				<Stack className={'leave-review-config'}>
-					<Typography className={'main-title'}>Write a product review</Typography>
-					<Typography className={'review-title'}>Your product review</Typography>
-					<textarea
-						onChange={({ target: { value } }: any) => {
-							setInsertCommentData({ ...insertCommentData, commentContent: value });
-						}}
-						value={insertCommentData.commentContent}
-						placeholder={'Tell other pet parents what worked well (or what did not).'}
-					></textarea>
-					<Box className={'submit-btn'} component={'div'}>
-						<Button
-							className={'submit-review'}
-							disabled={insertCommentData.commentContent === '' || user?._id === ''}
-							onClick={createCommentHandler}
-						>
-							<Typography className={'title'}>Submit product review</Typography>
-						</Button>
-					</Box>
-				</Stack>
+                        <div className="detail-card__tabs">
+                            <button type="button" className={`detail-card__tab ${activeTab === 'about' ? 'is-active' : ''}`} onClick={() => setActiveTab('about')}>About</button>
+                            <button type="button" className={`detail-card__tab ${activeTab === 'details' ? 'is-active' : ''}`} onClick={() => setActiveTab('details')}>Details</button>
+                        </div>
 
-				{relatedProducts.length !== 0 && (
-					<section className="related-section">
-						<h3>You Might Also Like</h3>
-						<div className="related-grid">
-							{relatedProducts
-								.filter((item) => item._id !== product?._id)
-								.slice(0, 4)
-								.map((relatedProduct: Product) => (
-									<Link href={`/product/detail?id=${relatedProduct._id}`} className="related-card" key={relatedProduct._id}>
-										<img src={getListingImg(relatedProduct.listingImages?.[0])} alt="" />
-										<div className="overlay">
-											<strong>{relatedProduct.listingTitle}</strong>
-										</div>
-									</Link>
-								))}
-						</div>
-					</section>
-				)}
-			</div>
-		</div>
-	);
+                        <div className="detail-card__tab-body">
+                            {activeTab === 'about' ? (
+                                <p>{product?.listingDesc ?? 'No description available.'}</p>
+                            ) : (
+                                <>
+                                    <p><strong>Location:</strong> {product?.listingLocation || '—'}</p>
+                                    <p><strong>Status:</strong> {product?.listingStatus || '—'}</p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT: sidebar */}
+                <div className="detail-page__sidebar">
+                    <div className="detail-card detail-card--specialist">
+                        <img className="detail-card__avatar" src={getMemberImg(product?.memberData?.memberImage ?? undefined)} alt={product?.memberData?.memberNick ?? 'Specialist'} />
+                        <div className="detail-card__specialist-info">
+                            <strong>{product?.memberData?.memberNick ?? 'Specialist'}</strong>
+                            {product?.memberData?.memberPhone && <p className="detail-card__specialist-phone">{product.memberData.memberPhone}</p>}
+                            <Link href={`/specialist/detail?id=${product?.memberData?._id}`} className="detail-card__specialist-link">View Profile →</Link>
+                        </div>
+                    </div>
+
+                    <div className="detail-card detail-card--inquiry">
+                        <ProductDetailInquirySidebar product={product} user={user} />
+                    </div>
+                </div>
+
+            </div>
+
+            {/* ── BOTTOM ── */}
+            <div className="detail-page__bottom">
+                <div className="detail-page__container">
+                    {commentTotal !== 0 && (
+                        <Stack className="detail-reviews">
+                            <Typography className="detail-reviews__count">Shopper Reviews</Typography>
+                            <Stack className="detail-reviews__list">
+                                {productComments?.map((comment: Comment) => (
+                                    <ProductReviewCard comment={comment} key={comment?._id} />
+                                ))}
+                                <Box component="div" className="detail-reviews__pagination">
+                                    <MuiPagination page={commentInquiry.page} count={Math.ceil(commentTotal / commentInquiry.limit)} onChange={commentPaginationChangeHandler} shape="circular" color="primary" />
+                                </Box>
+                            </Stack>
+                        </Stack>
+                    )}
+
+                    <Stack className="detail-leave-review">
+                        <Typography className="detail-leave-review__title">Write a Review</Typography>
+                        <textarea className="detail-leave-review__textarea" placeholder="Tell other pet parents what worked well (or what did not)." onChange={({ target: { value } }: any) => setInsertCommentData({ ...insertCommentData, commentContent: value })} value={insertCommentData.commentContent} />
+                        <Button className="detail-leave-review__btn" disabled={!insertCommentData.commentContent || !user?._id} onClick={createCommentHandler}>Submit Review</Button>
+                    </Stack>
+
+                    {relatedProducts.length !== 0 && (
+                        <section className="detail-related">
+                            <h3 className="detail-related__title">You Might Also Like</h3>
+                            <div className="detail-related__grid">
+                                {relatedProducts.filter((item) => item._id !== product?._id).slice(0, 4).map((p) => (
+                                    <Link href={`/product/detail?id=${p._id}`} className="detail-related__card" key={p._id}>
+                                        <img src={getListingImg(p.listingImages?.[0])} alt={p.listingTitle} />
+                                        <div className="detail-related__overlay"><strong>{p.listingTitle}</strong></div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            </div>
+
+        </div>
+    );
 };
 
 ProductDetail.defaultProps = {
-	initialComment: {
-		page: 1,
-		limit: 5,
-		sort: 'createdAt',
-		direction: 'DESC',
-		search: {
-			commentRefId: '',
-		},
-	},
+    initialComment: { page: 1, limit: 5, sort: 'createdAt', direction: 'DESC', search: { commentRefId: '' } },
 };
 
 export default withLayoutFull(ProductDetail);

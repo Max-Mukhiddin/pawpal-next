@@ -1,21 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { NextPage } from 'next';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import {
-	Box,
-	Button,
-	Checkbox,
-	Dialog,
-	DialogContent,
-	Divider,
-	FormControlLabel,
-	FormGroup,
-	Stack,
-} from '@mui/material';
+import { Button, Dialog, DialogContent, Divider, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
 import { logIn, signUp } from '../../libs/auth';
-import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export const getStaticProps = async ({ locale }: any) => ({
@@ -32,14 +20,21 @@ const infoRows = [
 
 const Join: NextPage = () => {
 	const router = useRouter();
-	const device = useDeviceDetect();
 	const [input, setInput] = useState({ nick: '', password: '', phone: '', type: 'USER' });
+	const [memberDesc, setMemberDesc] = useState('');
 	const [loginView, setLoginView] = useState<boolean>(true);
+	const [showPassword, setShowPassword] = useState(false);
 	const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+	const isPendingSpecialist = input.type === 'AGENT';
 
 	/** HANDLERS **/
 	const viewChangeHandler = (state: boolean) => {
 		setLoginView(state);
+		setErrorMessage(null);
+		setSuccessMessage(null);
 	};
 
 	const handleInput = useCallback((name: any, value: any) => {
@@ -49,240 +44,326 @@ const Join: NextPage = () => {
 	}, []);
 
 	const doLogin = useCallback(async () => {
-		console.warn(input);
+		const nick = input.nick;
+		const password = input.password;
+
+		setErrorMessage(null);
+		setSuccessMessage(null);
+
+		if (!nick.trim() || !password.trim()) {
+			setErrorMessage('Please enter both nickname and password');
+			return;
+		}
+		if (nick.length < 3 || nick.length > 16) {
+			setErrorMessage('Nickname must be between 3 and 16 characters');
+			return;
+		}
+		if (password.length < 5 || password.length > 12) {
+			setErrorMessage('Password must be between 5 and 12 characters');
+			return;
+		}
+
 		try {
-			await logIn(input.nick, input.password);
+			await logIn(nick, password);
+			setSuccessMessage('Welcome back!');
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
-			await sweetMixinErrorAlert(err.message);
+			const msg =
+				err?.message || err?.graphQLErrors?.[0]?.message || 'Login failed. Please check your credentials.';
+			setErrorMessage(msg);
 		}
-	}, [input]);
+	}, [input.nick, input.password, router]);
 
 	const doSignUp = useCallback(async () => {
-		console.warn(input);
-		try {
-			const isSpecialistSignup = input.type === 'AGENT';
-			const memberType = 'USER';
-			const isPendingSpecialist = isSpecialistSignup;
+		const nick = input.nick;
+		const password = input.password;
+		const phone = input.phone;
 
-			await signUp(input.nick, input.password, input.phone, memberType, {
+		setErrorMessage(null);
+		setSuccessMessage(null);
+
+		if (!nick.trim() || !password.trim() || !phone.trim()) {
+			setErrorMessage('Please fill in all required fields');
+			return;
+		}
+		if (nick.length < 3 || nick.length > 16) {
+			setErrorMessage('Nickname must be between 3 and 16 characters');
+			return;
+		}
+		if (password.length < 5 || password.length > 12) {
+			setErrorMessage('Password must be between 5 and 12 characters');
+			return;
+		}
+		if (phone.length < 7 || phone.length > 20) {
+			setErrorMessage('Please enter a valid phone number');
+			return;
+		}
+		if (isPendingSpecialist && (!memberDesc || memberDesc.length < 10)) {
+			setErrorMessage('Please describe your experience (at least 10 characters)');
+			return;
+		}
+
+		try {
+			await signUp(nick, password, phone, 'USER', {
 				isPendingSpecialist,
+				memberDesc,
 			});
 
-			if (isSpecialistSignup) {
+			if (isPendingSpecialist) {
+				setSuccessMessage('Application submitted! Waiting for admin approval.');
 				setApplicationDialogOpen(true);
 			} else {
-				await sweetMixinSuccessAlert('Signup successful! Welcome to PawPal.');
+				setSuccessMessage('Account created successfully!');
 				await router.push(`${router.query.referrer ?? '/'}`);
 			}
 		} catch (err: any) {
-			await sweetMixinErrorAlert(err.message);
+			const msg = err?.message || err?.graphQLErrors?.[0]?.message || 'Signup failed. Please try again.';
+			setErrorMessage(msg);
 		}
-	}, [input, router]);
+	}, [input.nick, input.password, input.phone, memberDesc, isPendingSpecialist, router]);
 
 	const handleApplicationDialogClose = () => {
 		setApplicationDialogOpen(false);
 		setLoginView(true);
 	};
 
-	console.log('+input: ', input);
+	return (
+		<>
+			<Stack className="join-page">
+				<div className="join-page__visual">
+					<div className="join-page__visual-overlay" />
+					<div className="join-page__brand">
+						<img src="/images/footer/pawpal-logo-light.svg" alt="PawPal" style={{ height: '36px', width: 'auto' }} />
+					</div>
+					<div className="join-page__welcome">
+						<h1>Hello!</h1>
+						<p>Welcome to PawPal. Your pet care journey starts here.</p>
+					</div>
+				</div>
 
-	if (device === 'mobile') {
-		return <div>LOGIN MOBILE</div>;
-	} else {
-		return (
-			<>
-				<Stack className={'join-page'}>
-					<Stack className={'container'}>
-						<Stack className={'main'}>
-							<Stack className={'left'}>
-								{/* @ts-ignore */}
-								<Box className={'logo'}>
-									<span style={{ fontSize: '24px', fontWeight: 700, color: '#E07B3A' }}>PawPal</span>
-								</Box>
-								<Box className={'info'}>
-									<span>{loginView ? 'login' : 'signup'}</span>
-									<p>Welcome back! Sign in to book pet services.</p>
-								</Box>
-								<Box className={'input-wrap'}>
-									<div className={'input-box'}>
-										<span>Nickname</span>
-										<input
-											type="text"
-											placeholder={'Enter Nickname'}
-											onChange={(e) => handleInput('nick', e.target.value)}
-											required={true}
-											onKeyDown={(event) => {
-												if (event.key == 'Enter' && loginView) doLogin();
-												if (event.key == 'Enter' && !loginView) doSignUp();
-											}}
-										/>
-									</div>
-									<div className={'input-box'}>
-										<span>Password</span>
-										<input
-											type="text"
-											placeholder={'Enter Password'}
-											onChange={(e) => handleInput('password', e.target.value)}
-											required={true}
-											onKeyDown={(event) => {
-												if (event.key == 'Enter' && loginView) doLogin();
-												if (event.key == 'Enter' && !loginView) doSignUp();
-											}}
-										/>
-									</div>
-									{!loginView && (
-										<div className={'input-box'}>
-											<span>Phone</span>
-											<input
-												type="text"
-												placeholder={'Enter Phone'}
-												onChange={(e) => handleInput('phone', e.target.value)}
-												required={true}
-												onKeyDown={(event) => {
-													if (event.key == 'Enter') doSignUp();
-												}}
-											/>
-										</div>
-									)}
-								</Box>
-								{!loginView && (
-									<Box
-										className="join-member-type"
-										sx={{
-											mt: 2.5,
-											width: '470px',
-											maxWidth: '100%',
-											display: 'flex',
-											flexDirection: 'column',
-											gap: 1.25,
-											alignSelf: 'center',
-										}}
-									>
-										<Box component="span" sx={{ fontSize: 14, fontWeight: 600, color: '#181A20' }}>
-											I am signing up as
-										</Box>
-										<Stack direction="row" spacing={1.25} sx={{ width: '100%' }}>
-											<Button
-												type="button"
-												variant={input.type === 'USER' ? 'contained' : 'outlined'}
-												onClick={() => handleInput('type', 'USER')}
-												sx={{
-													flex: 1,
-													borderRadius: '999px',
-													textTransform: 'none',
-													fontWeight: 600,
-													py: 1.25,
-													borderColor: '#ddd',
-													...(input.type === 'USER'
-														? { bgcolor: '#E07B3A', color: '#fff', '&:hover': { bgcolor: '#c96a32' } }
-														: { color: '#181A20' }),
-												}}
-											>
-												Pet Owner
-											</Button>
-											<Button
-												type="button"
-												variant={input.type === 'AGENT' ? 'contained' : 'outlined'}
-												onClick={() => handleInput('type', 'AGENT')}
-												sx={{
-													flex: 1,
-													borderRadius: '999px',
-													textTransform: 'none',
-													fontWeight: 600,
-													py: 1.25,
-													borderColor: '#ddd',
-													...(input.type === 'AGENT'
-														? { bgcolor: '#E07B3A', color: '#fff', '&:hover': { bgcolor: '#c96a32' } }
-														: { color: '#181A20' }),
-												}}
-											>
-												Specialist / Provider
-											</Button>
-										</Stack>
-									</Box>
-								)}
-								<Box className={'register'}>
-									{loginView && (
-										<div className={'remember-info'}>
-											<FormGroup>
-												<FormControlLabel control={<Checkbox defaultChecked size="small" />} label="Remember me" />
-											</FormGroup>
-											<a>Lost your password?</a>
-										</div>
-									)}
-
-									{loginView ? (
-										<Button
-											variant="contained"
-											endIcon={<img src="/img/icons/rightup.svg" alt="" />}
-											disabled={input.nick == '' || input.password == ''}
-											onClick={doLogin}
-										>
-											LOGIN
-										</Button>
-									) : (
-										<Button
-											variant="contained"
-											disabled={input.nick == '' || input.password == '' || input.phone == ''}
-											onClick={doSignUp}
-											endIcon={<img src="/img/icons/rightup.svg" alt="" />}
-										>
-											SIGNUP
-										</Button>
-									)}
-								</Box>
-								<Box className={'ask-info'}>
-									{loginView ? (
-										<p>
-											Not registered yet?
-											<b
-												onClick={() => {
-													viewChangeHandler(false);
-												}}
-											>
-												SIGNUP
-											</b>
-										</p>
-									) : (
-										<p>
-											Have account?
-											<b onClick={() => viewChangeHandler(true)}> LOGIN</b>
-										</p>
-									)}
-								</Box>
-							</Stack>
-							<Stack className={'right'}></Stack>
-						</Stack>
-					</Stack>
-				</Stack>
-
-				{/* Specialist application submitted dialog */}
-				<Dialog
-					open={applicationDialogOpen}
-					onClose={handleApplicationDialogClose}
-					maxWidth="sm"
-					fullWidth
-					PaperProps={{ sx: { borderRadius: '16px' } }}
-				>
-					<DialogContent>
-						<div style={{ padding: '40px', textAlign: 'center' }}>
-							{/* Paw icon */}
-							<div
-								style={{
-									width: 80,
-									height: 80,
-									background: '#FFF3EC',
-									borderRadius: '50%',
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									fontSize: '40px',
-									margin: '0 auto',
+				<div className="join-page__form-wrapper">
+					<div className="join-page__form-container">
+						<div className="join-page__tabs">
+							<button
+								type="button"
+								className={`join-page__tab ${loginView ? 'active' : ''}`}
+								onClick={() => {
+									setLoginView(true);
+									setErrorMessage(null);
+									setSuccessMessage(null);
 								}}
 							>
-								🐾
+								Sign In
+							</button>
+							<button
+								type="button"
+								className={`join-page__tab ${!loginView ? 'active' : ''}`}
+								onClick={() => {
+									setLoginView(false);
+									setErrorMessage(null);
+									setSuccessMessage(null);
+								}}
+							>
+								Sign Up
+							</button>
+						</div>
+
+						{loginView && (
+							<div className="join-page__form">
+								<h2>Welcome back</h2>
+								<p className="join-page__subtitle">Sign in to manage your bookings and pet profiles</p>
+
+								<div className="form-field">
+									<span className="form-field__icon">👤</span>
+									<input
+										type="text"
+										placeholder="Nickname"
+										maxLength={16}
+										value={input.nick}
+										onChange={(e) => handleInput('nick', e.target.value)}
+										onKeyDown={(e) => e.key === 'Enter' && doLogin()}
+									/>
+								</div>
+
+								<div className="form-field">
+									<span className="form-field__icon">🔒</span>
+									<input
+										type={showPassword ? 'text' : 'password'}
+										placeholder="Password"
+										maxLength={12}
+										value={input.password}
+										onChange={(e) => handleInput('password', e.target.value)}
+										onKeyDown={(e) => e.key === 'Enter' && doLogin()}
+									/>
+									<button
+										type="button"
+										className="form-field__toggle"
+										onClick={() => setShowPassword((prev) => !prev)}
+									>
+										{showPassword ? '🙈' : '👁'}
+									</button>
+								</div>
+
+								<div className="join-page__forgot">
+									<a href="#">Forgot password?</a>
+								</div>
+
+								{errorMessage && (
+									<div className="join-page__alert join-page__alert--error">
+										<span className="join-page__alert-icon">⚠️</span>
+										<span>{errorMessage}</span>
+									</div>
+								)}
+
+								{successMessage && (
+									<div className="join-page__alert join-page__alert--success">
+										<span className="join-page__alert-icon">✓</span>
+										<span>{successMessage}</span>
+									</div>
+								)}
+
+								<button className="btn-primary" type="button" onClick={doLogin}>
+									Sign In
+								</button>
+
+								<div className="join-page__divider">
+									<span>or continue with</span>
+								</div>
+
+								<button className="btn-social" type="button">
+									<img src="/img/icons/google.svg" alt="" width="20" height="20" />
+									<span>Continue with Google</span>
+								</button>
+
+								<div className="join-page__switch">
+									Don&apos;t have an account?{' '}
+									<button type="button" onClick={() => viewChangeHandler(false)}>
+										Sign Up
+									</button>
+								</div>
 							</div>
+						)}
+
+						{!loginView && (
+							<div className="join-page__form">
+								<h2>Create Account</h2>
+								<p className="join-page__subtitle">Join our community of pet lovers</p>
+
+								<div className="form-field">
+									<input
+										type="text"
+										placeholder="Username"
+										maxLength={16}
+										value={input.nick}
+										onChange={(e) => handleInput('nick', e.target.value)}
+									/>
+								</div>
+
+								<div className="form-field">
+									<input
+										type="tel"
+										placeholder="Phone number"
+										maxLength={20}
+										value={input.phone}
+										onChange={(e) => handleInput('phone', e.target.value)}
+										onKeyDown={(e) => e.key === 'Enter' && doSignUp()}
+									/>
+								</div>
+
+								<div className="form-field">
+									<input
+										type={showPassword ? 'text' : 'password'}
+										placeholder="Password"
+										maxLength={12}
+										value={input.password}
+										onChange={(e) => handleInput('password', e.target.value)}
+										onKeyDown={(e) => e.key === 'Enter' && doSignUp()}
+									/>
+									<button
+										type="button"
+										className="form-field__toggle"
+										onClick={() => setShowPassword((prev) => !prev)}
+									>
+										{showPassword ? '🙈' : '👁'}
+									</button>
+								</div>
+
+								<label className="join-page__checkbox">
+									<input
+										type="checkbox"
+										checked={input.type === 'AGENT'}
+										onChange={(e) => handleInput('type', e.target.checked ? 'AGENT' : 'USER')}
+									/>
+									<span>I want to register as a specialist</span>
+								</label>
+
+								{input.type === 'AGENT' && (
+									<div className="form-field">
+										<textarea
+											placeholder="Tell us about your experience..."
+											maxLength={1000}
+											value={memberDesc}
+											onChange={(e) => setMemberDesc(e.target.value)}
+										/>
+									</div>
+								)}
+
+								{errorMessage && (
+									<div className="join-page__alert join-page__alert--error">
+										<span className="join-page__alert-icon">⚠️</span>
+										<span>{errorMessage}</span>
+									</div>
+								)}
+
+								{successMessage && (
+									<div className="join-page__alert join-page__alert--success">
+										<span className="join-page__alert-icon">✓</span>
+										<span>{successMessage}</span>
+									</div>
+								)}
+
+								<button className="btn-primary" type="button" onClick={doSignUp}>
+									Create Account
+								</button>
+
+								<div className="join-page__switch">
+									Already have an account?{' '}
+									<button type="button" onClick={() => viewChangeHandler(true)}>
+										Sign In
+									</button>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			</Stack>
+
+			{/* Specialist application submitted dialog */}
+			<Dialog
+				open={applicationDialogOpen}
+				onClose={handleApplicationDialogClose}
+				maxWidth="sm"
+				fullWidth
+				PaperProps={{ sx: { borderRadius: '16px' } }}
+			>
+				<DialogContent>
+					<div style={{ padding: '40px', textAlign: 'center' }}>
+						{/* Paw icon */}
+						<div
+							style={{
+								width: 80,
+								height: 80,
+								background: 'var(--pp-primary-soft)',
+								borderRadius: '50%',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								fontSize: '40px',
+								margin: '0 auto',
+							}}
+						>
+							🐾
+						</div>
 
 							{/* Title */}
 							<p
@@ -327,24 +408,23 @@ const Join: NextPage = () => {
 								fullWidth
 								onClick={handleApplicationDialogClose}
 								sx={{
-									background: '#E07B3A',
+									background: 'var(--pp-primary)',
 									color: '#fff',
 									borderRadius: '50px',
 									padding: '12px 0',
 									fontSize: '15px',
 									fontWeight: 600,
 									textTransform: 'none',
-									'&:hover': { background: '#c96a32' },
+									'&:hover': { background: 'var(--pp-primary-hover)' },
 								}}
 							>
 								Got it!
 							</Button>
-						</div>
-					</DialogContent>
-				</Dialog>
-			</>
-		);
-	}
+					</div>
+				</DialogContent>
+			</Dialog>
+		</>
+	);
 };
 
 export default withLayoutBasic(Join);

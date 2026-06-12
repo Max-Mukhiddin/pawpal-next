@@ -315,12 +315,6 @@ export const GET_VISITED = gql`
 	}
 `;
 
-/** @deprecated Use GET_LISTING — same document; remove after call sites migrate */
-export const GET_PROPERTY = GET_LISTING;
-/** @deprecated Use GET_LISTINGS — same document */
-export const GET_PROPERTIES = GET_LISTINGS;
-/** @deprecated Use GET_AGENT_LISTINGS — same document */
-export const GET_AGENT_PROPERTIES = GET_AGENT_LISTINGS;
 
 /**************************
  *      BOARD-ARTICLE     *
@@ -558,6 +552,18 @@ export const GET_MY_BOOKINGS = gql`
 				bookingStatus
 				createdAt
 				updatedAt
+				listingData {
+					_id
+					listingTitle
+					listingType
+					listingLocation
+				}
+				agentData {
+					_id
+					memberNick
+					memberPhone
+					memberImage
+				}
 			}
 			metaCounter {
 				total
@@ -579,6 +585,18 @@ export const GET_AGENT_BOOKINGS = gql`
 				bookingStatus
 				createdAt
 				updatedAt
+				listingData {
+					_id
+					listingTitle
+					listingType
+					listingLocation
+				}
+				agentData {
+					_id
+					memberNick
+					memberPhone
+					memberImage
+				}
 			}
 			metaCounter {
 				total

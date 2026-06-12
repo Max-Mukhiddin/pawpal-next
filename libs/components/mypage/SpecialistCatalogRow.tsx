@@ -1,21 +1,26 @@
-import { Menu, MenuItem, Stack, Typography } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 import React, { useState } from 'react';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import IconButton from '@mui/material/IconButton';
 import ModeIcon from '@mui/icons-material/Mode';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Listing } from '../../types/listing/listing';
-import { formatterStr } from '../../utils';
 import Moment from 'react-moment';
 import { useRouter } from 'next/router';
-import { ListingStatus } from '../../enums/listing.enum';
+import { ListingStatus, ListingType } from '../../enums/listing.enum';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
 
 interface SpecialistCatalogRowProps {
 	listing: Listing;
-	deleteListingHandler?: any;
+	deleteListingHandler?: (id: string) => void;
 	memberPage?: boolean;
-	updateListingHandler?: any;
+	updateListingHandler?: (status: string, id: string) => void;
+}
+
+function statusBadgeClass(status: string): string {
+	if (status === ListingStatus.ACTIVE) return 'mypage-catalog__status-badge--active';
+	if (status === ListingStatus.SOLD) return 'mypage-catalog__status-badge--sold';
+	return 'mypage-catalog__status-badge--delete';
 }
 
 export const SpecialistCatalogRow = (props: SpecialistCatalogRowProps) => {
@@ -25,7 +30,6 @@ export const SpecialistCatalogRow = (props: SpecialistCatalogRowProps) => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
-	/** HANDLERS **/
 	const pushEditListing = async (id: string) => {
 		await router.push({
 			pathname: '/mypage',
@@ -33,16 +37,16 @@ export const SpecialistCatalogRow = (props: SpecialistCatalogRowProps) => {
 		});
 	};
 
-	const pushListingDetail = async (id: string) => {
-		if (memberPage)
-			await router.push({
-				pathname: '/listings/detail',
-				query: { id: id },
-			});
-		else return;
+	const pushListingDetail = async (listing: Listing) => {
+		const pathname =
+			listing.listingType === ListingType.SERVICE
+				? '/service/detail'
+				: '/product/detail';
+		await router.push({ pathname, query: { id: listing._id } });
 	};
 
-	const handleClick = (event: any) => {
+	const handleStatusClick = (event: React.MouseEvent<HTMLElement>) => {
+		if (memberPage || listing.listingStatus === ListingStatus.SOLD) return;
 		setAnchorEl(event.currentTarget);
 	};
 
@@ -52,32 +56,47 @@ export const SpecialistCatalogRow = (props: SpecialistCatalogRowProps) => {
 
 	if (device === 'mobile') {
 		return <div>MOBILE CATALOG ROW</div>;
-	} else
-		return (
-			<Stack className={memberPage ? 'member-listing-card-box' : 'listing-card-box'}>
-				<Stack className="image-box" onClick={() => pushListingDetail(listing?._id)}>
-					<img src={resolveListingImageUrl(listing?.listingImages?.[0])} alt="" />
-				</Stack>
-				<Stack className="information-box" onClick={() => pushListingDetail(listing?._id)}>
-					<Typography className="name">{listing.listingTitle}</Typography>
-					<Typography className="address">{listing.listingAddress}</Typography>
-					<Typography className="price">
-						<strong>${formatterStr(listing?.listingPrice)}</strong>
-					</Typography>
-				</Stack>
-				<Stack className="date-box">
-					<Typography className="date">
-						<Moment format="DD MMMM, YYYY">{listing.createdAt}</Moment>
-					</Typography>
-				</Stack>
-				<Stack className="status-box">
-					<Stack className="coloured-box" sx={{ background: '#E5F0FD' }} onClick={handleClick}>
-						<Typography className="status" sx={{ color: '#3554d1' }}>
-							{listing.listingStatus}
-						</Typography>
-					</Stack>
-				</Stack>
-				{!memberPage && listing.listingStatus !== 'SOLD' && (
+	}
+
+	return (
+		<div className={`mypage-catalog__row${memberPage ? ' mypage-catalog__row--member' : ''}`}>
+			<div
+				className="mypage-catalog__thumb"
+				onClick={() => pushListingDetail(listing)}
+				style={{ cursor: 'pointer' }}
+			>
+				<img
+					src={resolveListingImageUrl(listing?.listingImages?.[0])}
+					alt={listing.listingTitle || ''}
+				/>
+			</div>
+
+			<div
+				className="mypage-catalog__info"
+				onClick={() => pushListingDetail(listing)}
+				style={{ cursor: 'pointer' }}
+			>
+				<p className="mypage-catalog__info__title">{listing.listingTitle}</p>
+				<p className="mypage-catalog__info__meta">{listing.listingAddress || '—'}</p>
+			</div>
+
+			<div className="mypage-catalog__date">
+				<Moment format="DD MMMM, YYYY">{listing.createdAt}</Moment>
+			</div>
+
+			<div>
+				<span
+					className={`mypage-catalog__status-badge ${statusBadgeClass(listing.listingStatus)}`}
+					onClick={handleStatusClick}
+					role="button"
+					tabIndex={0}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') handleStatusClick(e as unknown as React.MouseEvent<HTMLElement>);
+					}}
+				>
+					{listing.listingStatus}
+				</span>
+				{!memberPage && listing.listingStatus !== ListingStatus.SOLD && (
 					<Menu
 						anchorEl={anchorEl}
 						open={open}
@@ -91,42 +110,47 @@ export const SpecialistCatalogRow = (props: SpecialistCatalogRowProps) => {
 								overflow: 'visible',
 								filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
 							},
-							style: {
-								padding: 0,
-								display: 'flex',
-								justifyContent: 'center',
-							},
 						}}
 					>
-						{listing.listingStatus === 'ACTIVE' && (
-							<>
-								<MenuItem
-									disableRipple
-									onClick={() => {
-										handleClose();
-										updateListingHandler(ListingStatus.SOLD, listing?._id);
-									}}
-								>
-									Sold
-								</MenuItem>
-							</>
+						{listing.listingStatus === ListingStatus.ACTIVE && (
+							<MenuItem
+								disableRipple
+								onClick={() => {
+									handleClose();
+									updateListingHandler?.(ListingStatus.SOLD, listing?._id);
+								}}
+							>
+								Sold
+							</MenuItem>
 						)}
 					</Menu>
 				)}
+			</div>
 
-				<Stack className="views-box">
-					<Typography className="views">{listing.listingViews.toLocaleString()}</Typography>
-				</Stack>
-				{!memberPage && listing.listingStatus === ListingStatus.ACTIVE && (
-					<Stack className="action-box">
-						<IconButton className="icon-button" onClick={() => pushEditListing(listing._id)}>
-							<ModeIcon className="buttons" />
-						</IconButton>
-						<IconButton className="icon-button" onClick={() => deleteListingHandler(listing._id)}>
-							<DeleteIcon className="buttons" />
-						</IconButton>
-					</Stack>
-				)}
-			</Stack>
-		);
+			<div className="mypage-catalog__views">
+				{listing.listingViews.toLocaleString()}
+			</div>
+
+			{!memberPage && listing.listingStatus === ListingStatus.ACTIVE ? (
+				<div className="mypage-catalog__actions">
+					<IconButton
+						className="icon-button"
+						aria-label="Edit listing"
+						onClick={() => pushEditListing(listing._id)}
+					>
+						<ModeIcon fontSize="small" />
+					</IconButton>
+					<IconButton
+						className="icon-button"
+						aria-label="Delete listing"
+						onClick={() => deleteListingHandler?.(listing._id)}
+					>
+						<DeleteIcon fontSize="small" />
+					</IconButton>
+				</div>
+			) : (
+				<div className="mypage-catalog__actions" aria-hidden />
+			)}
+		</div>
+	);
 };

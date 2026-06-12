@@ -46,7 +46,7 @@ const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 
 	const [likeTargetMember] = useMutation(LIKE_TARGET_MEMBER);
 
-	const { refetch: getAgentsRefetch } = useQuery(GET_AGENTS, {
+	const { loading: agentsLoading, refetch: getAgentsRefetch } = useQuery(GET_AGENTS, {
 		fetchPolicy: 'network-only',
 		variables: { input: specialistDirectoryInquiry },
 		notifyOnNetworkStatusChange: true,
@@ -135,7 +135,11 @@ const SpecialistsListPage: NextPage = ({ initialInput }: any) => {
 						/>
 
 						<div className="card-wrap">
-							{agents?.length === 0 ? (
+							{agentsLoading && agents.length === 0 ? (
+								Array.from({ length: 4 }).map((_, i) => (
+									<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
+								))
+							) : agents?.length === 0 ? (
 								<div className="no-data">
 									<img src="/img/icons/icoAlert.svg" alt="" />
 									<p>No Specialists found!</p>

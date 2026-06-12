@@ -17,7 +17,7 @@ function pawpalPalette(mode: PaletteMode): ThemeOptions['palette'] {
 				paper: '#faf7f2',
 			},
 			primary: {
-				main: '#b85c38',
+				main: '#ff7a1a',
 				contrastText: '#ffffff',
 			},
 			secondary: {
@@ -37,7 +37,7 @@ function pawpalPalette(mode: PaletteMode): ThemeOptions['palette'] {
 			paper: '#1a1a22',
 		},
 		primary: {
-			main: '#c49a6c',
+			main: '#ff8c2c',
 			contrastText: '#121218',
 		},
 		secondary: {

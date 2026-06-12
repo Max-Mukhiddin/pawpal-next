@@ -20,6 +20,7 @@ const withLayoutMain = (Component: any) => {
 		}, []);
 
 		const isMobileLayout = device === 'mobile';
+		const wrapClassName = isMobileLayout ? 'layout-home layout-home--mobile' : 'layout-home';
 
 		return (
 			<>
@@ -27,7 +28,7 @@ const withLayoutMain = (Component: any) => {
 					<title>pawpal</title>
 					<meta name={'title'} content={`pawpal`} />
 				</Head>
-				<Stack id="pc-wrap" className={isMobileLayout ? 'layout-home--mobile' : undefined}>
+				<Stack id="pc-wrap" className={wrapClassName}>
 					<Stack id="pawpal-header">
 						<Top />
 					</Stack>

@@ -178,12 +178,6 @@ export const LIKE_TARGET_LISTING = gql`
 	}
 `;
 
-/** @deprecated Use CREATE_LISTING — same document */
-export const CREATE_PROPERTY = CREATE_LISTING;
-/** @deprecated Use UPDATE_LISTING — same document */
-export const UPDATE_PROPERTY = UPDATE_LISTING;
-/** @deprecated Use LIKE_TARGET_LISTING — same document */
-export const LIKE_TARGET_PROPERTY = LIKE_TARGET_LISTING;
 
 /**************************
  *         INQUIRY        *

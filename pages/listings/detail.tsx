@@ -54,7 +54,7 @@ const ListingDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const [listingComments, setPropertyComments] = useState<Comment[]>([]);
 	const [commentTotal, setCommentTotal] = useState<number>(0);
 	const [insertCommentData, setInsertCommentData] = useState<CommentInput>({
-		commentGroup: CommentGroup.PROPERTY,
+		commentGroup: CommentGroup.LISTING,
 		commentContent: '',
 		commentRefId: '',
 	});

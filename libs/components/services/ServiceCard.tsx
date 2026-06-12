@@ -58,7 +58,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onLike }) => {
 					className="services-list-card__actions"
 					direction="row"
 					alignItems="center"
-					onClick={(e) => e.stopPropagation()}
+					onClick={(e: { stopPropagation: () => any; }) => e.stopPropagation()}
 				>
 					<IconButton
 						size="small"

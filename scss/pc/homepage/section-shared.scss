@@ -29,10 +29,10 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			background-image: url('/img/decorations/paw-pattern.svg');
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none'%3E%3Cpath d='M210 40c-22 38-62 62-108 62-12 0-24-2-36-6 8 44 38 82 78 102-40 20-70 58-78 102 12-4 24-6 36-6 46 0 86 24 108 62 22-38 62-62 108-62 12 0 24 2 36 6-8-44-38-82-78-102 40-20 70-58 78-102-12 4-24 6-36 6-46 0-86-24-108-62z' stroke='%23ff7a1a' stroke-opacity='0.07' stroke-width='1.2'/%3E%3Ccircle cx='90' cy='320' r='28' stroke='%23ff7a1a' stroke-opacity='0.06' stroke-width='1'/%3E%3Ccircle cx='340' cy='100' r='20' stroke='%23ff7a1a' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
 			background-repeat: no-repeat;
-			background-position: center;
-			background-size: 80%;
+			background-position: 8% 20%;
+			background-size: 480px 480px;
 			opacity: 0.04;
 			pointer-events: none;
 			z-index: 0;
@@ -65,7 +65,7 @@
 			font-size: 0.85rem;
 			font-weight: 600;
 			letter-spacing: 2px;
-			color: #e8734a;
+			color: var(--pp-primary);
 			text-transform: uppercase;
 			margin: 0 0 16px;
 		}
@@ -94,16 +94,16 @@
 			gap: 6px;
 			margin-top: 18px;
 			padding: 10px 18px;
-			border: 1px solid #e8734a;
+			border: 1px solid var(--pp-primary);
 			border-radius: 999px;
-			color: #e8734a;
+			color: var(--pp-primary);
 			text-decoration: none;
 			font-size: 14px;
 			font-weight: 600;
 			transition: all 0.3s ease;
 
 			&:hover {
-				background: #fff2e8;
+				background: var(--pp-primary-soft);
 			}
 		}
 
@@ -155,7 +155,7 @@
 	}
 
 	.section-pawpal--soft {
-		background: #fff2e8;
+		background: var(--pp-primary-soft);
 	}
 }
 

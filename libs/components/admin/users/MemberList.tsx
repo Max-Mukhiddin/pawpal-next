@@ -265,7 +265,12 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 													<Chip
 														label="Pending Specialist"
 														size="small"
-														sx={{ fontWeight: 600, bgcolor: '#FFF3E0', color: '#E65100', border: '1px solid #E07B3A' }}
+														sx={{
+															fontWeight: 600,
+															bgcolor: 'var(--pp-primary-soft)',
+															color: 'var(--pp-primary-text)',
+															border: '1px solid var(--pp-primary)',
+														}}
 													/>
 												) : (
 													'—'

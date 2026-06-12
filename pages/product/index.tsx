@@ -101,7 +101,7 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 
 	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
-	const { refetch: getProductsCatalogRefetch } = useQuery(GET_LISTINGS, {
+	const { loading: productsLoading, refetch: getProductsCatalogRefetch } = useQuery(GET_LISTINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input: productCatalogInquiry },
 		skip: !router.isReady,
@@ -228,7 +228,15 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 
 					{/* ── 3. Products grid + pagination ── */}
 					<Stack className="products-catalog-page__main" mb={device === 'mobile' ? '32px' : '76px'}>
-						<ProductsList products={filteredProducts} onLike={likeProductHandler} />
+						{productsLoading && products.length === 0 ? (
+							<Stack className="products-catalog-page__grid">
+								{Array.from({ length: 4 }).map((_, i) => (
+									<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
+								))}
+							</Stack>
+						) : (
+							<ProductsList products={filteredProducts} onLike={likeProductHandler} />
+						)}
 
 						<Stack className="pagination-config">
 							{filteredProducts.length !== 0 && (

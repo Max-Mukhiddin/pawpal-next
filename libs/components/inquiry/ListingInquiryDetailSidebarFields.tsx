@@ -27,7 +27,7 @@ export interface ListingInquiryDetailSidebarFieldsProps {
 	onSubmitClick: () => void | Promise<void>;
 	submitLabel: string;
 	messagePlaceholder: string;
-	/** Optional icon or extra content after the submit label (e.g. property detail arrow SVG). */
+	/** Optional icon or extra content after the submit label (e.g. listing detail arrow SVG). */
 	submitEndAdornment?: React.ReactNode;
 	submitDisabled?: boolean;
 	submitting?: boolean;

@@ -125,7 +125,7 @@ const Footer = () => {
                     <div className="footer-pawpal__col footer-pawpal__col--brand">
                         <Link href="/" className="footer-pawpal__logo-link">
                             <img
-                                src="/images/footer/pawpal-logo-light.svg"
+                                src="/img/logo/logo-white.svg"
                                 alt="PawPal"
                                 className="footer-pawpal__logo"
                                 width={160}

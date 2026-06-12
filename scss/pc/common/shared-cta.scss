@@ -44,7 +44,7 @@
 			font-weight: 700;
 			letter-spacing: 0.15em;
 			text-transform: uppercase;
-			color: #e07b3a;
+			color: var(--pp-primary);
 			margin-bottom: 12px;
 		}
 
@@ -88,12 +88,12 @@
 			cursor: pointer;
 
 			&--primary {
-				background: #e07b3a;
+				background: var(--pp-primary);
 				color: #fff;
 				border: 2px solid transparent;
 
 				&:hover {
-					background: #c96a32;
+					background: var(--pp-primary-hover);
 				}
 			}
 
@@ -103,8 +103,8 @@
 				border: 2px solid rgba(0, 0, 0, 0.18);
 
 				&:hover {
-					border-color: #e07b3a;
-					color: #e07b3a;
+					border-color: var(--pp-primary);
+					color: var(--pp-primary);
 				}
 			}
 		}

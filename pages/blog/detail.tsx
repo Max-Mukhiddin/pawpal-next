@@ -294,7 +294,9 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 
 				{/* ── Article body ─────────────────────────────── */}
 					<div className="ablog-body">
-						<ToastViewerComponent markdown={boardArticle?.articleContent} />
+						<div className="article-content">
+							<ToastViewerComponent markdown={boardArticle?.articleContent} />
+						</div>
 					</div>
 
 					{/* ── Like button ──────────────────────────────── */}

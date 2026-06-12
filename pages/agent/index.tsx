@@ -5,7 +5,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Stack, Box, Button, Pagination } from '@mui/material';
 import { Menu, MenuItem } from '@mui/material';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import AgentCard from '../../libs/components/common/AgentCard';
+import SpecialistListCard from '../../libs/components/specialists/SpecialistListCard';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Member } from '../../libs/types/member/member';
@@ -181,9 +181,9 @@ const AgentList: NextPage = ({ initialInput, ...props }: any) => {
 								<p>No specialists found.</p>
 							</div>
 						) : (
-							agents.map((agent: Member) => {
-								return <AgentCard agent={agent} key={agent._id} likeMemberHandler={likeMemberHandler}/>;
-							})
+							agents.map((agent: Member) => (
+								<SpecialistListCard specialist={agent} key={agent._id} onLike={likeMemberHandler} />
+							))
 						)} 
 					</Stack>
 					<Stack className={'pagination'}>

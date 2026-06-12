@@ -2,15 +2,26 @@ import React, { useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import IconButton from '@mui/material/IconButton';
+import ModeIcon from '@mui/icons-material/Mode';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { T } from '../../types/common';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
+import { UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { useRouter } from 'next/router';
 import Moment from 'react-moment';
 import { REACT_APP_API_URL } from '../../config';
 import { getArticleCategoryLabel } from '../../utils/articleCategoryMap';
+import { BoardArticleStatus } from '../../enums/board-article.enum';
+import { sweetConfirmAlert, sweetErrorHandling } from '../../sweetAlert';
+
+function articleStatusBadgeClass(status: string): string {
+	if (status === BoardArticleStatus.ACTIVE) return 'mypage-catalog__status-badge--active';
+	return 'mypage-catalog__status-badge--delete';
+}
 
 const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
@@ -23,11 +34,10 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
 
-	/** APOLLO REQUESTS **/
+	const [updateBoardArticle] = useMutation(UPDATE_BOARD_ARTICLE);
+
 	const {
 		loading: boardArticlesLoading,
-		data: boardArticlesData,
-		error: getBoardArticlesError,
 		refetch: boardArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
@@ -42,7 +52,6 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		},
 	});
 
-	/** HANDLERS **/
 	const paginationHandler = (e: T, value: number) => {
 		setSearchCommunity({ ...searchCommunity, page: value });
 	};
@@ -62,184 +71,106 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		});
 	};
 
+	const deleteArticleHandler = async (e: React.MouseEvent, articleId: string) => {
+		e.stopPropagation();
+		try {
+			if (!(await sweetConfirmAlert('Are you sure you want to delete this article?'))) return;
+			await updateBoardArticle({
+				variables: {
+					input: {
+						_id: articleId,
+						articleStatus: BoardArticleStatus.DELETE,
+					},
+				},
+			});
+			await boardArticlesRefetch({ input: searchCommunity });
+		} catch (err: any) {
+			await sweetErrorHandling(err);
+		}
+	};
+
 	if (device === 'mobile') {
 		return <>ARTICLE PAGE MOBILE</>;
-	} else
-		return (
-			<div id="my-articles-page">
-				<Stack className="main-title-box">
-					<Stack className="right-box">
-						<Typography className="main-title">My Articles</Typography>
-						<Typography className="sub-title">Manage and edit your published articles.</Typography>
-					</Stack>
+	}
+
+	return (
+		<div id="my-articles-page" className="mypage-catalog">
+			<Stack className="main-title-box">
+				<Stack className="right-box">
+					<Typography className="main-title">My Articles</Typography>
+					<Typography className="sub-title">Manage and edit your published articles.</Typography>
 				</Stack>
+			</Stack>
 
-				{/* Article management list */}
-				<div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16 }}>
-					{boardArticlesLoading ? (
-						<div className={'no-data'}>
-							<p>Loading articles…</p>
-						</div>
-					) : boardArticles?.length > 0 ? (
-						boardArticles.map((article: BoardArticle) => {
-							const imageSrc = article.articleImage
-								? `${REACT_APP_API_URL}/${article.articleImage}`
-								: '/img/community/communityImg.png';
-							const categoryLabel = getArticleCategoryLabel(article.articleCategory);
-
-							return (
-								<div
-									key={article._id}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: 20,
-										background: '#fff',
-										borderRadius: 16,
-										padding: '18px 24px',
-										boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-										border: '1px solid rgba(0,0,0,0.06)',
-										cursor: 'pointer',
-										transition: 'box-shadow 0.18s',
-									}}
-									onClick={() => goToDetailHandler(article._id)}
-									onMouseEnter={(e) =>
-										((e.currentTarget as HTMLDivElement).style.boxShadow =
-											'0 4px 20px rgba(0,0,0,0.12)')
-									}
-									onMouseLeave={(e) =>
-										((e.currentTarget as HTMLDivElement).style.boxShadow =
-											'0 2px 8px rgba(0,0,0,0.06)')
-									}
-								>
-									{/* Thumbnail */}
-									<img
-										src={imageSrc}
-										alt={article.articleTitle}
-										style={{
-											width: 80,
-											height: 80,
-											borderRadius: 12,
-											objectFit: 'cover',
-											flexShrink: 0,
-											background: '#f5f5f5',
-										}}
-									/>
-
-									{/* Info */}
-									<div style={{ flex: 1, minWidth: 0 }}>
-										<div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-											{categoryLabel && (
-												<span
-													style={{
-														fontSize: 11,
-														fontWeight: 700,
-														color: '#e07b3a',
-														background: '#fff3eb',
-														borderRadius: 999,
-														padding: '2px 10px',
-														textTransform: 'uppercase',
-														letterSpacing: '0.06em',
-													}}
-												>
-													{categoryLabel}
-												</span>
-											)}
-										</div>
-										<p
-											style={{
-												margin: 0,
-												fontSize: 16,
-												fontWeight: 700,
-												color: '#181a20',
-												lineHeight: 1.3,
-												whiteSpace: 'nowrap',
-												overflow: 'hidden',
-												textOverflow: 'ellipsis',
-											}}
-										>
-											{article.articleTitle}
-										</p>
-										<div
-											style={{
-												display: 'flex',
-												alignItems: 'center',
-												gap: 16,
-												marginTop: 6,
-												color: '#aaa',
-												fontSize: 12,
-											}}
-										>
-											<Moment format="MMM DD, YYYY">{article.createdAt}</Moment>
-											<span>👁 {article.articleViews}</span>
-											<span>❤️ {article.articleLikes}</span>
-											<span>💬 {article.articleComments}</span>
-										</div>
-									</div>
-
-									{/* Actions */}
-									<div
-										style={{ display: 'flex', gap: 10, flexShrink: 0 }}
-										onClick={(e) => e.stopPropagation()}
-									>
-										<button
-											onClick={(e) => {
-												e.stopPropagation();
-												goToDetailHandler(article._id);
-											}}
-											style={{
-												padding: '8px 18px',
-												borderRadius: 999,
-												border: '1.5px solid #e0ddd8',
-												background: 'transparent',
-												fontSize: 13,
-												fontWeight: 600,
-												color: '#555',
-												cursor: 'pointer',
-												transition: 'border-color 0.18s',
-											}}
-											onMouseEnter={(e) =>
-												((e.currentTarget as HTMLButtonElement).style.borderColor = '#999')
-											}
-											onMouseLeave={(e) =>
-												((e.currentTarget as HTMLButtonElement).style.borderColor = '#e0ddd8')
-											}
-										>
-											View
-										</button>
-										<button
-											onClick={(e) => goToEditHandler(e, article._id)}
-											style={{
-												padding: '8px 18px',
-												borderRadius: 999,
-												border: 'none',
-												background: '#e07b3a',
-												color: '#fff',
-												fontSize: 13,
-												fontWeight: 700,
-												cursor: 'pointer',
-												transition: 'background 0.18s',
-											}}
-											onMouseEnter={(e) =>
-												((e.currentTarget as HTMLButtonElement).style.background = '#c96a32')
-											}
-											onMouseLeave={(e) =>
-												((e.currentTarget as HTMLButtonElement).style.background = '#e07b3a')
-											}
-										>
-											Edit
-										</button>
-									</div>
-								</div>
-							);
-						})
-					) : (
-						<div className={'no-data'}>
-							<img src="/img/icons/icoAlert.svg" alt="" />
-							<p>No articles yet. Write your first one!</p>
-						</div>
-					)}
+			<div className="mypage-catalog__panel">
+				<div className="mypage-catalog__header">
+					<span aria-hidden />
+					<span>Title</span>
+					<span>Date Published</span>
+					<span>Status</span>
+					<span>View</span>
+					<span>Action</span>
 				</div>
+
+				{boardArticlesLoading ? (
+					<div className="no-data">
+						<p>Loading articles…</p>
+					</div>
+				) : boardArticles?.length > 0 ? (
+					boardArticles.map((article: BoardArticle) => {
+						const imageSrc = article.articleImage
+							? `${REACT_APP_API_URL}/${article.articleImage}`
+							: '/img/community/communityImg.png';
+						const categoryLabel = getArticleCategoryLabel(article.articleCategory);
+
+						return (
+							<div key={article._id} className="mypage-catalog__row">
+								<div className="mypage-catalog__thumb" onClick={() => goToDetailHandler(article._id)}>
+									<img src={imageSrc} alt={article.articleTitle || 'Article'} />
+								</div>
+
+								<div className="mypage-catalog__info" onClick={() => goToDetailHandler(article._id)}>
+									<p className="mypage-catalog__info__title">{article.articleTitle}</p>
+									<p className="mypage-catalog__info__meta">{categoryLabel || '—'}</p>
+								</div>
+
+								<div className="mypage-catalog__date">
+									<Moment format="DD MMMM, YYYY">{article.createdAt}</Moment>
+								</div>
+
+								<div>
+									<span className={`mypage-catalog__status-badge ${articleStatusBadgeClass(article.articleStatus)}`}>
+										{article.articleStatus}
+									</span>
+								</div>
+
+								<div className="mypage-catalog__views">{article.articleViews?.toLocaleString() ?? '0'}</div>
+
+								<div className="mypage-catalog__actions">
+									<IconButton
+										className="icon-button"
+										aria-label="Edit article"
+										onClick={(e) => goToEditHandler(e, article._id)}
+									>
+										<ModeIcon fontSize="small" />
+									</IconButton>
+									<IconButton
+										className="icon-button"
+										aria-label="Delete article"
+										onClick={(e) => deleteArticleHandler(e, article._id)}
+									>
+										<DeleteIcon fontSize="small" />
+									</IconButton>
+								</div>
+							</div>
+						);
+					})
+				) : (
+					<div className="no-data">
+						<img src="/img/icons/icoAlert.svg" alt="" />
+						<p>No articles yet. Write your first one!</p>
+					</div>
+				)}
 
 				{boardArticles?.length > 0 && (
 					<Stack className="pagination-conf">
@@ -258,7 +189,8 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 					</Stack>
 				)}
 			</div>
-		);
+		</div>
+	);
 };
 
 MyArticles.defaultProps = {

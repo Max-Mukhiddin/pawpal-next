@@ -158,7 +158,7 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 
 	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
-	const { refetch: getServicesCatalogRefetch } = useQuery(GET_LISTINGS, {
+	const { loading: servicesLoading, refetch: getServicesCatalogRefetch } = useQuery(GET_LISTINGS, {
 		fetchPolicy: 'network-only',
 		variables: { input: serviceCatalogInquiry },
 		skip: !router.isReady,
@@ -274,7 +274,15 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 
 				{/* ── 3. Services grid + pagination ── */}
 				<Stack className="services-catalog-page__main" mb={device === 'mobile' ? '32px' : '76px'}>
-					<ServicesList services={filteredServices} onLike={likeServiceHandler} />
+					{servicesLoading && services.length === 0 ? (
+						<Stack className="services-catalog-page__grid">
+							{Array.from({ length: 4 }).map((_, i) => (
+								<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
+							))}
+						</Stack>
+					) : (
+						<ServicesList services={filteredServices} onLike={likeServiceHandler} />
+					)}
 
 					<Stack className="pagination-config">
 						{filteredServices.length !== 0 && (

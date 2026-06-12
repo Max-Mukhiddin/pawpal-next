@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { getJwtToken, logOut, updateUserInfo } from '../auth';
-import { Stack, Box } from '@mui/material';
+import { Stack, Box, Drawer, Divider } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import { alpha, styled } from '@mui/material/styles';
 import Menu, { MenuProps } from '@mui/material/Menu';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import { CaretDown } from 'phosphor-react';
 import useDeviceDetect from '../hooks/useDeviceDetect';
 import Link from 'next/link';
@@ -39,9 +40,7 @@ const StyledLangMenu = styled((props: MenuProps) => (
 			theme.palette.mode === 'light'
 				? '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)'
 				: '0 12px 24px rgba(0,0,0,0.35)',
-		'& .MuiMenu-list': {
-			padding: '4px 0',
-		},
+		'& .MuiMenu-list': { padding: '4px 0' },
 		'& .MuiMenuItem-root': {
 			'& .MuiSvgIcon-root': {
 				fontSize: 18,
@@ -68,21 +67,16 @@ export default function Top() {
 	const [lang, setLang] = useState<string | null>('en');
 	const langMenuOpen = Boolean(anchorEl2);
 	const [isScrolled, setIsScrolled] = useState(false);
-	const [logoutAnchor, setLogoutAnchor] = useState<null | HTMLElement>(null);
-	const logoutOpen = Boolean(logoutAnchor);
+	const [drawerOpen, setDrawerOpen] = useState(false);
 
-	const primaryNav = useMemo(
+	const allNav = useMemo(
 		() => [
 			{ href: '/', label: t('Home'), isActive: (p: string) => p === '/' },
 			{ href: '/service', label: t('Services'), isActive: (p: string) => p.startsWith('/service') },
 			{ href: '/product', label: t('Products'), isActive: (p: string) => p.startsWith('/product') },
 			{ href: '/specialist', label: t('Specialists'), isActive: (p: string) => p.startsWith('/specialist') },
 			{ href: '/about', label: t('About'), isActive: (p: string) => p.startsWith('/about') },
-		{
-			href: '/blog',
-			label: t('Community'),
-			isActive: (p: string) => p.startsWith('/blog') || p.startsWith('/community'),
-		},
+			{ href: '/blog', label: t('Blog'), isActive: (p: string) => p.startsWith('/blog') || p.startsWith('/community') },
 		],
 		[t],
 	);
@@ -108,13 +102,14 @@ export default function Top() {
 		return () => window.removeEventListener('scroll', onScroll);
 	}, []);
 
-	const langClick = (e: React.MouseEvent<HTMLElement>) => {
-		setAnchorEl2(e.currentTarget);
-	};
+	useEffect(() => {
+		const handleRouteChange = () => setDrawerOpen(false);
+		router.events.on('routeChangeStart', handleRouteChange);
+		return () => router.events.off('routeChangeStart', handleRouteChange);
+	}, [router.events]);
 
-	const langClose = () => {
-		setAnchorEl2(null);
-	};
+	const langClick = (e: React.MouseEvent<HTMLElement>) => setAnchorEl2(e.currentTarget);
+	const langClose = () => setAnchorEl2(null);
 
 	const selectLocale = useCallback(
 		async (locale: string) => {
@@ -126,283 +121,161 @@ export default function Top() {
 		[router],
 	);
 
+	const Brand = (): React.ReactElement => (
+		<Link href="/" className="navbar-pawpal__brand" aria-label="PawPal home">
+			<img src="/img/logo/logo-primary.svg" alt="PawPal" height={36} />
+		</Link>
+	);
+
+	const DrawerContent = (): React.ReactElement => (
+		<div className="navbar-pawpal__drawer">
+			<div className="navbar-pawpal__drawer-head">
+				<Brand />
+				<IconButton onClick={() => setDrawerOpen(false)} aria-label="Close menu" className="navbar-pawpal__drawer-close">
+					<CloseIcon />
+				</IconButton>
+			</div>
+			<Divider className="navbar-pawpal__drawer-divider" />
+			<nav className="navbar-pawpal__drawer-nav" aria-label="Primary mobile">
+				{allNav.map(({ href, label, isActive }) => (
+					<Link
+						key={href}
+						href={href}
+						className={`navbar-pawpal__drawer-link ${isActive(pathname) ? 'is-active' : ''}`}
+						onClick={() => setDrawerOpen(false)}
+					>
+						{label}
+					</Link>
+				))}
+			</nav>
+			<Divider className="navbar-pawpal__drawer-divider" />
+			<div className="navbar-pawpal__drawer-footer">
+				{user?._id ? (
+					<>
+						<Link href="/mypage" className="navbar-pawpal__drawer-account" onClick={() => setDrawerOpen(false)}>
+							<img src={avatarSrc} onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }} alt="" />
+							<div>
+								<span className="navbar-pawpal__drawer-account-name">{user?.memberNick ?? 'My Page'}</span>
+								<span className="navbar-pawpal__drawer-account-meta">{t('View profile')}</span>
+							</div>
+						</Link>
+						<button type="button" className="navbar-pawpal__drawer-logout" onClick={() => { logOut(); setDrawerOpen(false); }}>
+							<Logout fontSize="small" />
+							<span>{t('Logout')}</span>
+						</button>
+					</>
+				) : (
+					<Link href="/account/join" className="navbar-pawpal__drawer-login" onClick={() => setDrawerOpen(false)}>
+						<AccountCircleOutlinedIcon />
+						<span>{t('Login')}</span>
+					</Link>
+				)}
+				<div className="navbar-pawpal__drawer-lang">
+					<span className="navbar-pawpal__drawer-lang-label">{t('Language')}</span>
+					<div className="navbar-pawpal__drawer-lang-options">
+						{(['en', 'kr', 'ru'] as const).map((code) => (
+							<button key={code} type="button" className={`navbar-pawpal__drawer-lang-btn ${lang === code ? 'is-active' : ''}`} onClick={() => selectLocale(code)}>
+								<img src={`/img/flag/lang${code}.png`} alt="" />
+								<span>{code.toUpperCase()}</span>
+							</button>
+						))}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+
 	if (device === 'mobile') {
 		return (
-			<Stack component="header" className="navbar navbar-pawpal navbar-pawpal--mobile" role="banner">
-				<Stack className="navbar-pawpal__mobile-top" direction="row" alignItems="center" justifyContent="space-between">
-					<Link href="/" className="navbar-pawpal__brand">
-						<span className="navbar-pawpal__brand-icon" aria-hidden>
-							<svg width="28" height="28" viewBox="0 0 100 100">
-								<ellipse cx="50" cy="70" rx="22" ry="18" fill="#E07B3A" />
-								<ellipse cx="28" cy="45" rx="10" ry="13" fill="#E07B3A" />
-								<ellipse cx="72" cy="45" rx="10" ry="13" fill="#E07B3A" />
-								<ellipse cx="38" cy="35" rx="9" ry="12" fill="#E07B3A" />
-								<ellipse cx="62" cy="35" rx="9" ry="12" fill="#E07B3A" />
-							</svg>
-						</span>
-						<span className="navbar-pawpal__brand-paw">Paw</span>
-						<span className="navbar-pawpal__brand-pal">Pal</span>
-					</Link>
-					<Stack direction="row" alignItems="center" className="navbar-pawpal__mobile-actions">
-						<IconButton
-							size="small"
-							className="navbar-pawpal__icon-btn"
-							onClick={() => undefined}
-							aria-label={t('Cart')}
-						>
-							<ShoppingBagOutlinedIcon fontSize="small" />
-						</IconButton>
-						<IconButton
-							size="small"
-							className="navbar-pawpal__icon-btn"
-							onClick={toggleMode}
-							aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}
-						>
-							{mode === 'dark' ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
-						</IconButton>
+			<>
+				<Stack component="header" className="navbar navbar-pawpal navbar-pawpal--mobile" role="banner">
+					<Stack
+						className={`navbar-pawpal__bar-mobile ${isScrolled ? 'is-scrolled' : ''}`}
+						direction="row"
+						alignItems="center"
+						justifyContent="space-between"
+					>
+						<Brand />
+						<Stack direction="row" alignItems="center" className="navbar-pawpal__mobile-actions">
+							<IconButton size="small" className="navbar-pawpal__icon-btn" onClick={toggleMode} aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}>
+								{mode === 'dark' ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
+							</IconButton>
+							<IconButton size="small" className="navbar-pawpal__menu-btn" onClick={() => setDrawerOpen(true)} aria-label="Open menu">
+								<MenuIcon />
+							</IconButton>
+						</Stack>
 					</Stack>
 				</Stack>
-				<nav className="navbar-pawpal__mobile-nav" aria-label="Primary">
-					{primaryNav.map(({ href, label, isActive }) => (
-						<Link
-							key={href}
-							href={href}
-							className={`navbar-pawpal__link ${isActive(pathname) ? 'is-active' : ''}`}
-						>
-							{label}
-						</Link>
-					))}
-				</nav>
-				<Stack direction="row" alignItems="center" justifyContent="space-between" className="navbar-pawpal__mobile-meta">
-					{user?._id ? (
-						<>
-							<button
-								type="button"
-								className="navbar-pawpal__avatar"
-								onClick={(event) => setLogoutAnchor(event.currentTarget)}
-							>
-								<img
-									src={avatarSrc}
-									onError={(e) => {
-										const img = e.currentTarget;
-										if (img.src.includes('/img/profile/defaultUser.svg')) {
-											img.src = '/images/hero/pawpal-hero.jpg';
-											return;
-										}
-										img.src = '/img/profile/defaultUser.svg';
-									}}
-									alt=""
-								/>
-							</button>
-							<Menu
-								anchorEl={logoutAnchor}
-								open={logoutOpen}
-								onClose={() => setLogoutAnchor(null)}
-								className="navbar-pawpal__account-menu"
-							>
-								<MenuItem
-									onClick={() => {
-										setLogoutAnchor(null);
-										router.push('/mypage');
-									}}
-								>
-									{t('My Page')}
-								</MenuItem>
-								<MenuItem
-									onClick={() => {
-										logOut();
-										setLogoutAnchor(null);
-									}}
-								>
-									<Logout fontSize="small" className="navbar-pawpal__menu-icon" />
-									{t('Logout')}
-								</MenuItem>
-							</Menu>
-							<NotificationsOutlinedIcon className="navbar-pawpal__notify" aria-hidden />
-						</>
-					) : (
-						<Link href="/account/join" className="navbar-pawpal__join">
-							<AccountCircleOutlinedIcon />
-							<span>
-								{t('Login')} / {t('Register')}
-							</span>
-						</Link>
-					)}
-					<div className="navbar-pawpal__lan-box">
-						<Button disableRipple className="navbar-pawpal__lang-btn" onClick={langClick} endIcon={<CaretDown size={14} weight="fill" />}>
-							<Box component="span" className="navbar-pawpal__flag">
-								{lang !== null ? (
-									<img src={`/img/flag/lang${lang}.png`} alt="" />
-								) : (
-									<img src="/img/flag/langen.png" alt="" />
-								)}
-							</Box>
-						</Button>
-						<StyledLangMenu anchorEl={anchorEl2} open={langMenuOpen} onClose={langClose}>
-							<MenuItem disableRipple onClick={() => selectLocale('en')}>
-								<img className="navbar-pawpal__img-flag" src="/img/flag/langen.png" alt="" />
-								{t('English')}
-							</MenuItem>
-							<MenuItem disableRipple onClick={() => selectLocale('kr')}>
-								<img className="navbar-pawpal__img-flag" src="/img/flag/langkr.png" alt="" />
-								{t('Korean')}
-							</MenuItem>
-							<MenuItem disableRipple onClick={() => selectLocale('ru')}>
-								<img className="navbar-pawpal__img-flag" src="/img/flag/langru.png" alt="" />
-								{t('Russian')}
-							</MenuItem>
-						</StyledLangMenu>
-					</div>
-				</Stack>
-			</Stack>
+				<Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)} className="navbar-pawpal__drawer-root" PaperProps={{ className: 'navbar-pawpal__drawer-paper' }}>
+					<DrawerContent />
+				</Drawer>
+			</>
 		);
 	}
 
+	// DESKTOP — Logo left | Nav center | Actions right
 	return (
-		<Stack component="header" className="navbar navbar-pawpal" role="banner">
-			<Stack className={`navbar-pawpal__bar ${isScrolled ? 'is-scrolled' : ''}`}>
-				<Stack
-					className="container navbar-pawpal__inner"
-					direction="row"
-					alignItems="center"
-					justifyContent="space-between"
-					sx={{ display: 'flex' }}
-				>
-					<Link href="/" className="navbar-pawpal__brand">
-						<span className="navbar-pawpal__brand-icon" aria-hidden>
-							<svg width="28" height="28" viewBox="0 0 100 100">
-								<ellipse cx="50" cy="70" rx="22" ry="18" fill="#E07B3A" />
-								<ellipse cx="28" cy="45" rx="10" ry="13" fill="#E07B3A" />
-								<ellipse cx="72" cy="45" rx="10" ry="13" fill="#E07B3A" />
-								<ellipse cx="38" cy="35" rx="9" ry="12" fill="#E07B3A" />
-								<ellipse cx="62" cy="35" rx="9" ry="12" fill="#E07B3A" />
-							</svg>
-						</span>
-						<span className="navbar-pawpal__brand-paw">Paw</span>
-						<span className="navbar-pawpal__brand-pal">Pal</span>
-					</Link>
-					<nav className="navbar-pawpal__nav" aria-label="Primary">
-						{primaryNav.map(({ href, label, isActive }) => (
-							<Link
-								key={href}
-								href={href}
-								className={`navbar-pawpal__link ${isActive(pathname) ? 'is-active' : ''}`}
-							>
-								{label}
-							</Link>
-						))}
-					</nav>
-					<Box
-						component="div"
-						className="navbar-pawpal__actions"
-						sx={{ paddingRight: '16px', gap: '8px', alignItems: 'center', display: 'flex', flexDirection: 'row' }}
-					>
-						<IconButton
-							size="medium"
-							className="navbar-pawpal__icon-btn"
-							onClick={() => undefined}
-							aria-label={t('Cart')}
-						>
-							<ShoppingBagOutlinedIcon />
-						</IconButton>
-					<IconButton
-						size="medium"
-						className="navbar-pawpal__icon-btn"
-						onClick={toggleMode}
-						aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}
-					>
-						{mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
-					</IconButton>
-						<Link href="/service" className="navbar-pawpal__book-btn">
-							Book Now
-						</Link>
-						{user?._id ? (
-							<>
-								<button
-									type="button"
-									className="navbar-pawpal__avatar"
-									onClick={(event) => setLogoutAnchor(event.currentTarget)}
-								>
-									<img
-										src={avatarSrc}
-										onError={(e) => {
-											const img = e.currentTarget;
-											if (img.src.includes('/img/profile/defaultUser.svg')) {
-												img.src = '/images/hero/pawpal-hero.jpg';
-												return;
-											}
-											img.src = '/img/profile/defaultUser.svg';
-										}}
-										alt=""
-									/>
-								</button>
-								<Menu
-									anchorEl={logoutAnchor}
-									open={logoutOpen}
-									onClose={() => setLogoutAnchor(null)}
-									className="navbar-pawpal__account-menu"
-								>
-									<MenuItem
-										onClick={() => {
-											setLogoutAnchor(null);
-											router.push('/mypage');
-										}}
-									>
-										{t('My Page')}
+		<>
+			<Stack component="header" className="navbar navbar-pawpal" role="banner">
+				<Stack className={`navbar-pawpal__bar ${isScrolled ? 'is-scrolled' : ''}`}>
+					<div className="navbar-pawpal__inner">
+
+						{/* LEFT: Brand/Logo */}
+						<Brand />
+
+						{/* CENTER: All nav links */}
+						<nav className="navbar-pawpal__nav navbar-pawpal__nav--center" aria-label="Primary">
+							{allNav.map(({ href, label, isActive }) => (
+								<Link key={href} href={href} className={`navbar-pawpal__link ${isActive(pathname) ? 'is-active' : ''}`}>
+									{label}
+								</Link>
+							))}
+						</nav>
+
+						{/* RIGHT: Actions */}
+						<div className="navbar-pawpal__actions">
+							<IconButton size="medium" className="navbar-pawpal__icon-btn" onClick={toggleMode} aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}>
+								{mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
+							</IconButton>
+
+							{user?._id ? (
+								<Link href="/mypage" className="navbar-pawpal__avatar" aria-label={t('My Page')}>
+									<img src={avatarSrc} onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }} alt="" />
+								</Link>
+							) : (
+								<Link href="/account/join" className="navbar-pawpal__join">
+									<AccountCircleOutlinedIcon />
+									<span>{t('Login')}</span>
+								</Link>
+							)}
+
+							<div className="navbar-pawpal__lan-box">
+								{user?._id && <NotificationsOutlinedIcon className="navbar-pawpal__notify" aria-hidden />}
+								<Button disableRipple className="navbar-pawpal__lang-btn" onClick={langClick} endIcon={<CaretDown size={14} weight="fill" />}>
+									<Box component="span" className="navbar-pawpal__flag">
+										{lang !== null ? <img src={`/img/flag/lang${lang}.png`} alt="" /> : <img src="/img/flag/langen.png" alt="" />}
+									</Box>
+								</Button>
+								<StyledLangMenu anchorEl={anchorEl2} open={langMenuOpen} onClose={langClose}>
+									<MenuItem disableRipple onClick={() => selectLocale('en')}>
+										<img className="navbar-pawpal__img-flag" src="/img/flag/langen.png" alt="" /> {t('English')}
 									</MenuItem>
-									<MenuItem
-										onClick={() => {
-											logOut();
-											setLogoutAnchor(null);
-										}}
-									>
-										<Logout fontSize="small" className="navbar-pawpal__menu-icon" />
-										{t('Logout')}
+									<MenuItem disableRipple onClick={() => selectLocale('kr')}>
+										<img className="navbar-pawpal__img-flag" src="/img/flag/langkr.png" alt="" /> {t('Korean')}
 									</MenuItem>
-								</Menu>
-							</>
-						) : (
-							<Link href="/account/join" className="navbar-pawpal__join">
-								<AccountCircleOutlinedIcon />
-								<span>
-									{t('Login')} / {t('Register')}
-								</span>
-							</Link>
-						)}
-						<div className="navbar-pawpal__lan-box">
-							{user?._id && <NotificationsOutlinedIcon className="navbar-pawpal__notify" aria-hidden />}
-							<Button
-								disableRipple
-								className="navbar-pawpal__lang-btn"
-								onClick={langClick}
-								endIcon={<CaretDown size={14} weight="fill" />}
-							>
-								<Box component="span" className="navbar-pawpal__flag">
-									{lang !== null ? (
-										<img src={`/img/flag/lang${lang}.png`} alt="" />
-									) : (
-										<img src="/img/flag/langen.png" alt="" />
-									)}
-								</Box>
-							</Button>
-							<StyledLangMenu anchorEl={anchorEl2} open={langMenuOpen} onClose={langClose}>
-								<MenuItem disableRipple onClick={() => selectLocale('en')}>
-									<img className="navbar-pawpal__img-flag" src="/img/flag/langen.png" alt="" />
-									{t('English')}
-								</MenuItem>
-								<MenuItem disableRipple onClick={() => selectLocale('kr')}>
-									<img className="navbar-pawpal__img-flag" src="/img/flag/langkr.png" alt="" />
-									{t('Korean')}
-								</MenuItem>
-								<MenuItem disableRipple onClick={() => selectLocale('ru')}>
-									<img className="navbar-pawpal__img-flag" src="/img/flag/langru.png" alt="" />
-									{t('Russian')}
-								</MenuItem>
-							</StyledLangMenu>
+									<MenuItem disableRipple onClick={() => selectLocale('ru')}>
+										<img className="navbar-pawpal__img-flag" src="/img/flag/langru.png" alt="" /> {t('Russian')}
+									</MenuItem>
+								</StyledLangMenu>
+							</div>
 						</div>
-					</Box>
+
+					</div>
 				</Stack>
 			</Stack>
-		</Stack>
+			<Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)} className="navbar-pawpal__drawer-root" PaperProps={{ className: 'navbar-pawpal__drawer-paper' }}>
+				<DrawerContent />
+			</Drawer>
+		</>
 	);
 }

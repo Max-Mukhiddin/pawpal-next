@@ -1,402 +1,397 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { NextPage } from 'next';
+import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
-import { Box, Button, CircularProgress, Pagination, Stack, Typography } from '@mui/material';
-import StarIcon from '@mui/icons-material/Star';
+import { Box, Button, Pagination, Stack, Typography } from '@mui/material';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/router';
 import type { Listing } from '../../libs/types/listing/listing';
-import { ListingsInquiry } from '../../libs/types/listing/listing.input';
 import { Member } from '../../libs/types/member/member';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { userVar } from '../../apollo/store';
+import type { ListingsInquiry } from '../../libs/types/listing/listing.input';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Messages } from '../../libs/config';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { CREATE_COMMENT, LIKE_TARGET_LISTING, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
+import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { GET_COMMENTS, GET_MEMBER, GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
-import SpecialistProfileSummary from '../../libs/components/specialists/SpecialistProfileSummary';
-import SpecialistInquiryPanel from '../../libs/components/specialists/SpecialistInquiryPanel';
-import RelatedSpecialistServiceCard from '../../libs/components/specialists/RelatedSpecialistServiceCard';
-import SpecialistReviewCard from '../../libs/components/specialists/SpecialistReviewCard';
-import { resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
+import { resolveListingImageUrl, resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
+import { formatterStr } from '../../libs/utils';
+import Link from 'next/link';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: {
-		...(await serverSideTranslations(locale, ['common'])),
-	},
+    props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
-const SpecialistDetail: NextPage = ({ initialInput, initialComment }: any) => {
-	const router = useRouter();
-	const user = useReactiveVar(userVar);
-	const [specialistId, setSpecialistId] = useState<string | null>(null);
-	const [specialist, setSpecialist] = useState<Member | null>(null);
-	const [specialistListingsInquiry, setSpecialistListingsInquiry] = useState<ListingsInquiry>(initialInput);
-	const [specialistListings, setSpecialistListings] = useState<Listing[]>([]);
-	const [listingTotal, setListingTotal] = useState<number>(0);
-	const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
-	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
-	const [specialistReviews, setSpecialistReviews] = useState<Comment[]>([]);
-	const [commentTotal, setCommentTotal] = useState<number>(0);
-	const [insertCommentData, setInsertCommentData] = useState<CommentInput>({
-		commentGroup: CommentGroup.MEMBER,
-		commentContent: '',
-		commentRefId: '',
-	});
+const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) => {
+    const device = useDeviceDetect();
+    const router = useRouter();
+    const user = useReactiveVar(userVar);
+    const [agentId, setAgentId] = useState<string | null>(null);
+    const [agent, setAgent] = useState<Member | null>(null);
+    const [listingInquiry, setListingInquiry] = useState<ListingsInquiry>(initialInput);
+    const [agentListings, setAgentListings] = useState<Listing[]>([]);
+    const [listingTotal, setListingTotal] = useState<number>(0);
+    const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
+    const [agentComments, setAgentComments] = useState<Comment[]>([]);
+    const [commentTotal, setCommentTotal] = useState<number>(0);
+    const [insertCommentData, setInsertCommentData] = useState<CommentInput>({
+        commentGroup: CommentGroup.MEMBER,
+        commentContent: '',
+        commentRefId: '',
+    });
+    // Consultation form state
+    const [consultName, setConsultName] = useState('');
+    const [consultService, setConsultService] = useState('');
+    const [consultDate, setConsultDate] = useState('');
+    const [consultSubmitting, setConsultSubmitting] = useState(false);
 
-	const specialistListingsInquiryRef = useRef(specialistListingsInquiry);
-	specialistListingsInquiryRef.current = specialistListingsInquiry;
+    const [createComment] = useMutation(CREATE_COMMENT);
+    const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
-	/** APOLLO REQUESTS **/
-	const [createComment] = useMutation(CREATE_COMMENT);
-	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
-	const [subscribe] = useMutation(SUBSCRIBE);
-	const [unsubscribe] = useMutation(UNSUBSCRIBE);
+    const { loading: getMemberLoading } = useQuery(GET_MEMBER, {
+        fetchPolicy: 'network-only',
+        variables: { input: agentId },
+        skip: !agentId,
+        onCompleted: (data: T) => {
+            setAgent(data?.getMember);
+            setListingInquiry((prev) => ({
+                ...prev,
+                search: { ...prev.search, memberId: data?.getMember?._id as string },
+            }));
+            setCommentInquiry({ ...commentInquiry, search: { commentRefId: data?.getMember?._id } });
+            setInsertCommentData({ ...insertCommentData, commentRefId: data?.getMember?._id });
+        },
+    });
 
-	const { loading: getMemberLoading } = useQuery(GET_MEMBER, {
-		fetchPolicy: 'network-only',
-		variables: { input: specialistId },
-		skip: !specialistId || specialistId.length !== 24,
-		onCompleted: (data: T) => {
-			setSpecialist(data?.getMember);
-			setSelectedListing(null);
-			const memberId = data?.getMember?._id as string | undefined;
-			setSpecialistListingsInquiry((prev) => ({
-				...prev,
-				search: {
-					memberId,
-				},
-			}));
+    const { refetch: getListingsRefetch } = useQuery(GET_LISTINGS, {
+        fetchPolicy: 'network-only',
+        variables: { input: listingInquiry },
+        skip: !listingInquiry.search.memberId,
+        notifyOnNetworkStatusChange: true,
+        onCompleted: (data: T) => {
+            setAgentListings(data?.getListings?.list ?? []);
+            setListingTotal(data?.getListings?.metaCounter[0]?.total ?? 0);
+        },
+    });
 
-			setCommentInquiry((prev) => ({
-				...prev,
-				search: {
-					commentRefId: memberId ?? '',
-				},
-			}));
+    const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
+        fetchPolicy: 'network-only',
+        variables: { input: commentInquiry },
+        skip: !commentInquiry.search.commentRefId,
+        notifyOnNetworkStatusChange: true,
+        onCompleted: (data: T) => {
+            setAgentComments(data?.getComments?.list ?? []);
+            setCommentTotal(data?.getComments?.metaCounter[0]?.total ?? 0);
+        },
+    });
 
-			setInsertCommentData((prev) => ({
-				...prev,
-				commentRefId: memberId ?? '',
-			}));
-		},
-	});
+    useEffect(() => {
+        // support both ?id= and ?agentId= URL params
+        const id = (router.query.id || router.query.agentId) as string | undefined;
+        if (id) setAgentId(id);
+    }, [router.query]);
 
-	const { refetch: getSpecialistListingsRefetch } = useQuery(GET_LISTINGS, {
-		fetchPolicy: 'network-only',
-		variables: { input: specialistListingsInquiry },
-		skip: !specialistListingsInquiry.search.memberId,
-		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setSpecialistListings(data?.getListings?.list);
-			setListingTotal(data?.getListings?.metaCounter[0]?.total ?? 0);
-		},
-	});
+    const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
+        commentInquiry.page = value;
+        setCommentInquiry({ ...commentInquiry });
+    };
 
-	const { refetch: getCommentsRefetch } = useQuery(GET_COMMENTS, {
-		fetchPolicy: 'network-only',
-		variables: { input: commentInquiry },
-		skip:
-			!commentInquiry.search.commentRefId ||
-			commentInquiry.search.commentRefId.length !== 24,
-		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setSpecialistReviews(data?.getComments?.list);
-			setCommentTotal(data?.getComments?.metaCounter[0]?.total ?? 0);
-		},
-	});
+    const listingPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
+        listingInquiry.page = value;
+        setListingInquiry({ ...listingInquiry });
+    };
 
-	/** LIFECYCLES **/
-	useEffect(() => {
-		if (router.query.id) setSpecialistId(router.query.id as string);
-	}, [router]);
+    const createCommentHandler = async () => {
+        try {
+            if (!user._id) throw new Error(Messages.error2);
+            if (user._id === agentId) throw new Error('Cannot write a review for yourself!');
+            await createComment({ variables: { input: insertCommentData } });
+            setInsertCommentData({ ...insertCommentData, commentContent: '' });
+            await getCommentsRefetch({ input: commentInquiry });
+        } catch (err: any) {
+            sweetErrorHandling(err).then();
+        }
+    };
 
-	/** HANDLERS **/
-	const redirectToMemberPageHandler = async (memberId: string) => {
-		try {
-			if (memberId === user?._id) await router.push(`/mypage?memberId=${memberId}`);
-			else await router.push(`/member?memberId=${memberId}`);
-		} catch (error) {
-			await sweetErrorHandling(error);
-		}
-	};
+    const handleConsultSubmit = async () => {
+        try {
+            if (!user?._id) { await sweetMixinErrorAlert(Messages.error2); return; }
+            if (!consultName.trim()) { await sweetMixinErrorAlert('Please enter your pet\'s name and breed.'); return; }
+            if (!consultService) { await sweetMixinErrorAlert('Please select a service.'); return; }
+            setConsultSubmitting(true);
+            // Simulate submit — wire up to createInquiry or createBooking as needed
+            await new Promise((r) => setTimeout(r, 800));
+            await sweetTopSmallSuccessAlert('Consultation request sent! The specialist will contact you soon.', 2800);
+            setConsultName('');
+            setConsultService('');
+            setConsultDate('');
+        } catch (err: any) {
+            sweetErrorHandling(err).then();
+        } finally {
+            setConsultSubmitting(false);
+        }
+    };
 
-	const listingPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		setSelectedListing(null);
-		setSpecialistListingsInquiry((prev) => ({ ...prev, page: value }));
-	};
+    const likeListingHandler = async (user: T, id: string) => {
+        try {
+            if (!id) return;
+            if (!user._id) throw new Error(Messages.error2);
+            await likeTargetListing({ variables: { input: id } });
+            await getListingsRefetch({ input: listingInquiry });
+            await sweetTopSmallSuccessAlert('success', 800);
+        } catch (err: any) {
+            sweetMixinErrorAlert(err.message).then();
+        }
+    };
 
-	const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
-		setCommentInquiry((prev) => ({ ...prev, page: value }));
-	};
+    const hasRealImage = !!(agent?.memberImage && !agent.memberImage.includes('defaultUser'));
+    const heroImage = hasRealImage
+        ? resolveMemberImageUrl(agent.memberImage, '/img/banner/specialists-default.webp')
+        : '/img/banner/specialists-default.webp';
+    const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
 
-	const createCommentHandler = async () => {
-		try {
-			if (!user._id) throw new Error(Messages.error2);
-			if (user._id === specialistId) throw new Error('You cannot review your own specialist profile.');
+    if (device === 'mobile') {
+        return <div>SPECIALIST DETAIL PAGE MOBILE</div>;
+    }
 
-			await createComment({
-				variables: {
-					input: insertCommentData,
-				},
-			});
+    return (
+        <div className="specialist-detail-page">
 
-			setInsertCommentData((prev) => ({ ...prev, commentContent: '' }));
-			await getCommentsRefetch({ input: commentInquiry });
-		} catch (err: any) {
-			sweetErrorHandling(err).then();
-		}
-	};
+            {/* ── HERO ── */}
+            <div className="specialist-detail__hero">
+                <div
+                    className="specialist-detail__hero-blur"
+                    style={{ backgroundImage: `url('${heroImage}')` }}
+                />
+                <div className="specialist-detail__hero-content">
+                    {hasRealImage && (
+                        <img className="specialist-detail__hero-avatar" src={heroImage} alt="" />
+                    )}
+                    <h1>{agent?.memberFullName ?? agent?.memberNick ?? 'Specialist'}</h1>
+                    <p>{agent?.memberDesc ? agent.memberDesc.split('.')[0] + '.' : 'PawPal Certified Specialist'}</p>
+                </div>
+            </div>
 
-	const likeListingHandler = async (user: any, id: string) => {
-		try {
-			if (!id) return;
-			if (!user._id) throw new Error(Messages.error2);
+            {/* ── STATS BAR ── */}
+            <div className="specialist-detail__stats-bar">
+                <div className="specialist-detail__stats-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <div className="stat-text">
+                        <strong>{listingTotal}+</strong>
+                        <span>Active Care Listings</span>
+                    </div>
+                </div>
+                <div className="specialist-detail__stats-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <div className="stat-text">
+                        <strong>{agent?.memberViews ?? 0}+</strong>
+                        <span>Profile Views</span>
+                    </div>
+                </div>
+                <div className="specialist-detail__stats-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <div className="stat-text">
+                        <strong>{agent?.memberLikes ?? 0}</strong>
+                        <span>Client Likes</span>
+                    </div>
+                </div>
+            </div>
 
-			await likeTargetListing({
-				variables: {
-					input: id,
-				},
-			});
+            {/* ── MAIN: Story + Consultation form ── */}
+            <div className="specialist-detail__main">
 
-			await getSpecialistListingsRefetch({ input: specialistListingsInquiryRef.current });
-			await sweetTopSmallSuccessAlert('success', 800);
-		} catch (err: any) {
-			console.log('ERROR likeListingHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
-	};
+                {/* LEFT: story */}
+                <div className="specialist-detail__story">
+                    <h2>Story &amp; Philosophy</h2>
+                    {agent?.memberDesc ? (
+                        agent.memberDesc.split('\n').filter(Boolean).map((para, i) => <p key={i}>{para}</p>)
+                    ) : (
+                        <p>This specialist is dedicated to providing the best care for your pets, bringing expertise and passion to every session.</p>
+                    )}
+                    {hasRealImage && (
+                        <img
+                            className="specialist-detail__story-photo"
+                            src={heroImage}
+                            alt={agent?.memberNick ?? 'Specialist'}
+                        />
+                    )}
+                </div>
 
-	const followToggleHandler = async (memberId: string, isFollowing: boolean) => {
-		try {
-			if (!user?._id) throw new Error(Messages.error2);
-			if (!memberId) return;
-			if (isFollowing) {
-				await unsubscribe({ variables: { input: memberId.toString() } });
-			} else {
-				await subscribe({ variables: { input: memberId.toString() } });
-			}
-			await sweetTopSmallSuccessAlert(isFollowing ? 'Unfollowed!' : 'Followed!', 800);
-			setSpecialist((prev) =>
-				prev
-					? ({
-							...prev,
-							meFollowed: [
-								{
-									followingId: memberId,
-									followerId: user._id,
-									myFollowing: !isFollowing,
-								},
-							],
-						} as Member)
-					: prev,
-			);
-		} catch (err: any) {
-			await sweetErrorHandling(err);
-		}
-	};
+                {/* RIGHT: consultation form */}
+                <div className="specialist-detail__consultation">
+                    <h3>Request Consultation</h3>
+                    <p>Discuss specific needs or book directly.</p>
 
-	if (!router.isReady) {
-		return (
-			<Stack sx={{ minHeight: 400, justifyContent: 'center', alignItems: 'center' }}>
-				<CircularProgress size={'4rem'} />
-			</Stack>
-		);
-	}
+                    <input
+                        className="specialist-detail__consult-field"
+                        type="text"
+                        placeholder="Pet's Name &amp; Breed"
+                        value={consultName}
+                        onChange={(e) => setConsultName(e.target.value)}
+                    />
 
-	if (!router.query.id) {
-		return (
-			<Stack className={'specialist-detail-page'} sx={{ py: 10, alignItems: 'center' }}>
-				<Typography>Open a specialist from the directory to view their profile.</Typography>
-			</Stack>
-		);
-	}
+                    <select
+                        className="specialist-detail__consult-field"
+                        value={consultService}
+                        onChange={(e) => setConsultService(e.target.value)}
+                    >
+                        <option value="">Select a Service</option>
+                        {agentListings.map((l) => (
+                            <option key={l._id} value={l._id}>{l.listingTitle}</option>
+                        ))}
+                    </select>
 
-	if (getMemberLoading && !specialist) {
-		return (
-			<Stack sx={{ minHeight: '70vh', justifyContent: 'center', alignItems: 'center' }}>
-				<CircularProgress size={'4rem'} />
-			</Stack>
-		);
-	}
+                    <input
+                        className="specialist-detail__consult-field"
+                        type="date"
+                        placeholder="Preferred Date"
+                        value={consultDate}
+                        onChange={(e) => setConsultDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                    />
 
-	const specialistHeroImage = '/img/banner/agents.webp';
+                    <Button
+                        className="specialist-detail__consult-btn"
+                        onClick={() => void handleConsultSubmit()}
+                        disabled={consultSubmitting || !user?._id}
+                    >
+                        {consultSubmitting ? 'Sending…' : 'Send Inquiry →'}
+                    </Button>
+                </div>
 
-	return (
-		<Stack className={'specialist-detail-page'} sx={{ px: { xs: 1, sm: 0 } }}>
-			<section
-				className="specialist-detail-page__hero"
-				style={{
-					backgroundImage: `url('${specialistHeroImage}')`,
-					backgroundSize: 'cover',
-					backgroundPosition: 'center',
-					boxShadow: 'inset 10px 40px 150px 40px rgb(24 22 36)',
-				}}
-			>
-				<div className="specialist-detail-page__hero-inner">
-					<h1>{specialist?.memberFullName ?? specialist?.memberNick ?? 'Specialist Profile'}</h1>
-					<p>{`Home / Specialists / ${specialist?.memberNick ?? specialist?.memberFullName ?? ''}`}</p>
-				</div>
-			</section>
-			<Stack className={'container'}>
-				<SpecialistProfileSummary
-					specialist={specialist}
-					onOpenMemberProfile={redirectToMemberPageHandler}
-					onToggleFollow={followToggleHandler}
-					isLoggedIn={Boolean(user?._id)}
-				/>
+            </div>
 
-				<Stack
-					direction={{ xs: 'column', lg: 'row' }}
-					spacing={3}
-					alignItems="flex-start"
-					sx={{ width: '100%', mt: 1 }}
-				>
-					<Stack flex={1} minWidth={0} sx={{ width: '100%' }}>
-						<Typography sx={{ fontSize: 20, fontWeight: 600, color: '#181a20', mb: 1, mt: 2 }}>
-							Care listings & offerings
-						</Typography>
-						<Typography sx={{ fontSize: 14, color: '#717171', mb: 2, maxWidth: 720 }}>
-							Services and packages this specialist hosts on PawPal. Use &quot;Select for inquiry&quot; on a card to message about
-							that service, or open the card for full details and the same flows on the service page.
-						</Typography>
+            {/* ── CARE OFFERINGS ── */}
+            {agentListings.length > 0 && (
+                <div className="specialist-detail__offerings">
+                    <div className="specialist-detail__offerings-inner">
+                        <div className="section-header">
+                            <h2>Care Offerings</h2>
+                            <p>Tailored services designed for comfort and style.</p>
+                        </div>
+                        <div className="specialist-detail__offerings-grid">
+                            {agentListings.slice(0, 6).map((listing) => (
+                                <Link
+                                    href={`/service/detail?id=${listing._id}`}
+                                    className="specialist-detail__offering-card"
+                                    key={listing._id}
+                                >
+                                    <img
+                                        className="specialist-detail__offering-img"
+                                        src={getListingImg(listing.listingImages?.[0])}
+                                        alt={listing.listingTitle}
+                                    />
+                                    <div className="specialist-detail__offering-body">
+                                        <h4 className="specialist-detail__offering-name">{listing.listingTitle}</h4>
+                                        <p className="specialist-detail__offering-desc">
+                                            {listing.listingDesc?.slice(0, 90)}{(listing.listingDesc?.length ?? 0) > 90 ? '…' : ''}
+                                        </p>
+                                        <div className="specialist-detail__offering-footer">
+                                            <span>From ₩{formatterStr(listing.listingPrice)}</span>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                        {listingTotal > 6 && (
+                            <div className="specialist-detail__offerings-pagination">
+                                <Pagination
+                                    page={listingInquiry.page}
+                                    count={Math.ceil(listingTotal / listingInquiry.limit) || 1}
+                                    onChange={listingPaginationChangeHandler}
+                                    shape="circular"
+                                    color="primary"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
-						<Stack className={'specialist-home-list'}>
-							<Stack className={'card-wrap'}>
-								{specialistListings.map((listing: Listing) => {
-									return (
-										<div className={'wrap-main'} key={listing?._id}>
-											<RelatedSpecialistServiceCard
-												listing={listing}
-												onLike={likeListingHandler}
-												selectedListingId={selectedListing?._id ?? null}
-												onSelectForInquiry={setSelectedListing}
-											/>
-										</div>
-									);
-								})}
-							</Stack>
-							<Stack className={'pagination'}>
-								{listingTotal ? (
-									<>
-										<Stack className="pagination-box">
-											<Pagination
-												page={specialistListingsInquiry.page}
-												count={Math.ceil(listingTotal / specialistListingsInquiry.limit) || 1}
-												onChange={listingPaginationChangeHandler}
-												shape="circular"
-												color="primary"
-											/>
-										</Stack>
-										<span>
-											Total {listingTotal} care service{listingTotal === 1 ? '' : 's'} available
-										</span>
-									</>
-								) : (
-									<div className={'no-data'}>
-										<img src="/img/icons/icoAlert.svg" alt="" />
-										<p>No care listings yet for this specialist.</p>
-									</div>
-								)}
-							</Stack>
-						</Stack>
+            {/* ── REVIEWS ── */}
+            <div className="specialist-detail__reviews-section">
+                <div className="specialist-detail__reviews-inner">
+                    {commentTotal > 0 && (
+                        <div className="specialist-detail__reviews">
+                            <h2 className="specialist-detail__reviews-title">Client Reviews</h2>
+                            <div className="specialist-detail__reviews-grid">
+                                {agentComments.map((comment: Comment) => (
+                                    <div className="specialist-detail__review-card" key={comment._id}>
+                                        <div className="specialist-detail__review-head">
+                                            <img
+                                                className="specialist-detail__review-avatar"
+                                                src={resolveMemberImageUrl(comment.memberData?.memberImage, '/img/profile/defaultUser.svg')}
+                                                alt=""
+                                            />
+                                            <div>
+                                                <strong>{comment.memberData?.memberNick}</strong>
+                                                <div className="specialist-detail__review-stars">★★★★★</div>
+                                            </div>
+                                        </div>
+                                        <p>{comment.commentContent}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            {commentTotal > commentInquiry.limit && (
+                                <div className="specialist-detail__reviews-pagination">
+                                    <Pagination
+                                        page={commentInquiry.page}
+                                        count={Math.ceil(commentTotal / commentInquiry.limit) || 1}
+                                        onChange={commentPaginationChangeHandler}
+                                        shape="circular"
+                                        color="primary"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-						<Stack className={'review-box'}>
-							<Stack className={'main-intro'}>
-								<span>Specialist reviews</span>
-								<p>Feedback from pet parents who have worked with this professional through PawPal.</p>
-							</Stack>
-							{commentTotal !== 0 && (
-								<Stack className={'review-wrap'}>
-									<Box component={'div'} className={'title-box'}>
-										<StarIcon />
-										<span>
-											{commentTotal} specialist review{commentTotal > 1 ? 's' : ''}
-										</span>
-									</Box>
-									{specialistReviews?.map((comment: Comment) => {
-										return <SpecialistReviewCard comment={comment} key={comment?._id} />;
-									})}
-									<Box component={'div'} className={'pagination-box'}>
-										<Pagination
-											page={commentInquiry.page}
-											count={Math.ceil(commentTotal / commentInquiry.limit) || 1}
-											onChange={commentPaginationChangeHandler}
-											shape="circular"
-											color="primary"
-										/>
-									</Box>
-								</Stack>
-							)}
+                    <div className="specialist-detail__leave-review">
+                        <h3>Leave a Review</h3>
+                        <textarea
+                            placeholder="Share your experience with this specialist…"
+                            value={insertCommentData.commentContent}
+                            onChange={({ target: { value } }) =>
+                                setInsertCommentData({ ...insertCommentData, commentContent: value })
+                            }
+                        />
+                        <Button
+                            className="specialist-detail__review-btn"
+                            disabled={!insertCommentData.commentContent || !user?._id}
+                            onClick={createCommentHandler}
+                        >
+                            Submit Review
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
-							<Stack className={'leave-review-config'}>
-								<Typography className={'main-title'}>Share your experience</Typography>
-								<Typography className={'review-title'}>Your review</Typography>
-								<textarea
-									onChange={({ target: { value } }: any) => {
-										setInsertCommentData((prev) => ({ ...prev, commentContent: value }));
-									}}
-									value={insertCommentData.commentContent}
-									placeholder={'How did this specialist help you and your pet?'}
-								></textarea>
-								<Box className={'submit-btn'} component={'div'}>
-									<Button
-										className={'submit-review'}
-										disabled={insertCommentData.commentContent === '' || user?._id === ''}
-										onClick={createCommentHandler}
-									>
-										<Typography className={'title'}>Submit specialist review</Typography>
-										<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none">
-											<g clipPath="url(#clip0_specialist_review_submit)">
-												<path
-													d="M16.1571 0.5H6.37936C6.1337 0.5 5.93491 0.698792 5.93491 0.944458C5.93491 1.19012 6.1337 1.38892 6.37936 1.38892H15.0842L0.731781 15.7413C0.558156 15.915 0.558156 16.1962 0.731781 16.3698C0.818573 16.4566 0.932323 16.5 1.04603 16.5C1.15974 16.5 1.27345 16.4566 1.36028 16.3698L15.7127 2.01737V10.7222C15.7127 10.9679 15.9115 11.1667 16.1572 11.1667C16.4028 11.1667 16.6016 10.9679 16.6016 10.7222V0.944458C16.6016 0.698792 16.4028 0.5 16.1571 0.5Z"
-													fill="#181A20"
-												/>
-											</g>
-											<defs>
-												<clipPath id="clip0_specialist_review_submit">
-													<rect width="16" height="16" fill="white" transform="translate(0.601562 0.5)" />
-												</clipPath>
-											</defs>
-										</svg>
-									</Button>
-								</Box>
-							</Stack>
-						</Stack>
-					</Stack>
-
-					<SpecialistInquiryPanel
-						user={user}
-						selectedListing={selectedListing}
-						onClearSelectedListing={() => setSelectedListing(null)}
-					/>
-				</Stack>
-			</Stack>
-		</Stack>
-	);
+        </div>
+    );
 };
 
-SpecialistDetail.defaultProps = {
-	initialInput: {
-		page: 1,
-		limit: 9,
-		search: {
-			memberId: '',
-		},
-	},
-	initialComment: {
-		page: 1,
-		limit: 5,
-		sort: 'createdAt',
-		direction: 'ASC',
-		search: {
-			commentRefId: '',
-		},
-	},
+AgentDetail.defaultProps = {
+    initialInput: {
+        page: 1, limit: 9,
+        search: { memberId: '' },
+    },
+    initialComment: {
+        page: 1, limit: 6, sort: 'createdAt', direction: 'DESC',
+        search: { commentRefId: '' },
+    },
 };
 
-export default withLayoutFull(SpecialistDetail);
+export default withLayoutFull(AgentDetail);

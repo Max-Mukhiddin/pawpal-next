@@ -167,8 +167,8 @@ $bp-mobile-max: 767px;
 	[class*='orange'],
 	[class*='accent'],
 	.btn-orange,
-	[style*='#E07B3A'] {
-		color: #e07b3a !important;
+	[style*='--pp-primary'] {
+		color: var(--pp-primary) !important;
 	}
 
 	/* KEEP WHITE TEXT ON ORANGE/DARK BUTTONS */
@@ -313,6 +313,14 @@ $bp-mobile-max: 767px;
 		color: #f0f0f0 !important;
 	}
 
+	/* Article body keeps readable dark-on-light typography */
+	#community-detail-page .article-content .toastui-editor-contents,
+	#community-detail-page .article-content .toastui-editor-contents p,
+	#community-detail-page .article-content .tui-editor-contents,
+	#community-detail-page .article-content .tui-editor-contents p {
+		color: #3a3a3a !important;
+	}
+
 	/* CATCH-ALL - page wrapper sections only, NOT hero/image/text elements */
 	section:not([class*='hero']):not([class*='image']):not([class*='banner']),
 	.section {
@@ -341,8 +349,14 @@ $bp-mobile-max: 767px;
 		background-image: none !important;
 	}
 
-	.header-basic__content span {
-		color: rgba(255, 255, 255, 0.78) !important;
+	.header-basic__content .breadcrumb__link,
+	.header-basic__content .breadcrumb__current {
+		color: rgba(255, 255, 255, 0.92) !important;
+	}
+
+	.catalog-image-hero__content .breadcrumb__link,
+	.catalog-image-hero__content .breadcrumb__current {
+		color: rgba(255, 255, 255, 0.92) !important;
 	}
 
 	/* Join/Auth */

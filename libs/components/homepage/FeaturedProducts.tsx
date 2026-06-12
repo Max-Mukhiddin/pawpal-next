@@ -21,10 +21,8 @@ const FALLBACK_PRODUCTS: ProductCard[] = [
     { _id: 'fp-4', title: 'Interactive Puzzle Feeder', price: 32, image: '/images/products/product-feeder.jpg', href: '/product' },
 ];
 
-const formatPrice = (price: number): string => {
-    const displayPrice = price; 
-    return `$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
+const formatPrice = (price: number): string =>
+    `₩${Number(price).toLocaleString('ko-KR')}`;
 
 export default function FeaturedProducts() {
     const variables = useMemo(

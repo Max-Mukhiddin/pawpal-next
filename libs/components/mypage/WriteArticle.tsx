@@ -27,7 +27,7 @@ const WriteArticle = ({ articleId }: WriteArticleProps) => {
 		return (
 			<div id="write-article-page">
 				<Stack alignItems="center" justifyContent="center" style={{ minHeight: 320 }}>
-					<CircularProgress size={36} sx={{ color: '#e07b3a' }} />
+					<CircularProgress size={36} sx={{ color: 'var(--pp-primary)' }} />
 					<Typography style={{ marginTop: 16, color: '#888', fontSize: 14 }}>Loading article…</Typography>
 				</Stack>
 			</div>
@@ -45,6 +45,9 @@ const WriteArticle = ({ articleId }: WriteArticleProps) => {
 						{isEditMode ? 'Update your article below.' : 'Feel free to write your ideas!'}
 					</Typography>
 				</Stack>
+				<span className="mypage-profile-watermark" aria-hidden>
+					🐾
+				</span>
 			</Stack>
 			<div className="mypage-editor-shell">
 				<TuiEditor initialArticle={article} mode={isEditMode ? 'edit' : 'create'} />

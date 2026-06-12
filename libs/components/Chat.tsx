@@ -185,7 +185,7 @@ const Chat = () => {
 						className={'send-msg-btn'}
 						onClick={onClickHandler}
 						style={{
-							background: '#E07B3A',
+							background: 'var(--pp-primary)',
 							color: 'white',
 							border: 'none',
 							borderRadius: '50%',

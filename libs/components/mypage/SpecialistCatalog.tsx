@@ -121,75 +121,74 @@ const SpecialistCatalog: NextPage = ({ initialInput, ...props }: any) => {
 		return <div>pawpal CATALOG MOBILE</div>;
 	} else {
 		return (
-			<div id="my-listings-page">
+			<div id="my-listings-page" className="mypage-catalog">
 				<Stack className="main-title-box">
 					<Stack className="right-box">
 						<Typography className="main-title">{pageTitle}</Typography>
 						<Typography className="sub-title">We are glad to see you again!</Typography>
 					</Stack>
 				</Stack>
-				<Stack className="listing-list-box">
-					<Stack className="tab-name-box">
-						<Typography
-							onClick={() => changeStatusHandler(ListingStatus.ACTIVE)}
-							className={searchFilter.search.listingStatus === 'ACTIVE' ? 'active-tab-name' : 'tab-name'}
-						>
-							On Sale
-						</Typography>
-						<Typography
-							onClick={() => changeStatusHandler(ListingStatus.SOLD)}
-							className={searchFilter.search.listingStatus === 'SOLD' ? 'active-tab-name' : 'tab-name'}
-						>
-							On Sold
-						</Typography>
-					</Stack>
-					<Stack className="list-box">
-						<Stack className="listing-title-box">
-							<Typography className="title-text">Title</Typography>
-							<Typography className="title-text">Date Published</Typography>
-							<Typography className="title-text">Status</Typography>
-							<Typography className="title-text">View</Typography>
-							{searchFilter.search.listingStatus === 'ACTIVE' && (
-								<Typography className="title-text">Action</Typography>
-							)}
-						</Stack>
 
-						{filteredAgentListings?.length === 0 ? (
-							<div className={'no-data'}>
-								<img src="/img/icons/icoAlert.svg" alt="" />
-								<p>No items found.</p>
-							</div>
-						) : (
-							filteredAgentListings.map((listing: Listing) => {
-								return (
-									<SpecialistCatalogRow
-										listing={listing}
-										deleteListingHandler={deleteListingHandler}
-										updateListingHandler={updateListingHandler}
-										key={listing._id}
-									/>
-								);
-							})
-						)}
+				<div className="mypage-catalog__tabs">
+					<button
+						type="button"
+						className={`mypage-catalog__tab${searchFilter.search.listingStatus === 'ACTIVE' ? ' is-active' : ''}`}
+						onClick={() => changeStatusHandler(ListingStatus.ACTIVE)}
+					>
+						On Sale
+					</button>
+					<button
+						type="button"
+						className={`mypage-catalog__tab${searchFilter.search.listingStatus === 'SOLD' ? ' is-active' : ''}`}
+						onClick={() => changeStatusHandler(ListingStatus.SOLD)}
+					>
+						On Sold
+					</button>
+				</div>
 
-						{filteredAgentListings.length !== 0 && (
-							<Stack className="pagination-config">
-								<Stack className="pagination-box">
-									<Pagination
-										count={Math.ceil(total / searchFilter.limit)}
-										page={searchFilter.page}
-										shape="circular"
-										color="primary"
-										onChange={paginationHandler}
-									/>
-								</Stack>
-								<Stack className="total-result">
-									<Typography>{total} item{total === 1 ? '' : 's'} in your catalog</Typography>
-								</Stack>
+				<div className="mypage-catalog__panel">
+					<div className="mypage-catalog__header">
+						<span aria-hidden />
+						<span>Title</span>
+						<span>Date Published</span>
+						<span>Status</span>
+						<span>View</span>
+						<span>Action</span>
+					</div>
+
+					{filteredAgentListings?.length === 0 ? (
+						<div className="no-data">
+							<img src="/img/icons/icoAlert.svg" alt="" />
+							<p>No items found.</p>
+						</div>
+					) : (
+						filteredAgentListings.map((listing: Listing) => (
+							<SpecialistCatalogRow
+								listing={listing}
+								deleteListingHandler={deleteListingHandler}
+								updateListingHandler={updateListingHandler}
+								key={listing._id}
+							/>
+						))
+					)}
+
+					{filteredAgentListings.length !== 0 && (
+						<Stack className="pagination-config">
+							<Stack className="pagination-box">
+								<Pagination
+									count={Math.ceil(total / searchFilter.limit)}
+									page={searchFilter.page}
+									shape="circular"
+									color="primary"
+									onChange={paginationHandler}
+								/>
 							</Stack>
-						)}
-					</Stack>
-				</Stack>
+							<Stack className="total-result">
+								<Typography>{total} item{total === 1 ? '' : 's'} in your catalog</Typography>
+							</Stack>
+						</Stack>
+					)}
+				</div>
 			</div>
 		);
 	}

@@ -332,12 +332,12 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 										mt: { xs: '12px', sm: 0 },
 										textTransform: 'none',
 										fontWeight: 600,
-										borderColor: '#E07B3A',
-										color: pendingSpecialistsOnly ? '#fff' : '#E07B3A',
-										bgcolor: pendingSpecialistsOnly ? '#E07B3A' : 'transparent',
+										borderColor: 'var(--pp-primary)',
+										color: pendingSpecialistsOnly ? '#fff' : 'var(--pp-primary)',
+										bgcolor: pendingSpecialistsOnly ? 'var(--pp-primary)' : 'transparent',
 										'&:hover': {
-											borderColor: '#c96a32',
-											bgcolor: pendingSpecialistsOnly ? '#c96a32' : 'rgba(224, 123, 58, 0.08)',
+											borderColor: 'var(--pp-primary-hover)',
+											bgcolor: pendingSpecialistsOnly ? 'var(--pp-primary-hover)' : 'rgba(255, 122, 26, 0.08)',
 										},
 									}}
 								>

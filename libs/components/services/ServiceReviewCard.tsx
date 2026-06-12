@@ -5,27 +5,27 @@ import Moment from 'react-moment';
 import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 export interface ServiceReviewCardProps {
-	comment: Comment;
+    comment: Comment;
 }
 
 const ServiceReviewCard: React.FC<ServiceReviewCardProps> = ({ comment }) => {
-	const imagePath: string = resolveMemberImageUrl(comment?.memberData?.memberImage, '/img/profile/defaultUser.svg');
+    const imagePath = resolveMemberImageUrl(comment?.memberData?.memberImage, '/img/profile/defaultUser.svg');
 
-	return (
-		<Stack className={'service-review-card'}>
-			<Stack className={'service-review-card__head'}>
-				<img src={imagePath} alt="" className={'service-review-card__avatar'} />
-				<Stack>
-					<Typography className={'service-review-card__name'}>{comment.memberData?.memberNick}</Typography>
-					<Typography className={'service-review-card__date'}>
-						<Moment format={'DD MMMM, YYYY'}>{comment.createdAt}</Moment>
-					</Typography>
-					<Typography sx={{ fontSize: 11, color: '#717171', mt: 0.25 }}>PawPal service review</Typography>
-				</Stack>
-			</Stack>
-			<Typography className={'service-review-card__content'}>{comment.commentContent}</Typography>
-		</Stack>
-	);
+    return (
+        <div className="review-card-item">
+            <div className="review-card-item__head">
+                <img src={imagePath} alt="" className="review-card-item__avatar" />
+                <div className="review-card-item__meta">
+                    <span className="review-card-item__name">{comment.memberData?.memberNick}</span>
+                    <span className="review-card-item__date">
+                        <Moment format={'DD MMMM, YYYY'}>{comment.createdAt}</Moment>
+                    </span>
+                    <div className="review-card-item__stars" aria-label="5 stars">★★★★★</div>
+                </div>
+            </div>
+            <p className="review-card-item__text">{comment.commentContent}</p>
+        </div>
+    );
 };
 
 export default ServiceReviewCard;

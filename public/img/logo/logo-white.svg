@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 58">
+  <ellipse cx="38" cy="39" rx="24" ry="17" fill="#ffffff"/>
+  <ellipse cx="16" cy="19" rx="8.5" ry="10.5" fill="#ffffff"/>
+  <ellipse cx="30" cy="11" rx="8.5" ry="10.5" fill="#ffffff"/>
+  <ellipse cx="46" cy="11" rx="8.5" ry="10.5" fill="#ffffff"/>
+  <ellipse cx="60" cy="19" rx="8.5" ry="10.5" fill="#ffffff"/>
+  <text x="82" y="40" font-family="Georgia, serif" font-weight="bold" font-size="32" fill="#ffffff">
+    PawPal
+  </text>
+</svg>

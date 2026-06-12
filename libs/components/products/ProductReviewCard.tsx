@@ -8,43 +8,40 @@ import { userVar } from '../../../apollo/store';
 import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 export interface ProductReviewCardProps {
-	comment: Comment;
+    comment: Comment;
 }
 
-/** Product detail review row; keeps `.review-config` tree for shared detail SCSS. */
 const ProductReviewCard: React.FC<ProductReviewCardProps> = ({ comment }) => {
-	const router = useRouter();
-	const user = useReactiveVar(userVar);
-	const imagePath: string = resolveMemberImageUrl(comment?.memberData?.memberImage, '/img/profile/defaultUser.svg');
+    const router = useRouter();
+    const user = useReactiveVar(userVar);
+    const imagePath = resolveMemberImageUrl(comment?.memberData?.memberImage, '/img/profile/defaultUser.svg');
 
-	const goMemberPage = (id: string) => {
-		if (id === user?._id) router.push('/mypage');
-		else router.push(`/member?memberId=${id}`);
-	};
+    const goMemberPage = (id: string) => {
+        if (id === user?._id) router.push('/mypage');
+        else router.push(`/member?memberId=${id}`);
+    };
 
-	return (
-		<Stack className={'review-config'} role="article" aria-label="Product review">
-			<Stack className={'review-mb-info'}>
-				<Stack className={'img-name-box'}>
-					<img src={imagePath} alt="" className={'img-box'} />
-					<Stack>
-						<Typography className={'name'} onClick={() => goMemberPage(comment?.memberData?._id as string)}>
-							{comment.memberData?.memberNick}
-						</Typography>
-						<Typography className={'date'}>
-							<Moment format={'DD MMMM, YYYY'}>{comment.createdAt}</Moment>
-						</Typography>
-						<Typography sx={{ fontSize: 11, color: '#717171', mt: 0.25, fontWeight: 400, lineHeight: 1.3 }}>
-							Shopper review for this product
-						</Typography>
-					</Stack>
-				</Stack>
-			</Stack>
-			<Stack className={'desc-box'}>
-				<Typography className={'description'}>{comment.commentContent}</Typography>
-			</Stack>
-		</Stack>
-	);
+    return (
+        <div className="review-card-item">
+            <div className="review-card-item__head">
+                <img src={imagePath} alt="" className="review-card-item__avatar" />
+                <div className="review-card-item__meta">
+                    <span
+                        className="review-card-item__name"
+                        onClick={() => goMemberPage(comment?.memberData?._id as string)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        {comment.memberData?.memberNick}
+                    </span>
+                    <span className="review-card-item__date">
+                        <Moment format={'DD MMMM, YYYY'}>{comment.createdAt}</Moment>
+                    </span>
+                    <div className="review-card-item__stars" aria-label="5 stars">★★★★★</div>
+                </div>
+            </div>
+            <p className="review-card-item__text">{comment.commentContent}</p>
+        </div>
+    );
 };
 
 export default ProductReviewCard;

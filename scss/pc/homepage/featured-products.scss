@@ -10,8 +10,7 @@
          position: relative;
          width: 100%;
          
-         /* FIX: Changed from dark gradient to the uniform off-white/bone canvas color of PawPal sections */
-         background: #faf6f0 !important; 
+       background: linear-gradient(180deg, #f7ebd9 0%, #e8d5bf 100%);
          padding: clamp(70px, 8vw, 110px) 0 clamp(70px, 7vw, 100px);
          overflow: hidden;
          isolation: isolate;

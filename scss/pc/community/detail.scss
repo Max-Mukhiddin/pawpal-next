@@ -40,7 +40,7 @@
 				transition: color 0.18s;
 
 				&:hover {
-					color: #e07b3a;
+					color: var(--pp-primary);
 				}
 			}
 
@@ -65,8 +65,8 @@
 			display: inline-block;
 			padding: 5px 18px;
 			border-radius: 999px;
-			background: #fff3eb;
-			color: #e07b3a;
+			background: var(--pp-primary-soft);
+			color: var(--pp-primary);
 			font-size: 11px;
 			font-weight: 700;
 			font-family: $font;
@@ -104,7 +104,7 @@
 			transition: border-color 0.18s;
 
 			&:hover {
-				border-color: #e07b3a;
+				border-color: var(--pp-primary);
 			}
 		}
 
@@ -123,7 +123,7 @@
 			transition: color 0.18s;
 
 			&:hover {
-				color: #e07b3a;
+				color: var(--pp-primary);
 			}
 		}
 
@@ -176,7 +176,7 @@
 			gap: 7px;
 			padding: 10px 26px;
 			border-radius: 999px;
-			background: #e07b3a;
+			background: var(--pp-primary);
 			color: #fff;
 			font-family: $font;
 			font-size: 13px;
@@ -186,7 +186,7 @@
 			transition: background 0.18s, transform 0.18s;
 
 			&:hover {
-				background: #c96a32;
+				background: var(--pp-primary-hover);
 				transform: translateY(-1px);
 			}
 		}
@@ -211,33 +211,45 @@
 				0 2px 8px rgba(0, 0, 0, 0.04),
 				0 12px 40px rgba(0, 0, 0, 0.08);
 			border: 1px solid rgba(0, 0, 0, 0.06);
+			background: var(--color-bg-card);
 
-			/* Reset TViewer Stack */
+			/* Reset TViewer Stack / Box — spacing lives on .article-content */
 			.MuiStack-root {
 				margin-top: 0;
 				border-radius: 0;
-				background: var(--color-bg-card);
+				background: transparent;
 			}
 
-			/* Reset TViewer Box — our padding below takes over */
 			.MuiBox-root {
 				margin: 0;
 				padding: 0;
 			}
 
+			.article-content {
+				max-width: 720px;
+				margin: 0 auto;
+				padding: 48px 32px;
+			}
+
 			/* ── editorial typography inside the Toast-UI Viewer ── */
-			.toastui-editor-contents {
-				padding: 60px 72px;
+			.article-content .toastui-editor-contents,
+			.article-content .tui-editor-contents {
+				padding: 0;
 				font-family: $font !important;
-				font-size: 17.5px !important;
-				line-height: 1.88 !important;
-				color: #2c2c2c !important;
-				letter-spacing: 0.008em;
+				font-size: 16px !important;
+				line-height: 1.75 !important;
+				color: #3a3a3a !important;
+				letter-spacing: 0.01em;
 
 				p {
-					margin: 0 0 1.6em;
-					font-size: 17.5px;
-					line-height: 1.88;
+					margin-bottom: 12px;
+					line-height: 1.75;
+					font-size: 16px;
+					color: #3a3a3a;
+				}
+
+				p + p {
+					margin-top: 0;
 				}
 
 				h1,
@@ -297,22 +309,23 @@
 
 				ul,
 				ol {
-					padding-left: 1.8em;
-					margin: 0 0 1.6em;
+					padding-left: 1.5em;
+					margin: 0 0 16px;
 
 					li {
-						margin-bottom: 0.55em;
-						font-size: 17.5px;
+						margin-bottom: 0.4em;
+						font-size: 16px;
+						line-height: 1.75;
 					}
 				}
 
 				a {
-					color: #e07b3a;
+					color: var(--pp-primary);
 					text-decoration: underline;
-					text-decoration-color: rgba(224, 123, 58, 0.4);
+					text-decoration-color: rgba(255, 122, 26, 0.4);
 
 					&:hover {
-						color: #c96a32;
+						color: var(--pp-primary-hover);
 					}
 				}
 
@@ -327,7 +340,7 @@
 					border-radius: 5px;
 					padding: 2px 8px;
 					font-size: 14.5px;
-					color: #c96a32;
+					color: var(--pp-primary-hover);
 				}
 
 				pre {
@@ -351,14 +364,6 @@
 				}
 			}
 
-			/* Fallback for older Toast-UI builds */
-			.tui-editor-contents {
-				padding: 60px 72px;
-				font-family: $font;
-				font-size: 17.5px;
-				line-height: 1.88;
-				color: #2c2c2c;
-			}
 		}
 
 		/* ─── like button ────────────────────────────────────── */
@@ -377,9 +382,9 @@
 			gap: 10px;
 			padding: 14px 44px;
 			border-radius: 999px;
-			border: 2px solid #e07b3a;
+			border: 2px solid var(--pp-primary);
 			background: transparent;
-			color: #e07b3a;
+			color: var(--pp-primary);
 			font-family: $font;
 			font-size: 15px;
 			font-weight: 700;
@@ -389,7 +394,7 @@
 
 			&:hover,
 			&--active {
-				background: #e07b3a;
+				background: var(--pp-primary);
 				color: #fff;
 			}
 
@@ -439,7 +444,7 @@
 				height: 28px;
 				padding: 0 9px;
 				border-radius: 999px;
-				background: #e07b3a;
+				background: var(--pp-primary);
 				color: #fff;
 				font-family: $font;
 				font-size: 11px;
@@ -468,9 +473,9 @@
 			background: #faf9f8;
 
 			&:focus {
-				border-color: #e07b3a;
+				border-color: var(--pp-primary);
 				background: var(--color-bg-card);
-				box-shadow: 0 0 0 3px rgba(224, 123, 58, 0.1);
+				box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.1);
 			}
 
 			&::placeholder {
@@ -494,7 +499,7 @@
 		.ablog-comment-form__submit {
 			padding: 11px 30px;
 			border-radius: 999px;
-			background: #e07b3a;
+			background: var(--pp-primary);
 			color: #fff;
 			font-family: $font;
 			font-size: 14px;
@@ -504,7 +509,7 @@
 			transition: background 0.18s, transform 0.15s;
 
 			&:hover {
-				background: #c96a32;
+				background: var(--pp-primary-hover);
 				transform: translateY(-1px);
 			}
 
@@ -544,7 +549,7 @@
 			transition: border-color 0.18s;
 
 			&:hover {
-				border-color: #e07b3a;
+				border-color: var(--pp-primary);
 			}
 		}
 
@@ -570,7 +575,7 @@
 			transition: color 0.18s;
 
 			&:hover {
-				color: #e07b3a;
+				color: var(--pp-primary);
 			}
 		}
 
@@ -641,7 +646,7 @@
 			transition: border-color 0.18s;
 
 			&:focus {
-				border-color: #e07b3a;
+				border-color: var(--pp-primary);
 			}
 		}
 
@@ -683,7 +688,7 @@
 		.ablog-edit-box__save {
 			padding: 10px 22px;
 			border-radius: 999px;
-			background: #e07b3a;
+			background: var(--pp-primary);
 			border: none;
 			font-family: $font;
 			font-size: 13px;
@@ -693,7 +698,7 @@
 			transition: background 0.18s;
 
 			&:hover {
-				background: #c96a32;
+				background: var(--pp-primary-hover);
 			}
 		}
 
@@ -715,10 +720,8 @@
 				font-size: 1.75rem;
 			}
 
-			.ablog-body .toastui-editor-contents,
-			.ablog-body .tui-editor-contents {
-				padding: 40px 32px;
-				font-size: 16px !important;
+			.ablog-body .article-content {
+				padding: 40px 24px;
 			}
 
 			.ablog-comments__head,
@@ -744,10 +747,8 @@
 				margin-top: 10px;
 			}
 
-			.ablog-body .toastui-editor-contents,
-			.ablog-body .tui-editor-contents {
-				padding: 28px 20px;
-				font-size: 15.5px !important;
+			.ablog-body .article-content {
+				padding: 32px 20px;
 			}
 
 			.ablog-comments__head,

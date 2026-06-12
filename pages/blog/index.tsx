@@ -16,15 +16,15 @@ import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/swee
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import Link from 'next/link';
 import { userVar } from '../../apollo/store';
-import { ARTICLE_CATEGORIES, getArticleCategoryLabel } from '../../libs/utils/articleCategoryMap';
+import { BLOG_CATEGORY_FILTERS, getArticleCategoryLabel } from '../../libs/utils/articleCategoryMap';
+
+const VALID_ARTICLE_CATEGORIES = new Set<string>(Object.values(BoardArticleCategory));
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
 		...(await serverSideTranslations(locale, ['common'])),
 	},
 });
-
-const POPULAR_TAGS = ['Pet Care', 'Dogs', 'Cats', 'Grooming', 'Nutrition', 'Training', 'Health', 'Vets'];
 
 const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
@@ -56,38 +56,37 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 
 	useEffect(() => {
 		if (!router.isReady) return;
-		if (router.query.articleCategory) {
-			setSearchArticles((prev) => ({
-				...prev,
-				search: {
-					...prev.search,
-					articleCategory: router.query.articleCategory as BoardArticleCategory,
-				},
-			}));
-		}
+
+		const categoryParam = router.query.articleCategory as string | undefined;
+		const isValidCategory = !!categoryParam && VALID_ARTICLE_CATEGORIES.has(categoryParam);
+
+		setSearchArticles((prev) => {
+			const nextSearch: BoardArticlesInquiry['search'] = {};
+			if (prev.search.text) nextSearch.text = prev.search.text;
+			if (isValidCategory) {
+				nextSearch.articleCategory = categoryParam as BoardArticleCategory;
+			}
+			return { ...prev, page: 1, search: nextSearch };
+		});
 	}, [router.isReady, router.query.articleCategory]);
 
-	useEffect(() => {
-		if (!query?.articleCategory)
-			router.push(
-				{ pathname: router.pathname, query: { articleCategory: 'FREE' } },
-				router.pathname,
-				{ shallow: true },
-			);
-	}, []);
-
 	/** HANDLERS **/
-	const tabChangeHandler = async (value: string) => {
+	const tabChangeHandler = async (category: BoardArticleCategory | null) => {
+		const nextSearch: BoardArticlesInquiry['search'] = {};
+		if (searchArticles.search.text) nextSearch.text = searchArticles.search.text;
+		if (category !== null) {
+			nextSearch.articleCategory = category;
+		}
+
 		setSearchArticles({
 			...searchArticles,
 			page: 1,
-			search: { ...searchArticles.search, articleCategory: value as BoardArticleCategory },
+			search: nextSearch,
 		});
-		await router.push(
-			{ pathname: '/blog', query: { articleCategory: value } },
-			router.pathname,
-			{ shallow: true },
-		);
+
+		const nextQuery =
+			category === null ? {} : { articleCategory: category as BoardArticleCategory };
+		await router.push({ pathname: '/blog', query: nextQuery }, router.pathname, { shallow: true });
 	};
 
 	const paginationHandler = (e: T, value: number) => {
@@ -109,14 +108,16 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const applySearchHandler = () => {
-		setSearchArticles((prev) => ({
-			...prev,
-			page: 1,
-			search: { ...prev.search, text: searchText.trim() },
-		}));
+		setSearchArticles((prev) => {
+			const nextSearch: BoardArticlesInquiry['search'] = {};
+			const trimmed = searchText.trim();
+			if (trimmed) nextSearch.text = trimmed;
+			if (prev.search.articleCategory) nextSearch.articleCategory = prev.search.articleCategory;
+			return { ...prev, page: 1, search: nextSearch };
+		});
 	};
 
-	const activeCategory = searchArticles.search?.articleCategory;
+	const activeCategory: BoardArticleCategory | null = searchArticles.search?.articleCategory ?? null;
 
 	if (device === 'mobile') {
 		return <h1>BLOG PAGE MOBILE</h1>;
@@ -154,21 +155,21 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 												className="cb-card__thumb"
 											/>
 											<div className="cb-card__body">
-												<div className="cb-card__meta">
-													<span className="cb-card__avatar">{authorInitial}</span>
-													<span className="cb-card__author">
-														{boardArticle?.memberData?.memberNick || 'PawPal'}
-													</span>
-													<span className="cb-card__sep">·</span>
-													<span className="cb-card__count">
-														{boardArticle?.articleComments ?? 0} Comment{boardArticle?.articleComments !== 1 ? 's' : ''}
-													</span>
-												</div>
 												<span className="cb-card__cat">{displayCategory}</span>
 												<h3 className="cb-card__title">{boardArticle?.articleTitle}</h3>
-												<p className="cb-card__stats">
-													👁 {boardArticle?.articleViews ?? 0}&nbsp;·&nbsp;♥ {boardArticle?.articleLikes ?? 0}
-												</p>
+												<div className="cb-card__footer">
+													<div className="cb-card__author-row">
+														<span className="cb-card__avatar">{authorInitial}</span>
+														<span className="cb-card__author">
+															{boardArticle?.memberData?.memberNick || 'PawPal'}
+														</span>
+													</div>
+													<span className="cb-card__stats">
+														👁 {boardArticle?.articleViews ?? 0}
+														&nbsp;·&nbsp;
+														♥ {boardArticle?.articleLikes ?? 0}
+													</span>
+												</div>
 												<Link href={`/blog/detail?id=${boardArticle?._id}`} className="cb-card__readmore">
 													Read More <span className="cb-card__readmore-arrow">→</span>
 												</Link>
@@ -224,9 +225,9 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 						<div className="cb-widget">
 							<h3 className="cb-widget__title">Categories</h3>
 							<ul className="cb-cats">
-								{ARTICLE_CATEGORIES.map((cat) => (
+								{BLOG_CATEGORY_FILTERS.map((cat) => (
 									<li
-										key={cat.value}
+										key={cat.value ?? 'all'}
 										className={`cb-cats__item${activeCategory === cat.value ? ' cb-cats__item--active' : ''}`}
 										onClick={() => tabChangeHandler(cat.value)}
 									>
@@ -235,15 +236,6 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 									</li>
 								))}
 							</ul>
-						</div>
-
-						<div className="cb-widget">
-							<h3 className="cb-widget__title">Popular Tags</h3>
-							<div className="cb-tags">
-								{POPULAR_TAGS.map((tag) => (
-									<span key={tag} className="cb-tags__tag">{tag}</span>
-								))}
-							</div>
 						</div>
 
 						<div className="cb-support">
@@ -280,7 +272,7 @@ BlogList.defaultProps = {
 		limit: 6,
 		sort: 'createdAt',
 		direction: 'ASC',
-		search: { articleCategory: 'FREE' },
+		search: {},
 	},
 };
 

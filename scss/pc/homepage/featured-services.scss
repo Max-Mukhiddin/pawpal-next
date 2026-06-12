@@ -10,8 +10,7 @@
 	 .featured-services {
 		 position: relative;
 		 width: 100%;
-		 // Replaced rich copper linear-gradient with a clean luxury warm bone background to match the rest of your page sections
-		 background: linear-gradient(180deg, #f3ece3 0%, #faf6f0 100%);
+		 background: var(--pp-bg, #f5f0e8);
 		 padding: clamp(70px, 8vw, 120px) 0 clamp(90px, 10vw, 140px);
 		 overflow: hidden;
 		 isolation: isolate;

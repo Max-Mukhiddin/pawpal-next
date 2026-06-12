@@ -14,6 +14,8 @@ export interface ServiceDetailInquirySidebarProps {
 	/** Defaults to desktop copy; mobile can pass sentence case. */
 	mainTitle?: string;
 	profileLinkLabel?: string;
+	/** Set true when the booking section is rendered separately (e.g. in the left column on desktop). */
+	hideBookingSection?: boolean;
 }
 
 /** Service detail right column: host card + listing inquiry form (`createInquiry`). */
@@ -22,6 +24,7 @@ const ServiceDetailInquirySidebar: React.FC<ServiceDetailInquirySidebarProps> = 
 	user,
 	mainTitle = 'Get Service Consultation',
 	profileLinkLabel = 'View Specialist Profile',
+	hideBookingSection = false,
 }) => {
 	const listingId = service?._id;
 	const { values, errors, setField, handleSubmitIntent, submitting } = useListingInquiryForm({
@@ -64,7 +67,7 @@ const ServiceDetailInquirySidebar: React.FC<ServiceDetailInquirySidebarProps> = 
 				submitDisabled={!listingId}
 				submitting={submitting}
 			/>
-			<ServiceDetailBookingSection service={service} user={user} />
+			{!hideBookingSection && <ServiceDetailBookingSection service={service} user={user} />}
 		</Stack>
 	);
 };

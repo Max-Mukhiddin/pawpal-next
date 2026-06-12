@@ -1,4 +1,5 @@
 import React from 'react';
+import HeroBreadcrumb from '../common/HeroBreadcrumb';
 
 /** Shared image hero style for service catalog. */
 const ServicesHero: React.FC = () => (
@@ -6,7 +7,7 @@ const ServicesHero: React.FC = () => (
 		<div className="catalog-image-hero__bg" aria-hidden />
 		<div className="catalog-image-hero__content">
 			<h1 className="catalog-image-hero__title">Find the Right Care for Your Pet</h1>
-			<p className="catalog-image-hero__crumb">Home / Services</p>
+			<HeroBreadcrumb current="Services" />
 		</div>
 	</section>
 );

@@ -160,9 +160,6 @@ const MyBookings: NextPage = () => {
 										<Typography sx={{ ...metaLineSx, mt: 0 }}>{agentPhone || 'Phone unavailable'}</Typography>
 									</Stack>
 								</Stack>
-								<Typography sx={{ ...metaLineSx, mt: 0.5 }}>Specialist ID: {b.agentId ?? b.agentData?._id ?? '—'}</Typography>
-								<Typography sx={{ ...metaLineSx, mt: 0.5 }}>Booking ID: {b._id}</Typography>
-
 								<Typography sx={{ ...fieldLabelSx, mt: 1.5 }}>Your note</Typography>
 								{b.note?.trim() ? (
 									<Stack sx={{ p: 1.5, bgcolor: '#fafafa', borderRadius: 1 }}>

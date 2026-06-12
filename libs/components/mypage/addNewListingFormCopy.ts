@@ -50,6 +50,8 @@ export function listingFormUploadHeading(t: ListingType | string): string {
 	return 'Upload photos';
 }
 
+export const listingFormPhotoFormatHint = 'Photos must be in JPEG or PNG format';
+
 export function listingFormIntro(t: ListingType | string): string {
 	if (isProductListingType(t)) {
 		return 'List a physical or catalog product. Clear photos and specs help buyers decide.';

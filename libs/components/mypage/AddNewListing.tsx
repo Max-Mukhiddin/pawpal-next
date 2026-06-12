@@ -23,10 +23,32 @@ import {
 	listingFormPricePlaceholder,
 	listingFormTitleLabel,
 	listingFormTitlePlaceholder,
+	listingFormPhotoFormatHint,
 	listingFormUploadHeading,
 } from './addNewListingFormCopy';
-
 const CATALOG_LISTING_TYPES = [ListingType.PRODUCT, ListingType.SERVICE];
+
+const MAX_LISTING_IMAGES = 5;
+
+const ALLOWED_LISTING_IMAGE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png']);
+
+function mergeListingImages(existing: string[], incoming: string[]): string[] {
+	const combined = [...existing];
+	for (const path of incoming) {
+		const normalized = String(path ?? '').replace(/^\/+/, '');
+		if (normalized && !combined.includes(normalized)) {
+			combined.push(normalized);
+		}
+	}
+	return combined.slice(0, MAX_LISTING_IMAGES);
+}
+
+function isAllowedListingImageFile(file: File): boolean {
+	const mime = (file.type || '').toLowerCase();
+	if (mime && ALLOWED_LISTING_IMAGE_TYPES.has(mime)) return true;
+	const name = (file.name || '').toLowerCase();
+	return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png');
+}
 
 function normalizeListingPayload(data: ListingInput): ListingInput {
 	const t = data.listingType;
@@ -39,6 +61,16 @@ function normalizeListingPayload(data: ListingInput): ListingInput {
 	return data;
 }
 
+function getQueryParam(value: string | string[] | undefined): string {
+	if (typeof value === 'string') return value;
+	if (Array.isArray(value)) return value[0] ?? '';
+	return '';
+}
+
+function getPostSaveCategory(listingType: ListingType | string): string {
+	return isProductListingType(listingType) ? 'myProducts' : 'myServices';
+}
+
 const AddNewListing = ({ initialValues, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
@@ -48,37 +80,36 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 	const listingLocationEnumValues = Object.values(ListingLocation);
 	const token = getJwtToken();
 	const user = useReactiveVar(userVar);
-	const isEdit = Boolean(router.query.listingId);
+	const listingId = getQueryParam(router.query.listingId);
+	const isEdit = Boolean(listingId);
 	const lt = insertListingData.listingType;
 
 	/** APOLLO REQUESTS **/
 	const [createListing] = useMutation(CREATE_LISTING);
 	const [updateListing] = useMutation(UPDATE_LISTING);
 
-	const {
-		loading: getListingLoading,
-		data: getListingData,
-		error: getListingError,
-		refetch: getListingRefetch,
-	} = useQuery(GET_LISTING, {
+	const { data: getListingData } = useQuery(GET_LISTING, {
 		fetchPolicy: 'network-only',
 		variables: {
-			input: router.query.listingId,
+			input: listingId,
 		},
-		skip: (() => {
-			const raw = router.query.listingId;
-			const id = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
-			return !id || id.length !== 24;
-		})(),
+		skip: !router.isReady || !isEdit || listingId.length !== 24,
 	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		const listing = getListingData?.getListing;
-		if (!listing) return;
+		if (isEdit) return;
+		setInsertListingData({
+			...initialValues,
+			listingImages: [...(initialValues.listingImages ?? [])],
+		});
+	}, [isEdit]);
 
-		setInsertListingData((prev) => ({
-			...prev,
+	useEffect(() => {
+		const listing = getListingData?.getListing;
+		if (!isEdit || !listing) return;
+
+		setInsertListingData({
 			listingTitle: listing.listingTitle ?? '',
 			listingPrice: listing.listingPrice ?? 0,
 			listingType: (listing.listingType as ListingType) ?? ('' as ListingType),
@@ -86,18 +117,43 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 			listingAddress: listing.listingAddress ?? '',
 			durationMinutes: listing.durationMinutes ?? null,
 			listingDesc: listing.listingDesc ?? '',
-			listingImages: listing.listingImages ?? [],
-		}));
-	}, [getListingLoading, getListingData]);
+			listingImages: Array.isArray(listing.listingImages)
+				? listing.listingImages.map((image: string) => String(image ?? '').replace(/^\/+/, '')).filter(Boolean)
+				: [],
+		});
+	}, [isEdit, getListingData]);
 
 	/** HANDLERS **/
+	const removeListingImage = useCallback((index: number) => {
+		setInsertListingData((prev) => ({
+			...prev,
+			listingImages: prev.listingImages.filter((_, i) => i !== index),
+		}));
+	}, []);
+
 	async function uploadImages() {
 		try {
 			const formData = new FormData();
 			const selectedFiles = inputRef.current.files;
 
 			if (selectedFiles.length == 0) return false;
-			if (selectedFiles.length > 5) throw new Error('Cannot upload more than 5 images!');
+
+			const existingCount = insertListingData.listingImages.length;
+			if (existingCount >= MAX_LISTING_IMAGES) {
+				throw new Error(`You can upload up to ${MAX_LISTING_IMAGES} images.`);
+			}
+			if (existingCount + selectedFiles.length > MAX_LISTING_IMAGES) {
+				throw new Error(
+					`You can add ${MAX_LISTING_IMAGES - existingCount} more image(s) (${MAX_LISTING_IMAGES} max).`,
+				);
+			}
+
+			for (let i = 0; i < selectedFiles.length; i++) {
+				const file = selectedFiles[i];
+				if (!isAllowedListingImageFile(file)) {
+					throw new Error(listingFormPhotoFormatHint);
+				}
+			}
 
 			formData.append(
 				'operations',
@@ -138,9 +194,14 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 				? responseImages.map((p) => String(p ?? '').replace(/^\/+/, ''))
 				: [];
 
-			setInsertListingData((prev) => ({ ...prev, listingImages: normalized }));
+			setInsertListingData((prev) => ({
+				...prev,
+				listingImages: mergeListingImages(prev.listingImages, normalized),
+			}));
+			if (inputRef.current) inputRef.current.value = '';
 		} catch (err: any) {
 			console.error('err: ', err.message);
+			if (inputRef.current) inputRef.current.value = '';
 			await sweetMixinErrorAlert(err.message);
 		}
 	}
@@ -181,8 +242,8 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 				},
 			});
 
-			await sweetMixinSuccessAlert('Saved successfully.');
-			const nextCategory = isProductListingType(payload.listingType) ? 'myProducts' : 'myServices';
+			await sweetMixinSuccessAlert('Listing created successfully!');
+			const nextCategory = getPostSaveCategory(payload.listingType);
 			await router.push({
 				pathname: '/mypage',
 				query: {
@@ -201,17 +262,21 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 			return;
 		}
 		try {
+			if (!listingId) {
+				throw new Error('Missing listing id for update.');
+			}
+
 			await updateListing({
 				variables: {
 					input: {
-						_id: getListingData?.getListing?._id as string,
+						_id: listingId,
 						...payload,
 					},
 				},
 			});
 
-			await sweetMixinSuccessAlert('Changes saved.');
-			const nextCategory = isProductListingType(payload.listingType) ? 'myProducts' : 'myServices';
+			await sweetMixinSuccessAlert('Listing updated successfully!');
+			const nextCategory = getPostSaveCategory(payload.listingType);
 			await router.push({
 				pathname: '/mypage',
 				query: {
@@ -221,7 +286,7 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
-	}, [insertListingData, getListingData, updateListing, router]);
+	}, [insertListingData, listingId, updateListing, router]);
 
 	if (user?.memberType !== 'AGENT') {
 		router.back();
@@ -232,6 +297,8 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 	} else {
 		const showServiceDuration = isServiceListingType(lt);
 		const showProductServiceNote = isProductListingType(lt) || isServiceListingType(lt);
+		const firstListingImage = insertListingData.listingImages?.[0];
+		const summaryImageUrl = firstListingImage ? `${REACT_APP_API_URL}/${String(firstListingImage).replace(/^\/+/, '')}` : '';
 
 		return (
 			<div id="add-listing-page">
@@ -410,7 +477,7 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 						<Typography sx={{ fontSize: 12, color: '#717171', mb: 1 }}>
 							{isProductListingType(lt) && 'Clear product shots build trust — show packaging and labels if helpful.'}
 							{isServiceListingType(lt) && 'Show your space, tools, or happy pets (with permission) so clients know what to expect.'}
-							{!isProductListingType(lt) && !isServiceListingType(lt) && 'Photos must be JPEG or PNG format and least 2048x768'}
+							{!isProductListingType(lt) && !isServiceListingType(lt) && listingFormPhotoFormatHint}
 						</Typography>
 						<Stack className="images-box">
 							<Stack className="upload-box">
@@ -457,10 +524,11 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 								</svg>
 								<Stack className="text-box">
 									<Typography className="drag-title">Drag and drop images here</Typography>
-									<Typography className="format-title">Photos must be JPEG or PNG format and least 2048x768</Typography>
+									<Typography className="format-title">{listingFormPhotoFormatHint}</Typography>
 								</Stack>
 								<Button
 									className="browse-button"
+									disabled={insertListingData.listingImages.length >= MAX_LISTING_IMAGES}
 									onClick={() => {
 										inputRef.current.click();
 									}}
@@ -489,16 +557,32 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 									</svg>
 								</Button>
 							</Stack>
-							<Stack className="gallery-box">
-								{insertListingData?.listingImages.map((image: string) => {
-									const imagePath: string = `${REACT_APP_API_URL}/${String(image).replace(/^\/+/, '')}`;
-									return (
-										<Stack className="image-box" key={image}>
-											<img src={imagePath} alt="" />
-										</Stack>
-									);
-								})}
-							</Stack>
+
+							{insertListingData.listingImages.length > 0 && (
+								<Stack className="listing-upload-thumbnails">
+									<Typography className="listing-upload-thumbnails__label">
+										Uploaded photos ({insertListingData.listingImages.length}/{MAX_LISTING_IMAGES})
+									</Typography>
+									<Stack className="listing-upload-thumbnails__grid">
+										{insertListingData.listingImages.map((image: string, index: number) => {
+											const imagePath = `${REACT_APP_API_URL}/${String(image).replace(/^\/+/, '')}`;
+											return (
+												<Stack className="listing-upload-thumbnails__item" key={`${image}-${index}`}>
+													<img src={imagePath} alt="" />
+													<button
+														type="button"
+														className="listing-upload-thumbnails__remove"
+														onClick={() => removeListingImage(index)}
+														aria-label="Remove image"
+													>
+														×
+													</button>
+												</Stack>
+											);
+										})}
+									</Stack>
+								</Stack>
+							)}
 						</Stack>
 
 						<Stack
@@ -524,20 +608,42 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 								<strong>Price:</strong>{' '}
 								{insertListingData.listingPrice ? insertListingData.listingPrice.toLocaleString() : '—'}
 							</Typography>
-							{isServiceListingType(lt) && (
-								<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
-									<strong>Duration:</strong>{' '}
-									{insertListingData.durationMinutes != null && insertListingData.durationMinutes > 0
-										? `${insertListingData.durationMinutes} min`
-										: '—'}
-								</Typography>
+							<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
+								<strong>Duration:</strong>{' '}
+								{insertListingData.durationMinutes != null && insertListingData.durationMinutes > 0
+									? `${insertListingData.durationMinutes} min`
+									: '—'}
+							</Typography>
+							<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
+								<strong>Location:</strong> {insertListingData.listingLocation || '—'}
+							</Typography>
+							<Typography sx={{ fontSize: 14, color: '#181a20', mt: 0.5 }}>
+								<strong>Address:</strong> {insertListingData.listingAddress || '—'}
+							</Typography>
+							{summaryImageUrl && (
+								<Stack sx={{ mt: 1.5, gap: 0.75 }}>
+									<Typography sx={{ fontSize: 12, fontWeight: 700, color: '#717171' }}>
+										Image preview
+									</Typography>
+									<img
+										src={summaryImageUrl}
+										alt="Listing preview"
+										style={{
+											width: 96,
+											height: 72,
+											objectFit: 'cover',
+											borderRadius: 8,
+											border: '1px solid #e5e5e5',
+										}}
+									/>
+								</Stack>
 							)}
 						</Stack>
 
 						<Stack className="buttons-row">
-							{router.query.listingId ? (
+							{isEdit ? (
 								<Button className="next-button" disabled={doDisabledCheck()} onClick={updateListingHandler}>
-									<Typography className="next-button-text">Edit</Typography>
+									<Typography className="next-button-text">Save Changes</Typography>
 								</Button>
 							) : (
 								<Button className="next-button" disabled={doDisabledCheck()} onClick={insertListingHandler}>
