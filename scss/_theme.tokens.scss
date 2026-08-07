@@ -1,32 +1,32 @@
 /**
  * PawPal theme tokens for SCSS (mirrors MUI palette direction).
- * React sets `document.documentElement[data-theme="light|dark"]` from ThemeModeProvider.
- *
- * Usage: prefer `var(--pp-*)` instead of raw hex in new/refactored styles.
- * Existing rules can migrate incrementally — no need to touch all files at once.
+ * Light-mode tokens for legacy --pp-* aliases used across the app.
  */
 
-:root[data-theme='light'],
-:root:not([data-theme]) {
+:root {
 	color-scheme: light;
 
 	/* Homepage editorial width — wider than legacy 1200px “card in a page” feel */
 	--pp-home-content-max: min(1440px, calc(100vw - clamp(28px, 7vw, 88px)));
 	--pp-home-section-pad-x: clamp(20px, 5vw, 56px);
 
-	--pp-bg: #f5f0e8;
-	--pp-bg-paper: #faf7f2;
+	--pp-bg: var(--pp-mist);
+	--pp-bg-paper: #ffffff;
 	--pp-bg-elevated: #fffefb;
 	--pp-text: #2a241e;
 	--pp-text-muted: #6b5d52;
 	--pp-border: rgba(42, 36, 30, 0.12);
-	--pp-primary: #ff7a1a;
-	--pp-primary-hover: #e66a0f;
-	--pp-primary-active: #cc5a0a;
-	--pp-primary-soft: #fff2e8;
-	--pp-primary-text: #c2410c;
+	--pp-primary: #1e6b4f;
+	--pp-primary-hover: #173e32;
+	--pp-primary-active: #133024;
+	--pp-primary-soft: #eef4f0;
+	--pp-primary-text: #15543d;
 	--pp-primary-contrast: #ffffff;
 	--pp-secondary: #5c5340;
+
+	/* Like / favorite heart — filled + outline use the same red */
+	--pp-like-red: #e53935;
+	--pp-like-red-hover: #c62828;
 
 	/* Top navigation (see scss/pc/top.scss) */
 	--pp-nav-bg: rgba(250, 247, 242, 0.88);
@@ -35,7 +35,11 @@
 	--pp-nav-text-muted: var(--pp-text-muted);
 	--pp-nav-border: var(--pp-border);
 	--pp-nav-accent: var(--pp-primary);
-	--pp-nav-link-hover: rgba(255, 122, 26, 0.15);
+	--pp-nav-link-hover: rgba(30, 107, 79, 0.12);
+	--pp-nav-z: 1200;
+
+	/* Featured Services duo row (scss/pc/homepage/featured-services.scss) */
+	--pp-featured-duo-h: clamp(400px, 32vw, 520px);
 
 	/* Homepage hero (scss/pc/homepage/hero-section.scss) */
 	--pp-hero-page-bg: var(--pp-bg);
@@ -89,12 +93,12 @@
 	/* Why PawPal (scss/pc/homepage/why-pawpal.scss) */
 	--pp-why-pawpal-bg: #fdfbf7;
 	--pp-why-pawpal-border: rgba(42, 36, 30, 0.07);
-	--pp-why-pawpal-icon-bg: rgba(255, 122, 26, 0.09);
+	--pp-why-pawpal-icon-bg: rgba(30, 107, 79, 0.09);
 	--pp-why-pawpal-icon-color: var(--pp-primary);
 	--pp-why-pawpal-lead: rgba(42, 36, 30, 0.62);
-	--pp-why-pawpal-decor: rgba(255, 122, 26, 0.07);
+	--pp-why-pawpal-decor: rgba(30, 107, 79, 0.07);
 	--pp-why-pawpal-focal-shadow: 0 20px 50px rgba(42, 36, 30, 0.1);
-	--pp-why-pawpal-cta-shadow: 0 10px 28px rgba(255, 122, 26, 0.28);
+	--pp-why-pawpal-cta-shadow: 0 10px 28px rgba(30, 107, 79, 0.28);
 	--pp-why-pawpal-pet-ring: #fffefb;
 	--pp-why-pawpal-story-bg: #f3efe6;
 
@@ -103,7 +107,7 @@
 	--pp-team-border: rgba(42, 36, 30, 0.07);
 	--pp-team-card-bg: #ffffff;
 	--pp-team-card-shadow: 0 28px 70px rgba(42, 36, 30, 0.08);
-	--pp-team-rail-bg: rgba(255, 122, 26, 0.06);
+	--pp-team-rail-bg: rgba(30, 107, 79, 0.06);
 	--pp-team-photo-well: #ede8df;
 
 	/* Footer: surface color, independent of page background */
@@ -111,105 +115,5 @@
 	--pp-footer-text: #1a1a1a;
 	--pp-footer-muted: rgba(0, 0, 0, 0.6);
 	--pp-footer-border: rgba(0, 0, 0, 0.1);
-	--pp-footer-accent: var(--pp-primary);
-}
-
-:root[data-theme='dark'] {
-	color-scheme: dark;
-
-	--pp-home-content-max: min(1440px, calc(100vw - clamp(28px, 7vw, 88px)));
-	--pp-home-section-pad-x: clamp(20px, 5vw, 56px);
-
-	--pp-bg: #121218;
-	--pp-bg-paper: #1a1a22;
-	--pp-bg-elevated: #22222c;
-	--pp-text: #ebe7e0;
-	--pp-text-muted: #9b948f;
-	--pp-border: rgba(235, 231, 224, 0.12);
-	--pp-primary: #ff8c2c;
-	--pp-primary-hover: #ff7a1a;
-	--pp-primary-active: #e66a0f;
-	--pp-primary-soft: rgba(255, 122, 26, 0.15);
-	--pp-primary-text: #ffb37a;
-	--pp-primary-contrast: #121218;
-	--pp-secondary: #9a9285;
-
-	--pp-nav-bg: rgba(18, 18, 24, 0.88);
-	--pp-nav-bg-scrolled: rgba(26, 26, 34, 0.96);
-	--pp-nav-text: var(--pp-text);
-	--pp-nav-text-muted: var(--pp-text-muted);
-	--pp-nav-border: var(--pp-border);
-	--pp-nav-accent: var(--pp-primary);
-	--pp-nav-link-hover: rgba(255, 140, 44, 0.12);
-
-	--pp-hero-page-bg: var(--pp-bg);
-	--pp-hero-overlay-strong: rgba(6, 6, 10, 0.85);
-	--pp-hero-overlay-mid: rgba(10, 10, 14, 0.58);
-	--pp-hero-overlay-soft: rgba(14, 14, 20, 0.38);
-	--pp-hero-heading: #f7f4ef;
-	--pp-hero-subtitle: rgba(247, 244, 239, 0.86);
-	--pp-hero-accent: var(--pp-primary);
-	--pp-hero-accent-text: var(--pp-primary-contrast);
-	--pp-hero-shadow: 0 32px 80px rgba(0, 0, 0, 0.38);
-	--pp-hero-card-radius: clamp(38px, 5.8vw, 58px);
-	--pp-hero-strip-bg: #f4f1eb;
-	--pp-hero-strip-text: rgba(42, 36, 30, 0.65);
-	--pp-hero-strip-heading: #2a241e;
-	--pp-hero-badge-bg: #0c0c10;
-	--pp-hero-badge-text: #f7f4ef;
-	--pp-hero-badge-inner: #f4f1eb;
-	--pp-hero-badge-arrow: #0c0c10;
-	--pp-hero-arrow-bg: rgba(253, 251, 247, 0.1);
-	--pp-hero-arrow-border: rgba(253, 251, 247, 0.32);
-	--pp-hero-avatar-ring: #f4f1eb;
-
-	--pp-our-services-bg: var(--pp-bg-paper);
-	--pp-our-services-border: var(--pp-border);
-	--pp-our-services-card-radius: 20px;
-	--pp-our-services-card-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
-	--pp-our-services-card-shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.32);
-	--pp-our-services-surface-bg: rgba(30, 30, 39, 0.5);
-	--pp-our-services-surface-border: rgba(235, 231, 224, 0.05);
-	--pp-our-services-surface-shadow: 0 14px 44px rgba(0, 0, 0, 0.22);
-	--pp-our-services-surface-radius: clamp(28px, 4.8vw, 44px);
-	--pp-our-services-overlay-strong: rgba(8, 8, 12, 0.92);
-	--pp-our-services-overlay-mid: rgba(8, 8, 12, 0.45);
-	--pp-our-services-card-heading: #f7f4ef;
-	--pp-our-services-card-body: rgba(247, 244, 239, 0.88);
-	--pp-our-services-action-bg: #f7f4ef;
-	--pp-our-services-action-icon: #1a1a22;
-	--pp-our-services-action-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-	--pp-our-services-browse-border: rgba(235, 231, 224, 0.18);
-	--pp-our-services-browse-bg: var(--pp-bg-elevated);
-	--pp-our-services-browse-hover-bg: rgba(196, 154, 108, 0.12);
-	--pp-our-services-nav-bg: var(--pp-bg-elevated);
-	--pp-our-services-nav-border: rgba(235, 231, 224, 0.14);
-	--pp-our-services-nav-icon: var(--pp-text);
-	--pp-our-services-nav-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
-	--pp-our-services-dot: rgba(235, 231, 224, 0.28);
-	--pp-our-services-dot-active: var(--pp-primary);
-
-	--pp-why-pawpal-bg: #1a1a22;
-	--pp-why-pawpal-border: rgba(235, 231, 224, 0.08);
-	--pp-why-pawpal-icon-bg: rgba(255, 140, 44, 0.12);
-	--pp-why-pawpal-icon-color: var(--pp-primary);
-	--pp-why-pawpal-lead: rgba(235, 231, 224, 0.68);
-	--pp-why-pawpal-decor: rgba(255, 140, 44, 0.08);
-	--pp-why-pawpal-focal-shadow: 0 22px 56px rgba(0, 0, 0, 0.35);
-	--pp-why-pawpal-cta-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-	--pp-why-pawpal-pet-ring: #22222c;
-	--pp-why-pawpal-story-bg: #22222c;
-
-	--pp-team-bg: #16161c;
-	--pp-team-border: rgba(235, 231, 224, 0.08);
-	--pp-team-card-bg: #1e1e26;
-	--pp-team-card-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
-	--pp-team-rail-bg: rgba(255, 140, 44, 0.08);
-	--pp-team-photo-well: #252530;
-
-	--pp-footer-bg: #0f0f14;
-	--pp-footer-text: #f2efe8;
-	--pp-footer-muted: rgba(242, 239, 232, 0.7);
-	--pp-footer-border: rgba(255, 255, 255, 0.08);
 	--pp-footer-accent: var(--pp-primary);
 }

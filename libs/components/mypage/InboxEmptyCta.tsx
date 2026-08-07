@@ -32,8 +32,9 @@ const InboxEmptyCta: React.FC<{ variant: InboxEmptyCtaVariant }> = ({ variant })
 				sx={{
 					textTransform: 'none',
 					fontWeight: 600,
-					background: '#eb6753',
-					'&:hover': { background: '#d95a47' },
+					background: 'var(--pp-primary)',
+					color: 'var(--pp-honey)',
+					'&:hover': { background: 'var(--pp-primary-hover)' },
 				}}
 			>
 				{label}

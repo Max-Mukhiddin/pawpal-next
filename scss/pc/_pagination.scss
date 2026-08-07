@@ -1,0 +1,49 @@
+/**
+ * PawPal — single shared MUI Pagination style.
+ * Used by every listing page (services, products, specialists, blog, profile).
+ * Apply by adding className="pp-pagination" to the MUI <Pagination /> element.
+ */
+.pp-pagination {
+	.MuiPagination-ul {
+		gap: 8px;
+		justify-content: flex-start;
+	}
+
+	.MuiPaginationItem-root {
+		width: 36px;
+		height: 36px;
+		min-width: 36px;
+		border-radius: 50%;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--pp-primary);
+		border: 1.5px solid var(--pp-primary);
+		background: transparent;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: #eef4f0;
+		}
+
+		&.Mui-selected {
+			background: var(--pp-primary);
+			color: #e8a04b;
+			border-color: var(--pp-primary);
+			font-weight: 700;
+
+			&:hover {
+				background: var(--pp-primary);
+			}
+		}
+
+		&.MuiPaginationItem-previousNext {
+			border-color: #6b9e85;
+		}
+
+		&.Mui-disabled {
+			opacity: 0.35;
+			cursor: not-allowed;
+		}
+	}
+}

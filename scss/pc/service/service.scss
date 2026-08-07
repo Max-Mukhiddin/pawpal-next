@@ -1,5 +1,369 @@
+@import '../common/catalog-sidebar.scss';
+
 #pc-wrap,
 #mobile-wrap {
+    /* ── Services listing page shell ── */
+    .pawpal-static-page--services {
+        background: var(--pp-mist);
+        padding: clamp(48px, 6vw, 72px) 0 clamp(72px, 8vw, 110px);
+
+        .container {
+            gap: 24px;
+            padding-left: var(--pp-gutter, 48px);
+            padding-right: var(--pp-gutter, 48px);
+        }
+
+        .pagination-config {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            padding-left: 0;
+
+            .total-result,
+            .total-result .MuiTypography-root {
+                margin-left: 12px;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.82rem;
+                color: #50625a;
+            }
+
+            .pagination-box {
+                .MuiPaginationItem-root {
+                    font-family: 'Poppins', sans-serif;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    min-width: 36px;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    border: 1.5px solid var(--pp-primary);
+                    color: var(--pp-primary);
+                    background: transparent;
+                    padding: 0;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+
+                    &:hover {
+                        background: #eef4f0;
+                        border-color: var(--pp-primary);
+                    }
+
+                    &.Mui-selected {
+                        background: var(--pp-primary) !important;
+                        border: 1.5px solid var(--pp-primary) !important;
+                        color: #e8a04b !important;
+                        font-weight: 700;
+                    }
+
+                    &.Mui-disabled {
+                        opacity: 0.35;
+                        cursor: not-allowed;
+                    }
+                }
+
+                .MuiPaginationItem-previousNext,
+                .MuiPaginationItem-firstLast {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: transparent;
+                    border: 1.5px solid #6b9e85 !important;
+                    color: var(--pp-primary);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+
+                    &:hover:not(.Mui-disabled) {
+                        background: #eef4f0;
+                        border-color: var(--pp-primary) !important;
+                    }
+
+                    &.Mui-disabled {
+                        opacity: 0.35;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+
+        /* ── Static blocks: packages, benefits, FAQ, CTA ── */
+        .pawpal-static-page__block {
+            background: #eef4f0;
+            border: none;
+            box-shadow: none;
+            padding: clamp(24px, 3.2vw, 34px) 0;
+        }
+
+        .pawpal-static-page__block-head {
+            h2 {
+                font-family: 'Fraunces', 'Playfair Display', serif;
+                font-size: clamp(1.45rem, 2.6vw, 2rem);
+                font-weight: 800;
+                color: #15241e;
+            }
+
+            p {
+                color: #50625a;
+            }
+        }
+
+        .pawpal-static-page__packages {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: clamp(32px, 4vw, 48px) 0;
+        }
+
+        .pawpal-static-page__faq,
+        .pawpal-static-page__benefits {
+            background: #eef4f0;
+            border: none;
+            box-shadow: none;
+        }
+
+        /* Feature hero — side-by-side, matches Products page */
+        .pawpal-products__feature-banner,
+        .pawpal-services__feature-banner {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 0.45fr) minmax(0, 0.55fr);
+            align-items: center;
+            gap: 0;
+            margin-top: 8px;
+            margin-bottom: clamp(32px, 4vw, 48px);
+            border-radius: 28px;
+            overflow: hidden;
+            background: #ffffff !important;
+            border: 1px solid rgba(30, 107, 79, 0.1);
+            box-shadow: var(--pp-shadow-on-mist, 0 8px 24px rgba(0, 0, 0, 0.06));
+
+            &::before {
+                display: none;
+            }
+
+            @media (max-width: 1023px) {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .pawpal-products__feature-media {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+            min-width: 0;
+            max-height: 420px;
+
+            img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                min-height: 260px;
+                max-height: 380px;
+                object-fit: cover;
+                object-position: center;
+                border-radius: 22px;
+            }
+
+            @media (max-width: 1023px) {
+                max-height: none;
+                padding: 16px 16px 0;
+
+                img {
+                    min-height: 220px;
+                    max-height: 280px;
+                }
+            }
+        }
+
+        .pawpal-products__feature-content {
+            position: relative;
+            z-index: 1;
+            padding: 28px 32px 28px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            min-width: 0;
+
+            .pawpal-products__feature-kicker {
+                margin: 0;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.68rem;
+                font-weight: 700;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: #e8a04b !important;
+            }
+
+            h2 {
+                margin: 0;
+                font-family: 'Fraunces', 'Playfair Display', serif;
+                font-size: clamp(1.55rem, 2.4vw, 2.1rem);
+                font-weight: 800;
+                line-height: 1.15;
+                letter-spacing: -0.02em;
+                color: #15241e !important;
+            }
+
+            p {
+                margin: 0;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.92rem;
+                line-height: 1.65;
+                color: #50625a !important;
+                max-width: 36rem;
+            }
+
+            @media (max-width: 1023px) {
+                padding: 20px 20px 24px;
+            }
+        }
+
+        .pawpal-products__feature-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+
+            span {
+                border: 1.5px solid var(--pp-primary) !important;
+                color: var(--pp-primary) !important;
+                border-radius: 999px;
+                padding: 5px 12px !important;
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.75rem !important;
+                font-weight: 600 !important;
+                background: transparent !important;
+            }
+        }
+
+        .pawpal-products__feature-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .pawpal-products__feature-cta {
+            border-radius: 999px;
+            padding: 12px 24px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+            &--primary {
+                background: var(--pp-primary) !important;
+                color: var(--pp-honey) !important;
+                border: none !important;
+                font-weight: 700;
+            }
+
+            &--secondary {
+                background: transparent !important;
+                border: 1.5px solid var(--pp-primary) !important;
+                color: var(--pp-primary) !important;
+                font-weight: 600;
+            }
+        }
+
+        .pawpal-static-page__package-foot button {
+            background: var(--pp-primary);
+            color: #e8a04b;
+            border: none;
+            border-radius: 999px;
+            padding: 8px 20px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            height: auto;
+            white-space: nowrap;
+            transition: background 0.2s ease;
+
+            &:hover {
+                background: var(--pp-primary-hover);
+                color: #e8a04b;
+            }
+        }
+
+        .pawpal-static-page__benefits {
+            padding: clamp(24px, 3.2vw, 34px) 0;
+        }
+
+        .pawpal-static-page__benefit {
+            background: #ffffff;
+            border: 1px solid rgba(21, 36, 30, 0.08);
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+
+            &:before {
+                display: none;
+            }
+
+            h3 {
+                font-family: 'Fraunces', 'Playfair Display', serif;
+                color: #15241e;
+            }
+
+            p {
+                color: #50625a;
+            }
+        }
+
+        .pawpal-static-page__benefit-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid #e8a04b;
+            color: #e8a04b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: none;
+        }
+
+        .pawpal-static-page__cta {
+            background: var(--pp-primary-hover);
+            border-radius: 22px;
+            color: #e8f4ee;
+
+            h2 {
+                font-family: 'Fraunces', 'Playfair Display', serif;
+                color: #e8f4ee;
+            }
+
+            p {
+                color: rgba(232, 244, 238, 0.8);
+            }
+
+            button {
+                background: var(--pp-primary);
+                color: var(--pp-honey);
+                border: none;
+                border-radius: 999px;
+                padding: 12px 28px;
+                font-weight: 700;
+                font-size: 0.9rem;
+                transition: background 0.2s ease;
+
+                &:hover {
+                    background: var(--pp-primary-hover);
+                }
+            }
+        }
+
+        .pawpal-static-page__cta-secondary {
+            background: transparent !important;
+            border: 1.5px solid #e8f4ee !important;
+            color: #e8f4ee !important;
+
+            &:hover {
+                background: rgba(232, 244, 238, 0.1) !important;
+            }
+        }
+    }
+
     .services-catalog-page {
         width: 100%;
     }
@@ -11,34 +375,34 @@
         flex-wrap: wrap;
         gap: 10px;
         margin-bottom: 24px;
-        padding-top: 32px;
+        padding-top: 8px;
 
         &__pill {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 9px 18px;
+            padding: 8px 18px;
             border-radius: 999px;
-            border: 1.5px solid #e8e0d8;
-            background: #fff;
+            border: 1.5px solid var(--pp-primary);
+            background: transparent;
             cursor: pointer;
-            font-family: $font;
-            font-size: 13.5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: #6b6b6b;
-            transition: all 0.18s ease;
+            color: var(--pp-primary);
+            transition: all 0.2s ease;
             white-space: nowrap;
 
             &:hover {
-                border-color: var(--pp-primary);
-                color: var(--pp-primary);
-                background: rgba(255, 122, 26, 0.04);
+                background: #eef4f0;
+                border-color: var(--pp-primary-hover);
             }
 
             &.is-active {
                 background: var(--pp-primary);
                 border-color: var(--pp-primary);
-                color: #fff;
+                color: #e8a04b;
+                font-weight: 700;
             }
         }
 
@@ -53,11 +417,11 @@
 
         @media (max-width: 767px) {
             gap: 8px;
-            padding-top: 24px;
+            padding-top: 4px;
 
             &__pill {
                 padding: 7px 14px;
-                font-size: 12.5px;
+                font-size: 0.8rem;
             }
         }
     }
@@ -90,16 +454,48 @@
             box-sizing: border-box;
             padding: 12px 14px 12px 40px;
             border-radius: 40px;
-            border: 1px solid #ddd;
-            font-family: $font;
+            border: 1.5px solid rgba(21, 36, 30, 0.15);
+            background: #ffffff;
+            font-family: 'Poppins', sans-serif;
             font-size: 14px;
+            color: #15241e;
+
+            &::placeholder {
+                color: #50625a;
+            }
         }
 
         .services-filter__right span {
-            font-family: $font;
+            font-family: 'Poppins', sans-serif;
             font-size: 13px;
             font-weight: 600;
-            color: var(--pp-text-muted, #6b5d52);
+            color: #50625a;
+        }
+
+        .services-filter__right .MuiButton-root {
+            margin-left: 0;
+            border: 1.5px solid rgba(30, 107, 79, 0.25);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #15241e;
+            background: #ffffff;
+            cursor: pointer;
+            text-transform: none;
+            box-shadow: none;
+            line-height: 1.4;
+
+            &:hover {
+                background: #eef4f0;
+            }
+
+            &:focus,
+            &:focus-visible {
+                border-color: var(--pp-primary);
+                outline: none;
+            }
         }
     }
 
@@ -129,211 +525,85 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 24px;
         width: 100%;
+        box-sizing: border-box;
+        align-items: stretch;
+        isolation: isolate;
 
         @media (max-width: 1023px) {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        @media (max-width: 767px) {
-            grid-template-columns: 1fr;
+        @media (max-width: 599px) {
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 
-    // --- Service Card ---
-    .services-list-card {
-        position: relative;
-        cursor: pointer;
-        border-radius: 20px; /* was 16px */
-        border: none;
-        overflow: hidden;
-        background: #1a1a1a;
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-                    box-shadow 0.3s ease;
+    .services-catalog-page__no-data {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 48px 24px;
+        color: #50625a;
+        font-family: 'Poppins', sans-serif;
 
-        &:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.14);
-
-            .services-list-card__img {
-                transform: scale(1.05);
-            }
-
-            .services-list-card__arrow {
-                background: var(--pp-primary);
-                color: #fff;
-                border-color: transparent;
-            }
+        .services-catalog-page__no-data-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
         }
     }
 
-    .services-list-card__media {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 4 / 3;
-        height: auto;
-        border-radius: 20px; /* was 16px */
-        border: none;
-        overflow: hidden;
-        background: #2a2a2a;
-    }
-
-    .services-list-card__img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    /* FIX: Gradient starts at 45% — much more gradual and cinematic */
-    .services-list-card__gradient {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(
-            to bottom,
-            transparent 0%,
-            transparent 40%,
-            rgba(0, 0, 0, 0.55) 70%,
-            rgba(0, 0, 0, 0.85) 100%
-        );
-        z-index: 1;
-    }
-
-    .services-list-card__title {
-        position: absolute;
-        left: 16px;
-        bottom: 16px;
-        z-index: 2;
-        max-width: calc(100% - 120px);
-        color: #fff;
-        font-size: 17px;
-        font-weight: 700;
-        line-height: 1.25;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    }
-
-    .services-list-card__price {
-        position: absolute;
-        right: 16px;
-        bottom: 16px;
-        z-index: 2;
-        color: var(--pp-primary);
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 1.2;
-        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
-
-    .services-list-card__duration-pill {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        z-index: 2;
-        padding: 5px 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
-        color: #1a1a1a;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-    }
-
-    /* FIX: Frosted glass arrow with proper SVG — no more ↗ text character */
-    .services-list-card__arrow {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        z-index: 2;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #fff;
-        transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-
-        svg {
-            display: block;
-            flex-shrink: 0;
-        }
-    }
-
-    .services-list-card__actions {
-        position: absolute;
-        left: 12px;
-        bottom: 48px;
-        z-index: 2;
-        flex-direction: row;
-        align-items: center;
-        gap: 2px;
-
-        .MuiIconButton-root {
-            color: #fff;
-            padding: 4px;
-        }
-    }
-
-    .services-list-card__like-cnt {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 12px;
-        font-weight: 600;
-    }
 }
 
 // --- Dark Mode ---
 :root[data-theme='dark'] {
     #pc-wrap,
     #mobile-wrap {
+        .pawpal-static-page--services {
+            background: #1a1a1a;
+
+            .pagination-box .MuiPaginationItem-root {
+                border-color: var(--pp-primary);
+                color: #e8f4ee;
+
+                &.Mui-selected {
+                    background: var(--pp-primary) !important;
+                    border-color: var(--pp-primary) !important;
+                    color: #e8a04b !important;
+                }
+            }
+        }
+
         .services-categories {
             &__pill {
-                background: rgba(42, 42, 42, 0.9);
-                border-color: rgba(255, 255, 255, 0.12);
-                color: rgba(255, 255, 255, 0.65);
+                background: transparent;
+                border-color: var(--pp-primary);
+                color: #e8f4ee;
 
                 &:hover {
-                    border-color: var(--pp-primary);
-                    color: var(--pp-primary);
-                    background: rgba(255, 122, 26, 0.08);
+                    border-color: var(--pp-primary-hover);
+                    background: rgba(30, 107, 79, 0.15);
                 }
 
                 &.is-active {
                     background: var(--pp-primary);
                     border-color: var(--pp-primary);
-                    color: #fff;
+                    color: #e8a04b;
                 }
             }
         }
 
         .services-filter {
-            background: transparent !important;
-
             .services-filter__left input {
                 background: rgba(42, 42, 42, 0.9) !important;
                 border-color: rgba(255, 255, 255, 0.15) !important;
                 color: #f0f0f0 !important;
             }
 
-            .services-filter__right span,
-            .services-filter__right select {
-                background: rgba(42, 42, 42, 0.9) !important;
-                border-color: rgba(255, 255, 255, 0.15) !important;
-                color: #f0f0f0 !important;
+            .services-filter__right span {
+                color: rgba(255, 255, 255, 0.7);
             }
         }
 
-        .services-list-card__media {
-            background-color: transparent !important;
-        }
     }
 }

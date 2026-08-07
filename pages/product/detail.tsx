@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -8,7 +8,6 @@ import { Pagination as MuiPagination } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import type { Product } from '../../libs/types/products/product';
 import { formatterStr } from '../../libs/utils';
@@ -22,17 +21,20 @@ import { Message } from '../../libs/enums/common.enum';
 import { ListingType } from '../../libs/enums/listing.enum';
 import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { likeToastMessage } from '../../libs/utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../libs/auth';
+import { withActionGate } from '../../libs/utils/actionGate';
 import ProductReviewCard from '../../libs/components/products/ProductReviewCard';
 import ProductDetailInquirySidebar from '../../libs/components/products/ProductDetailInquirySidebar';
-import ProductDetailMobile from '../../libs/components/products/ProductDetailMobile';
+import PpLoader from '../../libs/components/common/PpLoader';
 import { resolveListingImageUrl, resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
+import { useFadeUpOnScroll } from '../../libs/hooks/useFadeUpOnScroll';
 
 export const getStaticProps = async ({ locale }: any) => ({
     props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
 const ProductDetail: NextPage = ({ initialComment }: any) => {
-    const device = useDeviceDetect();
     const router = useRouter();
     const user = useReactiveVar(userVar);
     const [productId, setProductId] = useState<string | null>(null);
@@ -51,6 +53,8 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 
     const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
     const [createComment] = useMutation(CREATE_COMMENT);
+    const mainRevealRef = useFadeUpOnScroll<HTMLDivElement>();
+    const bottomRevealRef = useFadeUpOnScroll<HTMLDivElement>();
 
     const relatedProductCatalogInquiry = useMemo(
         () => ({ input: { page: 1, limit: 4, sort: 'createdAt', direction: 'DESC', search: { typeList: [ListingType.PRODUCT] } } }),
@@ -115,29 +119,33 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
         if (refId && refId.length === 24) getCommentsRefetch({ input: commentInquiry });
     }, [commentInquiry]);
 
-    const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
+    const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/default-listing.webp');
     const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
     const heroImage = product?.listingImages?.[0]
-        ? resolveListingImageUrl(product.listingImages[0], '/img/banner/products.webp')
-        : '/img/banner/products.webp';
+        ? resolveListingImageUrl(product.listingImages[0], '/img/listing/minjun_trainer_treats.jpg')
+        : '/img/listing/minjun_trainer_treats.jpg';
 
     // Optimistic like — no page reload
     const likeProductHandler = async (userData: T, id: string) => {
-        try {
-            if (!id) return;
-            if (!userData._id) throw new Error(Message.NOT_AUTHENTICATED);
-            const wasLiked = product?.meLiked?.[0]?.myFavorite;
-            setProduct((prev) => prev ? {
-                ...prev,
-                listingLikes: wasLiked ? Math.max(0, (prev.listingLikes ?? 0) - 1) : (prev.listingLikes ?? 0) + 1,
-                meLiked: [{ memberId: userData._id, likeRefId: id, myFavorite: !wasLiked }],
-            } : prev);
-            await likeTargetListing({ variables: { input: id } });
-            await sweetTopSmallSuccessAlert('success', 800);
-        } catch (err: any) {
-            void getProductRefetch({ input: productId });
-            sweetMixinErrorAlert(err.message).then();
-        }
+        await withActionGate(`like:listing:${id}`, async () => {
+            try {
+                if (!id) return;
+                if (requireSignIn(router, userData._id, 'like')) return;
+                const wasLiked = product?.meLiked?.[0]?.myFavorite;
+                setProduct((prev) => prev ? {
+                    ...prev,
+                    listingLikes: wasLiked ? Math.max(0, (prev.listingLikes ?? 0) - 1) : (prev.listingLikes ?? 0) + 1,
+                    meLiked: [{ memberId: userData._id, likeRefId: id, myFavorite: !wasLiked }],
+                } : prev);
+                await likeTargetListing({ variables: { input: id } });
+                await sweetTopSmallSuccessAlert(likeToastMessage(Boolean(wasLiked)), 800);
+            } catch (err: any) {
+                if (handleSignInRequiredError(err, router, 'like')) return;
+                if (await handleLikeMutationAuthError(err, router)) return;
+                void getProductRefetch({ input: productId });
+                sweetMixinErrorAlert(err.message).then();
+            }
+        });
     };
 
     const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
@@ -147,12 +155,12 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
 
     const createCommentHandler = async () => {
         try {
-            if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
+            if (requireSignIn(router, user._id, 'comment')) return;
             await createComment({ variables: { input: insertCommentData } });
             setInsertCommentData({ ...insertCommentData, commentContent: '' });
             await getCommentsRefetch({ input: commentInquiry });
         } catch (err: any) {
-            await sweetErrorHandling(err);
+            await sweetErrorHandling(err, { router, action: 'comment' });
         }
     };
 
@@ -161,28 +169,8 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
     if (productDetailLoading && !product) {
         return (
             <Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '1080px' }}>
-                <CircularProgress size={'4rem'} />
+                <PpLoader size={64} />
             </Stack>
-        );
-    }
-
-    if (device === 'mobile') {
-        return (
-            <>
-                <ProductDetailMobile
-                    product={product} user={user} slideImage={slideImage}
-                    onSlideImageChange={(img: string) => setSlideImage(img)}
-                    onLike={likeProductHandler} relatedProducts={relatedProducts}
-                    productComments={productComments} commentTotal={commentTotal}
-                    commentInquiry={commentInquiry} onCommentPageChange={commentPaginationChangeHandler}
-                    insertCommentData={insertCommentData}
-                    onCommentTextChange={(value: string) => setInsertCommentData((prev) => ({ ...prev, commentContent: value }))}
-                    onSubmitComment={createCommentHandler}
-                />
-                <div className="container" style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 32 }}>
-                    <ProductDetailInquirySidebar product={product} user={user} />
-                </div>
-            </>
         );
     }
 
@@ -190,7 +178,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
         <div className="detail-page">
 
             {/* ── MAIN: left panel | right sidebar ── */}
-            <div className="detail-page__main">
+            <div ref={mainRevealRef} className="detail-page__main">
 
                 {/* LEFT: hero bg + floating card */}
                 <div className="detail-page__left-panel">
@@ -227,7 +215,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
                                     {product?.listingViews ?? 0}
                                 </span>
                                 <button type="button" className="detail-card__like-btn" onClick={() => likeProductHandler(user, product?._id as string)}>
-                                    {isLiked ? <FavoriteIcon sx={{ fontSize: 14 }} htmlColor="var(--pp-primary)" /> : <FavoriteBorderIcon sx={{ fontSize: 14 }} htmlColor="#888" />}
+                                    {isLiked ? <FavoriteIcon sx={{ fontSize: 14, color: 'var(--pp-like-red)' }} /> : <FavoriteBorderIcon sx={{ fontSize: 14, color: 'var(--pp-like-red)' }} />}
                                     <span>{product?.listingLikes ?? 0}</span>
                                 </button>
                             </span>
@@ -270,7 +258,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
             </div>
 
             {/* ── BOTTOM ── */}
-            <div className="detail-page__bottom">
+            <div ref={bottomRevealRef} className="detail-page__bottom">
                 <div className="detail-page__container">
                     {commentTotal !== 0 && (
                         <Stack className="detail-reviews">
@@ -280,7 +268,7 @@ const ProductDetail: NextPage = ({ initialComment }: any) => {
                                     <ProductReviewCard comment={comment} key={comment?._id} />
                                 ))}
                                 <Box component="div" className="detail-reviews__pagination">
-                                    <MuiPagination page={commentInquiry.page} count={Math.ceil(commentTotal / commentInquiry.limit)} onChange={commentPaginationChangeHandler} shape="circular" color="primary" />
+                                    <MuiPagination className="pp-pagination" page={commentInquiry.page} count={Math.ceil(commentTotal / commentInquiry.limit)} onChange={commentPaginationChangeHandler} shape="circular" color="primary" />
                                 </Box>
                             </Stack>
                         </Stack>

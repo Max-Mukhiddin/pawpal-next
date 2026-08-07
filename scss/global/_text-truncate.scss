@@ -1,0 +1,40 @@
+/**
+ * Shared text truncation — single-line ellipsis + multi-line line-clamp.
+ * Use inside fixed-size cards; pair flex/grid children with min-width: 0.
+ */
+
+@mixin pp-truncate-single {
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+@mixin pp-line-clamp($lines: 2) {
+	min-width: 0;
+	max-width: 100%;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: $lines;
+	line-clamp: $lines;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow-wrap: anywhere;
+}
+
+.pp-text-clamp-1 {
+	@include pp-line-clamp(1);
+}
+
+.pp-text-clamp-2 {
+	@include pp-line-clamp(2);
+}
+
+.pp-text-clamp-3 {
+	@include pp-line-clamp(3);
+}
+
+.pp-text-ellipsis {
+	@include pp-truncate-single;
+}

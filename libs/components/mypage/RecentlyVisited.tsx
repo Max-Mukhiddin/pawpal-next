@@ -67,6 +67,7 @@ const RecentlyVisited: NextPage = () => {
 					<Stack className="pagination-config">
 						<Stack className="pagination-box">
 							<Pagination
+								className="pp-pagination"
 								count={Math.ceil(total / searchVisited.limit)}
 								page={searchVisited.page}
 								shape="circular"

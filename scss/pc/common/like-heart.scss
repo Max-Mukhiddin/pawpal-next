@@ -1,0 +1,86 @@
+/**
+ * Like / heart icon — red outline (idle) and red filled (liked).
+ * The icon component swaps (FavoriteBorderIcon → FavoriteIcon) on state flip,
+ * so `.liked .MuiSvgIcon-root` remounts and its `animation` replays naturally.
+ */
+
+#pc-wrap,
+#mobile-wrap {
+	.services-list-card__heart,
+	.pp-product-card__heart,
+	.specialist-card .heart-btn,
+	.specialist-card__heart,
+	.specialist-list-card__like,
+	.pp-like-heart,
+	.detail-card__like-btn {
+		color: var(--pp-like-red) !important;
+		transition: color 200ms ease, transform 200ms ease-out;
+
+		.MuiSvgIcon-root {
+			color: inherit !important;
+			transition: color 200ms ease, transform 200ms ease-out;
+		}
+
+		&:hover {
+			color: var(--pp-like-red-hover) !important;
+			background: transparent !important;
+		}
+
+		&:active .MuiSvgIcon-root {
+			animation: pp-heart-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+		}
+
+		&.is-liked,
+		&.liked,
+		&--active {
+			color: var(--pp-like-red) !important;
+
+			&:hover {
+				color: var(--pp-like-red-hover) !important;
+			}
+
+			.MuiSvgIcon-root {
+				animation: pp-heart-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+			}
+		}
+	}
+
+	/* Specialist card hearts keep their white circular chip — only the icon tints */
+	.specialist-card__heart:hover,
+	.specialist-card .heart-btn:hover {
+		background: rgba(255, 255, 255, 0.98) !important;
+	}
+
+	.community-general-card-config .buttons .MuiIconButton-root .MuiSvgIcon-root[data-testid='FavoriteIcon'],
+	.community-general-card-config .buttons .MuiSvgIcon-root[data-testid='FavoriteIcon'],
+	.community-general-card-config .buttons .MuiIconButton-root .MuiSvgIcon-root[data-testid='FavoriteBorderIcon'],
+	.community-general-card-config .buttons .MuiSvgIcon-root[data-testid='FavoriteBorderIcon'] {
+		color: var(--pp-like-red);
+	}
+
+	.community-general-card-config .buttons .MuiIconButton-root .MuiSvgIcon-root[data-testid='FavoriteIcon'] {
+		animation: pp-heart-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.community-general-card-config .buttons .MuiIconButton-root:hover .MuiSvgIcon-root[data-testid='FavoriteBorderIcon'],
+	.community-general-card-config .buttons .MuiIconButton-root:hover .MuiSvgIcon-root[data-testid='FavoriteIcon'] {
+		color: var(--pp-like-red-hover);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#pc-wrap,
+	#mobile-wrap {
+		.heart-btn,
+		.pp-like-heart,
+		.services-list-card__heart,
+		.pp-product-card__heart,
+		.specialist-card__heart,
+		.specialist-list-card__like,
+		.detail-card__like-btn {
+			.MuiSvgIcon-root {
+				animation: none !important;
+			}
+		}
+	}
+}

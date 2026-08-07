@@ -1,0 +1,74 @@
+/**
+ * Homepage — Closing CTA (contained forest card on porcelain page bg)
+ */
+#pc-wrap .home-page,
+#mobile-wrap .home-page {
+	.pp-closing {
+		position: relative;
+		width: 100%;
+		background: var(--pp-mist);
+		padding: 0 var(--pp-gutter) var(--pp-section-y);
+		overflow: visible;
+
+		&__inner {
+			position: relative;
+			max-width: var(--pp-max);
+			margin: 0 auto;
+			padding: clamp(24px, 3.6vw, 44px) clamp(40px, 6vw, 72px);
+			background: var(--pp-primary-hover);
+			border-radius: 24px;
+			text-align: center;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			box-shadow: 0 8px 32px rgba(23, 62, 50, 0.16);
+		}
+
+		&__decor {
+			position: absolute;
+			top: -20px;
+			right: -10px;
+			width: 180px;
+			height: 180px;
+			opacity: 0.06;
+			pointer-events: none;
+		}
+
+		&__eyebrow {
+			color: #e8a04b;
+			font-size: 0.7rem;
+			font-weight: 700;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			margin-bottom: 14px;
+		}
+
+		&__title {
+			margin: 0;
+			font-family: var(--pp-display);
+			font-size: clamp(2rem, 4vw, 3.2rem);
+			font-weight: 800;
+			color: #f0f8f3;
+			line-height: 1.1;
+			max-width: 20ch;
+			text-wrap: balance;
+		}
+
+		&__sub {
+			margin: 16px auto 32px;
+			max-width: 560px;
+			font-family: 'Poppins', sans-serif;
+			font-size: 1rem;
+			line-height: 1.6;
+			color: rgba(232, 244, 238, 0.75);
+		}
+
+		&__actions {
+			display: flex;
+			justify-content: center;
+			gap: 14px;
+			flex-wrap: wrap;
+		}
+	}
+}

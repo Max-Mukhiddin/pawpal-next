@@ -175,7 +175,12 @@ const SpecialistInquiries: NextPage = () => {
 													variant="contained"
 													disabled={busy}
 													onClick={() => void setStatus(inq._id, InquiryStatus.RESPONDED)}
-													sx={{ textTransform: 'none', background: '#eb6753', '&:hover': { background: '#d95a47' } }}
+													sx={{
+														textTransform: 'none',
+														background: 'var(--pp-primary)',
+														color: 'var(--pp-honey)',
+														'&:hover': { background: 'var(--pp-primary-hover)' },
+													}}
 												>
 													Mark responded
 												</Button>
@@ -212,6 +217,7 @@ const SpecialistInquiries: NextPage = () => {
 				<Stack className="pagination-config">
 					<Stack className="pagination-box">
 						<Pagination
+							className="pp-pagination"
 							count={Math.max(1, Math.ceil(total / input.limit))}
 							page={input.page}
 							shape="circular"

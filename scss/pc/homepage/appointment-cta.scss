@@ -39,13 +39,13 @@
 
 			&--primary {
 				background: var(--pp-primary);
-				color: #fff;
+				color: var(--pp-honey);
 				border: 2px solid var(--pp-primary);
 
 				&:hover {
 					filter: brightness(1.05);
 					transform: translateY(-2px);
-					box-shadow: 0 8px 18px rgba(255, 122, 26, 0.3);
+					box-shadow: 0 8px 18px rgba(30, 107, 79, 0.3);
 				}
 			}
 
@@ -55,7 +55,7 @@
 				border: 2px solid var(--pp-primary);
 
 				&:hover {
-					background: rgba(255, 122, 26, 0.08);
+					background: rgba(30, 107, 79, 0.08);
 					transform: translateY(-2px);
 				}
 			}

@@ -151,8 +151,9 @@ const ListingInquirySpecialistCardFields: React.FC<ListingInquirySpecialistCardF
 				borderRadius: '12px',
 				textTransform: 'none',
 				fontWeight: 600,
-				background: '#eb6753',
-				'&:hover': { background: '#d95a47' },
+				background: 'var(--pp-primary)',
+				color: 'var(--pp-honey)',
+				'&:hover': { background: 'var(--pp-primary-hover)' },
 			}}
 		>
 			{submitting ? (

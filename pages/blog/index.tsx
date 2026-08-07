@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Pagination } from '@mui/material';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
 import { T } from '../../libs/types/common';
@@ -13,10 +12,21 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLES } from '../../apollo/user/query';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import { Messages, REACT_APP_API_URL } from '../../libs/config';
-import Link from 'next/link';
+import { likeToastMessage, readWasLiked } from '../../libs/utils/likeToastMessage';
+import { PpCardSkeletonGrid } from '../../libs/components/common/PpSkeleton';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../libs/auth';
+import { withActionGate } from '../../libs/utils/actionGate';
 import { userVar } from '../../apollo/store';
 import { BLOG_CATEGORY_FILTERS, getArticleCategoryLabel } from '../../libs/utils/articleCategoryMap';
+import { useDebouncedValue } from '../../libs/hooks/useDebouncedValue';
+import { useFadeUpOnScroll } from '../../libs/hooks/useFadeUpOnScroll';
+import { useAnimeSectionReveal } from '../../libs/hooks/useAnimeSectionReveal';
+import ArticleHoverCard from '../../libs/components/articles/ArticleHoverCard';
+import {
+	formatArticleDate,
+	makeArticleExcerpt,
+	resolveArticleImage,
+} from '../../libs/utils/articleCardHelpers';
 
 const VALID_ARTICLE_CATEGORIES = new Set<string>(Object.values(BoardArticleCategory));
 
@@ -27,12 +37,12 @@ export const getStaticProps = async ({ locale }: any) => ({
 });
 
 const BlogList: NextPage = ({ initialInput, ...props }: T) => {
-	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const { query } = router;
 	const [searchArticles, setSearchArticles] = useState<BoardArticlesInquiry>(initialInput);
 	const [searchText, setSearchText] = useState('');
+	const debouncedSearchText = useDebouncedValue(searchText, 300);
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
 
@@ -70,6 +80,19 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 		});
 	}, [router.isReady, router.query.articleCategory]);
 
+	useEffect(() => {
+		const trimmed = debouncedSearchText.trim();
+		setSearchArticles((prev) => {
+			const prevText = (prev.search?.text ?? '').trim();
+			if (trimmed === prevText) return prev;
+
+			const nextSearch: BoardArticlesInquiry['search'] = {};
+			if (trimmed) nextSearch.text = trimmed;
+			if (prev.search.articleCategory) nextSearch.articleCategory = prev.search.articleCategory;
+			return { ...prev, page: 1, search: nextSearch };
+		});
+	}, [debouncedSearchText]);
+
 	/** HANDLERS **/
 	const tabChangeHandler = async (category: BoardArticleCategory | null) => {
 		const nextSearch: BoardArticlesInquiry['search'] = {};
@@ -90,93 +113,79 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const paginationHandler = (e: T, value: number) => {
-		setSearchArticles({ ...searchArticles, page: value });
+		setSearchArticles((prev) => ({ ...prev, page: value }));
 	};
 
 	const likeArticleHandler = async (e: any, user: any, id: string) => {
-		try {
-			e.stopPropagation();
-			if (!id) return;
-			if (!user._id) throw new Error(Messages.error2);
-			await likeTargetBoardArticle({ variables: { articleId: id } });
-			await boardArticlesRefetch({ input: searchArticles });
-			await sweetTopSmallSuccessAlert('success', 800);
-		} catch (err: any) {
-			console.error('ERROR, likeArticleHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
+		e.stopPropagation();
+		await withActionGate(`like:article:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'article')) return;
+				const wasLiked = readWasLiked(boardArticles.find((a) => a._id === id));
+				await likeTargetBoardArticle({ variables: { articleId: id } });
+				await boardArticlesRefetch({ input: searchArticles });
+				await sweetTopSmallSuccessAlert(likeToastMessage(wasLiked), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'article')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.error('ERROR, likeArticleHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
 	};
 
 	const applySearchHandler = () => {
+		const trimmed = searchText.trim();
 		setSearchArticles((prev) => {
 			const nextSearch: BoardArticlesInquiry['search'] = {};
-			const trimmed = searchText.trim();
 			if (trimmed) nextSearch.text = trimmed;
 			if (prev.search.articleCategory) nextSearch.articleCategory = prev.search.articleCategory;
 			return { ...prev, page: 1, search: nextSearch };
 		});
 	};
 
+	const searchBusy =
+		searchText !== debouncedSearchText || (boardArticlesLoading && boardArticles.length > 0);
+
 	const activeCategory: BoardArticleCategory | null = searchArticles.search?.articleCategory ?? null;
 
-	if (device === 'mobile') {
-		return <h1>BLOG PAGE MOBILE</h1>;
-	} else {
-		return (
-			<div id="community-list-page">
+	const sidebarRef = useFadeUpOnScroll<HTMLElement>();
+
+	useAnimeSectionReveal({
+		sectionSelector: '#community-list-page',
+		deps: [boardArticles, boardArticlesLoading],
+	});
+
+	return (
+		<div id="community-list-page">
 			<div className="cb-container">
 					{/* ── LEFT: article grid ─────────────────────── */}
 					<div className="cb-grid">
-						<div className="cb-articles">
-							{boardArticlesLoading ? (
-								Array.from({ length: 4 }).map((_, i) => (
-									<div key={i} className="cb-card" style={{ minHeight: 320, opacity: 0.45, pointerEvents: 'none' }}>
-										<div className="cb-card__thumb" style={{ background: '#eee', height: 196 }} />
-										<div className="cb-card__body">
-											<div style={{ height: 12, width: '60%', borderRadius: 6, background: '#eee', marginBottom: 12 }} />
-											<div style={{ height: 16, width: '90%', borderRadius: 6, background: '#e8e8e8', marginBottom: 8 }} />
-											<div style={{ height: 16, width: '70%', borderRadius: 6, background: '#e8e8e8' }} />
-										</div>
-									</div>
-								))
+						<div
+							className={`cb-articles pp-article-card-grid${
+								searchBusy ? ' is-filter-loading' : ''
+							}`}
+						>
+							{boardArticlesLoading && boardArticles.length === 0 ? (
+								<PpCardSkeletonGrid variant="article" count={4} bare />
 							) : boardArticles?.length ? (
-								boardArticles.map((boardArticle: BoardArticle) => {
-									const imageSrc = boardArticle?.articleImage
-										? `${REACT_APP_API_URL}/${boardArticle.articleImage}`
-										: '/img/banner/header2.svg';
-									const authorInitial = (boardArticle?.memberData?.memberNick || 'P')[0].toUpperCase();
-									const displayCategory = getArticleCategoryLabel(boardArticle?.articleCategory);
-
-									return (
-										<div key={boardArticle?._id} className="cb-card">
-											<img
-												src={imageSrc}
-												alt={boardArticle?.articleTitle || 'Article cover'}
-												className="cb-card__thumb"
-											/>
-											<div className="cb-card__body">
-												<span className="cb-card__cat">{displayCategory}</span>
-												<h3 className="cb-card__title">{boardArticle?.articleTitle}</h3>
-												<div className="cb-card__footer">
-													<div className="cb-card__author-row">
-														<span className="cb-card__avatar">{authorInitial}</span>
-														<span className="cb-card__author">
-															{boardArticle?.memberData?.memberNick || 'PawPal'}
-														</span>
-													</div>
-													<span className="cb-card__stats">
-														👁 {boardArticle?.articleViews ?? 0}
-														&nbsp;·&nbsp;
-														♥ {boardArticle?.articleLikes ?? 0}
-													</span>
-												</div>
-												<Link href={`/blog/detail?id=${boardArticle?._id}`} className="cb-card__readmore">
-													Read More <span className="cb-card__readmore-arrow">→</span>
-												</Link>
-											</div>
-										</div>
-									);
-								})
+								boardArticles.map((boardArticle: BoardArticle) => (
+									<ArticleHoverCard
+										key={boardArticle._id}
+										href={`/blog/detail?id=${boardArticle._id}`}
+										category={getArticleCategoryLabel(boardArticle.articleCategory)}
+										dateLabel={
+											formatArticleDate(boardArticle.createdAt) ??
+											formatArticleDate(boardArticle.updatedAt) ??
+											'Recent'
+										}
+										title={boardArticle.articleTitle ?? 'Untitled article'}
+										excerpt={makeArticleExcerpt(boardArticle.articleContent)}
+										image={resolveArticleImage(boardArticle.articleImage)}
+										scrollReveal
+									/>
+								))
 							) : (
 								<div className="cb-empty">
 									<div className="cb-empty__icon">🐾</div>
@@ -191,6 +200,7 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 						{totalCount > 0 && (
 							<div className="cb-pagination">
 								<Pagination
+									className="pp-pagination"
 									count={Math.ceil(totalCount / searchArticles.limit)}
 									page={searchArticles.page}
 									shape="rounded"
@@ -202,23 +212,40 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 					</div>
 
 					{/* ── RIGHT: sidebar ──────────────────────────── */}
-					<aside className="cb-sidebar">
+					<aside ref={sidebarRef} className="cb-sidebar">
 						<div className="cb-widget">
 							<h3 className="cb-widget__title">Search Articles</h3>
 							<div className="cb-search">
 								<input
 									className="cb-search__input"
-									type="text"
+									type="search"
 									placeholder="Search articles…"
 									value={searchText}
 									onChange={(e) => setSearchText(e.target.value)}
-									onKeyDown={(e) => { if (e.key === 'Enter') applySearchHandler(); }}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') applySearchHandler();
+									}}
+									aria-busy={searchBusy}
 								/>
-								<button className="cb-search__btn" onClick={applySearchHandler} aria-label="Search">
-									<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-										<path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-									</svg>
-								</button>
+								{searchBusy ? (
+									<span className="cb-search__spinner" aria-hidden />
+								) : (
+									<button
+										className="cb-search__btn"
+										onClick={applySearchHandler}
+										aria-label="Search"
+									>
+										<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+											<path
+												d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+												stroke="currentColor"
+												strokeWidth="2.2"
+												strokeLinecap="round"
+												fill="none"
+											/>
+										</svg>
+									</button>
+								)}
 							</div>
 						</div>
 
@@ -262,14 +289,13 @@ const BlogList: NextPage = ({ initialInput, ...props }: T) => {
 					</aside>
 				</div>
 			</div>
-		);
-	}
+	);
 };
 
 BlogList.defaultProps = {
 	initialInput: {
 		page: 1,
-		limit: 6,
+		limit: 4,
 		sort: 'createdAt',
 		direction: 'ASC',
 		search: {},

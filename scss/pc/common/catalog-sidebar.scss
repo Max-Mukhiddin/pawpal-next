@@ -1,0 +1,193 @@
+/**
+ * Catalog listing filter sidebar — Highland-inspired clean typography layout.
+ * Shared by Products + Services listing pages (matches specialist sidebar tone).
+ */
+
+#pc-wrap,
+#mobile-wrap {
+	.catalog-directory {
+		display: grid;
+		grid-template-columns: 280px 1fr;
+		gap: 40px;
+		width: 100%;
+		align-items: start;
+		margin-top: 8px;
+		margin-bottom: 24px;
+
+		&__main {
+			min-width: 0;
+
+			&.is-filter-loading {
+				opacity: 0.55;
+				pointer-events: none;
+				transition: opacity 0.2s ease;
+			}
+		}
+	}
+
+	.catalog-sidebar {
+		position: sticky;
+		top: 100px;
+		padding: 8px 0 32px;
+		background: transparent;
+
+		&__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 24px;
+		}
+
+		&__title {
+			margin: 0;
+			font-family: 'Fraunces', 'Playfair Display', serif;
+			font-size: 1.4rem;
+			font-weight: 700;
+			color: #15241e;
+		}
+
+		&__reset {
+			border: none;
+			background: none;
+			padding: 0;
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.8rem;
+			font-weight: 600;
+			color: #e8a04b;
+			cursor: pointer;
+			text-decoration: none;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+
+		&__search-wrap {
+			position: relative;
+			margin-bottom: 32px;
+		}
+
+		&__search {
+			width: 100%;
+			margin-bottom: 0;
+			border: none;
+			border-bottom: 2px solid rgba(30, 107, 79, 0.22);
+			background: transparent;
+			padding: 8px 28px 8px 0;
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.9rem;
+			color: #15241e;
+			outline: none;
+
+			&:focus {
+				border-bottom-color: var(--pp-primary);
+			}
+
+			&::placeholder {
+				color: #6b9e85;
+			}
+		}
+
+		&__search-spinner {
+			position: absolute;
+			right: 0;
+			top: 50%;
+			width: 16px;
+			height: 16px;
+			margin-top: -8px;
+			border: 2px solid rgba(30, 107, 79, 0.18);
+			border-top-color: var(--pp-primary);
+			border-radius: 50%;
+			animation: pp-catalog-search-spin 0.7s linear infinite;
+		}
+
+		&__group {
+			margin-bottom: 8px;
+		}
+
+		&__group-label {
+			margin: 0 0 16px;
+			font-family: 'Fraunces', 'Playfair Display', serif;
+			font-size: 1rem;
+			font-weight: 700;
+			color: #15241e;
+		}
+
+		&__row {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 10px 0;
+			cursor: pointer;
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.92rem;
+			color: #50625a;
+
+			input[type='checkbox'] {
+				width: 18px;
+				height: 18px;
+				margin: 0;
+				flex-shrink: 0;
+				accent-color: var(--pp-primary);
+				border-radius: 4px;
+				cursor: pointer;
+			}
+
+			span.is-checked {
+				color: #15241e;
+				font-weight: 600;
+			}
+		}
+	}
+
+	.catalog-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 12px;
+		margin-bottom: 20px;
+		flex-wrap: wrap;
+
+		&__label {
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.82rem;
+			font-weight: 600;
+			color: #50625a;
+		}
+
+		.MuiButton-root {
+			border: 1.5px solid rgba(30, 107, 79, 0.22) !important;
+			border-radius: 8px !important;
+			padding: 8px 14px !important;
+			font-family: 'Poppins', sans-serif !important;
+			font-size: 0.875rem !important;
+			font-weight: 600 !important;
+			color: #15241e !important;
+			background: #ffffff !important;
+			text-transform: none !important;
+			box-shadow: none !important;
+			line-height: 1.4 !important;
+
+			&:hover {
+				background: #eef4f0 !important;
+			}
+		}
+	}
+
+	@media (max-width: 1023px) {
+		.catalog-directory {
+			grid-template-columns: 1fr;
+		}
+
+		.catalog-sidebar {
+			position: static;
+			padding: 0 0 8px;
+		}
+	}
+}
+
+@keyframes pp-catalog-search-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

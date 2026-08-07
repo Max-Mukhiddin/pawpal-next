@@ -24,27 +24,23 @@
 		padding: 100px 0;
 		width: 100%;
 		overflow: hidden;
+		isolation: isolate;
 
 		&::before {
 			content: '';
 			position: absolute;
 			inset: 0;
-			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none'%3E%3Cpath d='M210 40c-22 38-62 62-108 62-12 0-24-2-36-6 8 44 38 82 78 102-40 20-70 58-78 102 12-4 24-6 36-6 46 0 86 24 108 62 22-38 62-62 108-62 12 0 24 2 36 6-8-44-38-82-78-102 40-20 70-58 78-102-12 4-24 6-36 6-46 0-86-24-108-62z' stroke='%23ff7a1a' stroke-opacity='0.07' stroke-width='1.2'/%3E%3Ccircle cx='90' cy='320' r='28' stroke='%23ff7a1a' stroke-opacity='0.06' stroke-width='1'/%3E%3Ccircle cx='340' cy='100' r='20' stroke='%23ff7a1a' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none'%3E%3Cpath d='M210 40c-22 38-62 62-108 62-12 0-24-2-36-6 8 44 38 82 78 102-40 20-70 58-78 102 12-4 24-6 36-6 46 0 86 24 108 62 22-38 62-62 108-62 12 0 24 2 36 6-8-44-38-82-78-102 40-20 70-58 78-102-12 4-24 6-36 6-46 0-86-24-108-62z' stroke='%231e6b4f' stroke-opacity='0.05' stroke-width='1.2'/%3E%3Ccircle cx='90' cy='320' r='28' stroke='%231e6b4f' stroke-opacity='0.04' stroke-width='1'/%3E%3Ccircle cx='340' cy='100' r='20' stroke='%231e6b4f' stroke-opacity='0.04' stroke-width='1'/%3E%3C/svg%3E");
 			background-repeat: no-repeat;
 			background-position: 8% 20%;
 			background-size: 480px 480px;
 			opacity: 0.04;
 			pointer-events: none;
-			z-index: 0;
-		}
-
-		> * {
-			position: relative;
-			z-index: 1;
+			z-index: -1;
 		}
 
 		.section-container {
-			max-width: 1200px;
+			max-width: var(--pp-max, 1360px);
 			margin: 0 auto;
 			padding: 0 24px;
 			box-sizing: border-box;
@@ -134,20 +130,20 @@
 		.pawpal-card {
 			background: #ffffff;
 			border-radius: 20px;
-			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+			box-shadow: var(--pp-shadow-on-mist);
 			overflow: hidden;
 			transition: all 0.3s ease;
-			border: 1px solid rgba(0, 0, 0, 0.04);
+			border: 1px solid var(--pp-border-subtle);
 
 			&:hover {
 				transform: translateY(-6px);
-				box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+				box-shadow: var(--pp-shadow-on-mist-hover);
 			}
 		}
 	}
 
 	.section-pawpal--cream {
-		background: #fff8f0;
+		background: var(--pp-mist);
 	}
 
 	.section-pawpal--white {
@@ -155,7 +151,7 @@
 	}
 
 	.section-pawpal--soft {
-		background: var(--pp-primary-soft);
+		background: var(--pp-mist);
 	}
 }
 

@@ -61,9 +61,9 @@ const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({
 							style={{
 								padding: '8px 14px',
 								borderRadius: 999,
-								border: '1px solid #eb6753',
-								background: specialist?.meFollowed?.[0]?.myFollowing ? '#fff' : '#eb6753',
-								color: specialist?.meFollowed?.[0]?.myFollowing ? '#eb6753' : '#fff',
+								border: '1px solid var(--pp-primary)',
+								background: specialist?.meFollowed?.[0]?.myFollowing ? '#fff' : 'var(--pp-primary)',
+								color: specialist?.meFollowed?.[0]?.myFollowing ? 'var(--pp-primary)' : 'var(--pp-honey)',
 								fontWeight: 700,
 								cursor: 'pointer',
 							}}
@@ -71,7 +71,7 @@ const SpecialistProfileSummary: React.FC<SpecialistProfileSummaryProps> = ({
 							{specialist?.meFollowed?.[0]?.myFollowing ? 'Unfollow' : 'Follow'}
 						</button>
 					) : (
-						<Typography sx={{ fontSize: 13, fontWeight: 700, color: '#eb6753' }}>Login to follow</Typography>
+						<Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--pp-primary)' }}>Login to follow</Typography>
 					)}
 				</Stack>
 			</Stack>

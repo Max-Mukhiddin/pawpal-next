@@ -1,0 +1,62 @@
+/** Branded toast + confirm popups (SweetAlert2). */
+.pp-toast {
+	border-radius: 16px !important;
+	font-family: 'Poppins', sans-serif !important;
+	box-shadow: 0 16px 40px rgba(23, 62, 50, 0.35) !important;
+	padding: 14px 20px !important;
+	min-width: 300px !important;
+	max-width: 380px !important;
+	border: 1px solid rgba(232, 160, 75, 0.2) !important;
+	animation: pp-toast-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+	backdrop-filter: blur(8px);
+}
+
+.pp-toast__title {
+	font-size: 0.9rem !important;
+	font-weight: 600 !important;
+	margin-left: 6px !important;
+}
+
+.pp-toast__progress {
+	background: rgba(232, 160, 75, 0.7) !important;
+}
+
+.pp-toast .swal2-icon {
+	width: 32px !important;
+	height: 32px !important;
+	border-width: 2px !important;
+	margin: 0 12px 0 0 !important;
+}
+
+.pp-toast .swal2-success-ring {
+	border-color: #e8a04b !important;
+}
+
+.pp-toast .swal2-x-mark {
+	color: #e53935 !important;
+}
+
+@keyframes pp-toast-slide {
+	0% {
+		transform: translateX(120%) scale(0.9);
+		opacity: 0;
+	}
+	60% {
+		transform: translateX(-8px) scale(1.02);
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(0) scale(1);
+		opacity: 1;
+	}
+}
+
+.pp-confirm {
+	border-radius: 16px !important;
+	font-family: 'Poppins', sans-serif !important;
+}
+
+.pp-confirm__title {
+	font-family: 'Fraunces', 'Playfair Display', Georgia, serif !important;
+	font-weight: 700 !important;
+}

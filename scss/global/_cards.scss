@@ -1,0 +1,94 @@
+/**
+ * Shared card shell — prevents corner bleed from parent section backgrounds.
+ * Cards on mist use white surfaces + soft forest-tinted lift shadows.
+ */
+
+@mixin pp-card-on-mist-surface {
+	background: #ffffff;
+	box-shadow: var(--pp-shadow-on-mist);
+	border: 1px solid var(--pp-border-subtle);
+}
+
+.pp-card,
+.pawpal-media-card,
+.specialist-card,
+.service-card,
+.product-card,
+.article-card,
+.pp-step-card,
+.pp-feature-card,
+.pp-testimonial-card,
+.about-pawpal-card,
+.why-pawpal-card,
+.featured-service-card,
+.top-specialist-card,
+.brand-showcase-card,
+.cb-card,
+.pp-service-card,
+.pp-product-card,
+.services-list-card,
+.pp-spec__editorial,
+.pp-spec__panel,
+.pp-spec__list-item,
+.home-card,
+.pet-tips-card,
+.pp-article-card,
+.pp-tips__stack-card,
+.member-profile-card,
+.following-card,
+.ppctaband__card {
+	overflow: hidden;
+	isolation: isolate;
+	background-clip: padding-box;
+	position: relative;
+
+	&::before,
+	&::after {
+		background: transparent !important;
+		background-color: transparent !important;
+	}
+}
+
+.pp-card,
+.about-pawpal-card,
+.why-pawpal-card,
+.featured-service-card,
+.top-specialist-card,
+.brand-showcase-card,
+.cb-card,
+.pp-service-card,
+.pp-product-card,
+.services-list-card,
+.specialist-card,
+.pp-spec__editorial,
+.pp-spec__panel,
+.pp-spec__list-item,
+.home-card,
+.pet-tips-card,
+.pp-tips__stack-card,
+.following-card,
+.ppctaband__card {
+	@include pp-card-on-mist-surface;
+}
+
+/* Final corner-bleed nuke on homepage cards */
+.home-card,
+.about-pawpal-card,
+.why-pawpal-card,
+.featured-service-card,
+.top-specialist-card,
+.brand-showcase-card,
+.pet-tips-card,
+.pp-card,
+.pp-article-card,
+.pp-tips__stack-card {
+	overflow: hidden !important;
+	isolation: isolate !important;
+	background-clip: padding-box !important;
+
+	&::before,
+	&::after {
+		background: transparent !important;
+		background-color: transparent !important;
+	}
+}

@@ -10,6 +10,7 @@ import type { Product } from '../../types/products/product';
 import { T } from '../../types/common';
 import { formatterStr } from '../../utils';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
+import { sanitizeListingDescription } from '../../utils/listingTextHelpers';
 
 export interface RelatedProductCardProps {
 	product: Product;
@@ -22,9 +23,10 @@ const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, onLike
 	const user = useReactiveVar(userVar);
 	const image = resolveListingImageUrl(product?.listingImages?.[0], '/images/hero/pawpal-hero.jpg');
 
-	const raw = (product?.listingDesc || product?.listingAddress || '').trim();
 	const blurb =
-		raw.length > 72 ? `${raw.slice(0, 72)}…` : raw || 'Popular with PawPal shoppers.';
+		sanitizeListingDescription(product?.listingDesc) ||
+		product?.listingAddress?.trim() ||
+		'Popular with PawPal shoppers.';
 
 	return (
 		<Stack className="related-product-card" onClick={() => router.push(`/product/detail?id=${product._id}`)}>
@@ -39,9 +41,7 @@ const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, onLike
 			</Box>
 			<Stack className="related-product-card__body">
 				<Typography className="related-product-card__title">{product.listingTitle}</Typography>
-				<Typography className="related-product-card__blurb" sx={{ fontSize: 12, color: '#717171', lineHeight: 1.45, mb: 0.5 }}>
-					{blurb}
-				</Typography>
+				<Typography className="related-product-card__blurb">{blurb}</Typography>
 				<Typography className="related-product-card__meta">From ${formatterStr(product.listingPrice)}</Typography>
 				<Stack direction={'row'} alignItems={'center'} className="related-product-card__stats">
 					<IconButton color={'default'}>
@@ -55,7 +55,11 @@ const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, onLike
 							onLike(user, product._id);
 						}}
 					>
-						{product?.meLiked && product?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
+						{product?.meLiked && product?.meLiked[0]?.myFavorite ? (
+							<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
+						) : (
+							<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
+						)}
 					</IconButton>
 					<Typography className="view-cnt">{product.listingLikes}</Typography>
 				</Stack>

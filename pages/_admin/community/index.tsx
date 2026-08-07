@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Select from '@mui/material/Select';
 import { TabContext } from '@mui/lab';
-import TablePagination from '@mui/material/TablePagination';
+import AdminListPagination from '../../../libs/components/admin/AdminListPagination';
 import CommunityArticleList from '../../../libs/components/admin/community/CommunityArticleList';
 import { AllBoardArticlesInquiry } from '../../../libs/types/board-article/board-article.input';
 import { BoardArticle } from '../../../libs/types/board-article/board-article';
@@ -155,14 +155,14 @@ const AdminCommunity: NextPage = ({ initialInquiry, ...props }: any) => {
 
 	return (
 		<Box component={'div'} className={'content'}>
-			<Typography variant={'h2'} className={'tit'} sx={{ mb: '24px' }}>
-				Arricle List
+			<Typography variant="h2" className="admin-page-title">
+				Article List
 			</Typography>
-			<Box component={'div'} className={'table-wrap'}>
+			<Box component="div" className="admin-table-card table-wrap">
 				<Box component={'div'} sx={{ width: '100%', typography: 'body1' }}>
 					<TabContext value={value}>
 						<Box component={'div'}>
-							<List className={'tab-menu'}>
+							<List className="admin-filter-tabs tab-menu">
 								<ListItem
 									onClick={(e: any) => tabChangeHandler(e, 'ALL')}
 									value="ALL"
@@ -186,8 +186,8 @@ const AdminCommunity: NextPage = ({ initialInquiry, ...props }: any) => {
 								</ListItem>
 							</List>
 							<Divider />
-							<Stack className={'search-area'} sx={{ m: '24px' }}>
-								<Select sx={{ width: '160px', mr: '20px' }} value={searchType}>
+							<Stack className="admin-toolbar search-area" sx={{ m: '24px' }} direction="row" alignItems="center" flexWrap="wrap" useFlexGap>
+								<Select sx={{ minWidth: 160 }} value={searchType} className="admin-select">
 									<MenuItem value={'ALL'} onClick={() => searchTypeHandler('ALL')}>
 										ALL
 									</MenuItem>
@@ -209,9 +209,7 @@ const AdminCommunity: NextPage = ({ initialInquiry, ...props }: any) => {
 							removeArticleHandler={removeArticleHandler}
 						/>
 
-						<TablePagination
-							rowsPerPageOptions={[10, 20, 40, 60]}
-							component="div"
+						<AdminListPagination
 							count={articleTotal}
 							rowsPerPage={communityInquiry?.limit}
 							page={communityInquiry?.page - 1}

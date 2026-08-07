@@ -1,0 +1,187 @@
+@import '/scss/variables.scss';
+
+#pc-wrap {
+	#my-page,
+	#member-page.member-profile-page {
+		.following-card {
+			background: #ffffff;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+			cursor: pointer;
+			transition: transform 0.25s ease, box-shadow 0.25s ease;
+			display: flex;
+			flex-direction: column;
+			isolation: isolate;
+
+			@media (hover: hover) and (pointer: fine) {
+				&:hover {
+					transform: translateY(-4px);
+					box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+				}
+			}
+
+			&__photo {
+				width: 100%;
+				height: 200px;
+				object-fit: cover;
+				object-position: 50% 15%;
+				display: block;
+				background: linear-gradient(135deg, #cdd4c2, #e2ede5);
+
+				&--default {
+					object-fit: contain;
+					opacity: 0.5;
+					padding: 40px;
+				}
+			}
+
+			&__body {
+				padding: 16px;
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+
+			&__name {
+				margin: 0;
+				font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+				font-weight: 700;
+				color: #15241e;
+				font-size: 1.05rem;
+				line-height: 1.25;
+			}
+
+			&__role {
+				display: inline-block;
+				width: fit-content;
+				background: #eef4f0;
+				color: var(--pp-primary);
+				padding: 3px 10px;
+				border-radius: 999px;
+				font-size: 0.65rem;
+				font-weight: 700;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				font-family: $font;
+			}
+
+			&__stats {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 12px;
+				margin-top: 4px;
+				font-size: 0.75rem;
+				color: #50625a;
+				font-family: $font;
+
+				span {
+					display: inline-flex;
+					align-items: center;
+					gap: 4px;
+				}
+			}
+
+			&__actions {
+				display: flex;
+				gap: 8px;
+				padding: 12px 16px;
+				border-top: 1px solid rgba(30, 107, 79, 0.1);
+				margin-top: auto;
+			}
+
+			&__btn {
+				width: 100%;
+				padding: 8px !important;
+				font-size: 0.85rem !important;
+				justify-content: center;
+			}
+		}
+	}
+
+	#my-page {
+		.mp-followings {
+			width: 100%;
+
+			&__header {
+				margin-bottom: 32px;
+			}
+
+			&__title {
+				margin: 0 0 8px;
+				font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+				font-size: 2rem;
+				font-weight: 800;
+				color: #15241e;
+			}
+
+			&__subtitle {
+				margin: 0;
+				font-family: $font;
+				font-size: 0.9rem;
+				color: #50625a;
+			}
+
+			&__grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 20px;
+			}
+
+			&__pagination {
+				display: flex;
+				justify-content: center;
+				margin-top: 32px;
+			}
+
+			&__empty {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				padding: 56px 24px;
+				background: #ffffff;
+				border-radius: 20px;
+				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+
+				svg {
+					font-size: 64px !important;
+					color: #6b9e85;
+					margin-bottom: 16px;
+				}
+
+				h3 {
+					margin: 0 0 8px;
+					font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+					font-size: 1.4rem;
+					font-weight: 700;
+					color: #15241e;
+				}
+
+				p {
+					margin: 0 0 20px;
+					font-family: $font;
+					font-size: 0.95rem;
+					color: #50625a;
+					max-width: 320px;
+					line-height: 1.6;
+				}
+			}
+		}
+	}
+
+	@media (max-width: 900px) {
+		#my-page .mp-followings__grid,
+		#member-page.member-profile-page .member-content__grid--members {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 600px) {
+		#my-page .mp-followings__grid,
+		#member-page.member-profile-page .member-content__grid--members {
+			grid-template-columns: 1fr;
+		}
+	}
+}

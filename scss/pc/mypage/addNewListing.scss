@@ -112,6 +112,14 @@
 						height: auto;
 						flex-direction: row;
 						justify-content: flex-end;
+						button:disabled {
+							background: color-mix(in srgb, var(--pp-primary) 45%, transparent);
+
+							.prev-button-text,
+							.next-button-text {
+								color: color-mix(in srgb, var(--pp-honey) 45%, transparent);
+							}
+						}
 						.prev-button {
 							width: 190px;
 							height: 44px;
@@ -120,9 +128,10 @@
 							align-items: center;
 							gap: 10px;
 							border-radius: 12px;
-							border: 1px solid #181a20;
+							border: none;
+							background: var(--pp-primary);
 							.prev-button-text {
-								color: #181a20;
+								color: var(--pp-honey);
 								font-family: $font;
 								font-size: 15px;
 								font-style: normal;
@@ -138,9 +147,10 @@
 							align-items: center;
 							gap: 10px;
 							border-radius: 12px;
-							background: #181a20;
+							border: none;
+							background: var(--pp-primary);
 							.next-button-text {
-								color: #fff;
+								color: var(--pp-honey);
 								font-family: $font;
 								font-size: 15px;
 								font-style: normal;
@@ -241,7 +251,7 @@
 						justify-content: center;
 						gap: 30px;
 						border-radius: 12px;
-						border: 1px dashed #eb6753;
+						border: 1px dashed var(--pp-honey);
 						.text-box {
 							width: 100%;
 							height: auto;
@@ -349,7 +359,12 @@
 					flex-direction: row;
 					justify-content: flex-end;
 					button:disabled {
-						background: #181a2045;
+						background: color-mix(in srgb, var(--pp-primary) 45%, transparent);
+
+						.prev-button-text,
+						.next-button-text {
+							color: color-mix(in srgb, var(--pp-honey) 45%, transparent);
+						}
 					}
 					.prev-button {
 						width: 190px;
@@ -359,9 +374,10 @@
 						align-items: center;
 						gap: 10px;
 						border-radius: 12px;
-						border: 1px solid #181a20;
+						border: none;
+						background: var(--pp-primary);
 						.prev-button-text {
-							color: #181a20;
+							color: var(--pp-honey);
 							font-family: $font;
 							font-size: 15px;
 							font-style: normal;
@@ -377,9 +393,10 @@
 						align-items: center;
 						gap: 10px;
 						border-radius: 12px;
-						background: #181a20;
+						border: none;
+						background: var(--pp-primary);
 						.next-button-text {
-							color: #fff;
+							color: var(--pp-honey);
 							font-family: $font;
 							font-size: 15px;
 							font-style: normal;

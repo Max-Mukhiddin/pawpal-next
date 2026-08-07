@@ -2,10 +2,10 @@ import { ListingType } from '../enums/listing.enum';
 
 /** Browse URL with filter state in `?input=` (JSON string, same shape as `ListingsInquiry`). */
 export function getListingsIndexHref(listingInquiry: unknown): string {
-	return `/listings?input=${JSON.stringify(listingInquiry)}`;
+	return `/service?input=${JSON.stringify(listingInquiry)}`;
 }
 
-/** Detail URL for a listing; unknown type → `/listings/detail` (generic marketplace fallback). */
+/** Detail URL for a listing; unknown type defaults to service detail (canonical marketplace). */
 export function getListingDetailHref(
 	listingId: string | null | undefined,
 	listingType: string | null | undefined,
@@ -14,8 +14,7 @@ export function getListingDetailHref(
 	const id = listingId.trim();
 	const t = listingType ? String(listingType).toUpperCase() : '';
 	if (t === ListingType.PRODUCT) return `/product/detail?id=${encodeURIComponent(id)}`;
-	if (t === ListingType.SERVICE) return `/service/detail?id=${encodeURIComponent(id)}`;
-	return `/listings/detail?id=${encodeURIComponent(id)}`;
+	return `/service/detail?id=${encodeURIComponent(id)}`;
 }
 
 /** Primary card title: prefer API title, else reference id, else generic label. */

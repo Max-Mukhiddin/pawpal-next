@@ -47,7 +47,11 @@ const RelatedServiceCard: React.FC<RelatedServiceCardProps> = ({ service, onLike
 							onLike(user, service._id);
 						}}
 					>
-						{service?.meLiked && service?.meLiked[0]?.myFavorite ? <FavoriteIcon color={'primary'} /> : <FavoriteBorderIcon />}
+						{service?.meLiked && service?.meLiked[0]?.myFavorite ? (
+							<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
+						) : (
+							<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
+						)}
 					</IconButton>
 					<Typography className="view-cnt">{service.listingLikes}</Typography>
 				</Stack>

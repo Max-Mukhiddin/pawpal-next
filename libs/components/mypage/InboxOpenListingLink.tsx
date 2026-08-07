@@ -17,7 +17,13 @@ const InboxOpenListingLink: React.FC<{
 				component={Link}
 				href={href}
 				underline="hover"
-				sx={{ fontSize: 13, fontWeight: 600, color: '#eb6753', width: 'fit-content' }}
+				sx={{
+					fontSize: 13,
+					fontWeight: 600,
+					color: 'var(--pp-primary)',
+					width: 'fit-content',
+					'&:hover': { color: 'var(--pp-primary-hover)' },
+				}}
 			>
 				Open listing
 			</MuiLink>

@@ -1,34 +1,35 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
+import { useRouter } from 'next/router';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
+import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { ListingType } from '../../enums/listing.enum';
 import type { Listing } from '../../types/listing/listing';
-import { resolveListingImageUrl } from '../../utils/mediaUrl';
+import type { Service } from '../../types/services/service';
+import { T } from '../../types/common';
+import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { likeToastMessage, readWasLiked } from '../../utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../auth';
+import { withActionGate } from '../../utils/actionGate';
+import ServiceCard from '../services/ServiceCard';
 
-interface ServiceCard {
-	_id: string;
-	title: string;
-	price: number;
-	image: string;
-	href: string;
-}
-
-const FALLBACK_CARDS: ServiceCard[] = [
-	{ _id: 'fb-1', title: 'Wellness Check', price: 120000, image: '/images/services/service-vet.jpg', href: '/service' },
-	{ _id: 'fb-2', title: 'Elite Grooming', price: 150000, image: '/images/services/service-grooming.jpg', href: '/service' },
-	{ _id: 'fb-3', title: 'Spa Retreat', price: 250000, image: '/images/services/service-spa.jpg', href: '/service' },
-	{ _id: 'fb-4', title: 'Luxury Boarding', price: 300000, image: '/images/services/service-boarding.jpg', href: '/service' },
-	{ _id: 'fb-5', title: 'Daily Walks', price: 50000, image: '/images/services/service-walking.jpg', href: '/service' },
-	{ _id: 'fb-6', title: 'Training Class', price: 85000, image: '/images/services/service-training.jpg', href: '/service' },
+const FALLBACK_SERVICES: Service[] = [
+	{ _id: 'fb-1', listingTitle: 'Wellness Check', listingPrice: 120000, listingImages: ['/images/services/service-vet.jpg'], listingDesc: 'A thorough wellness exam with a licensed veterinarian.', durationMinutes: 45 } as Service,
+	{ _id: 'fb-2', listingTitle: 'Elite Grooming', listingPrice: 150000, listingImages: ['/images/services/service-grooming.jpg'], listingDesc: 'Full-service grooming with organic shampoos and styling.', durationMinutes: 60 } as Service,
+	{ _id: 'fb-3', listingTitle: 'Spa Retreat', listingPrice: 250000, listingImages: ['/images/services/service-grooming.jpg'], listingDesc: 'Relaxing spa day with aromatherapy and coat conditioning.', durationMinutes: 90 } as Service,
+	{ _id: 'fb-4', listingTitle: 'Luxury Boarding', listingPrice: 300000, listingImages: ['/images/services/service-boarding.jpg'], listingDesc: 'Premium overnight care in a calm, supervised environment.', durationMinutes: null } as Service,
+	{ _id: 'fb-5', listingTitle: 'Daily Walks', listingPrice: 50000, listingImages: ['/images/services/service-walking.jpg'], listingDesc: 'Scheduled walks tailored to your pet energy level.', durationMinutes: 30 } as Service,
+	{ _id: 'fb-6', listingTitle: 'Training Class', listingPrice: 85000, listingImages: ['/images/services/service-training.jpg'], listingDesc: 'Positive-reinforcement training for better behavior at home.', durationMinutes: 60 } as Service,
 ];
 
-const formatPrice = (price: number): string => `₩${price.toLocaleString('en-US')}`;
-const AUTO_SCROLL_SPEED = 1.2; // pixels per frame at 60fps (~72px/sec)
-const DRAG_THRESHOLD = 8; // pixels before we treat it as a drag (not click)
+const AUTO_SCROLL_SPEED = 1.2;
+const DRAG_THRESHOLD = 8;
 
 export default function OurServices() {
+	const router = useRouter();
 	const variables = useMemo(
 		() => ({
 			input: {
@@ -42,29 +43,44 @@ export default function OurServices() {
 		[],
 	);
 
-	const { data } = useQuery(GET_LISTINGS, {
+	const { data, refetch } = useQuery(GET_LISTINGS, {
 		variables,
 		fetchPolicy: 'cache-and-network',
 	});
 
-	const listings: Listing[] = data?.getListings?.list ?? [];
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
-	const cards: ServiceCard[] = listings.length > 0
-		? listings.map((listing) => ({
-				_id: listing._id,
-				title: listing.listingTitle,
-				price: listing.listingPrice ?? 0,
-				image: listing.listingImages?.[0] ?? '',
-				href: `/service/detail?id=${listing._id}`,
-			}))
-		: FALLBACK_CARDS;
+	useAnimeSectionReveal({
+		sectionSelector: '.pp-services',
+		deps: [data],
+	});
+
+	const listings: Listing[] = data?.getListings?.list ?? [];
+	const services: Service[] = listings.length > 0 ? listings : FALLBACK_SERVICES;
+
+	const likeServiceHandler = async (user: T, id: string) => {
+		await withActionGate(`like:listing:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'like')) return;
+				const wasLiked = readWasLiked(services.find((s) => s._id === id));
+				await likeTargetListing({ variables: { input: id } });
+				await refetch(variables);
+				await sweetTopSmallSuccessAlert(likeToastMessage(wasLiked), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'like')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.log('ERROR likeServiceHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
+	};
 
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const trackRef = useRef<HTMLDivElement>(null);
 	const offsetRef = useRef(0);
-	const directionRef = useRef(-1); // -1 = moving left, +1 = moving right
+	const directionRef = useRef(-1);
 	const isDraggingRef = useRef(false);
-	const isPausedRef = useRef(false);
 	const didDragRef = useRef(false);
 	const dragStartXRef = useRef(0);
 	const dragStartOffsetRef = useRef(0);
@@ -88,23 +104,20 @@ export default function OurServices() {
 		}
 	}, []);
 
-	// Recalculate bounds on mount, when cards change, and on resize.
 	useEffect(() => {
-		// Defer one frame so layout has settled.
 		const rafId = requestAnimationFrame(() => recalcBounds());
 		window.addEventListener('resize', recalcBounds);
 		return () => {
 			cancelAnimationFrame(rafId);
 			window.removeEventListener('resize', recalcBounds);
 		};
-	}, [recalcBounds, cards.length]);
+	}, [recalcBounds, services.length]);
 
-	// Continuous auto-scroll loop with ping-pong direction reversal.
 	useEffect(() => {
 		let frameId: number;
 
 		const tick = () => {
-			if (!isDraggingRef.current && !isPausedRef.current) {
+			if (!isDraggingRef.current) {
 				const { min, max } = boundsRef.current;
 				if (min < 0) {
 					let next = offsetRef.current + directionRef.current * AUTO_SCROLL_SPEED;
@@ -125,8 +138,6 @@ export default function OurServices() {
 		return () => cancelAnimationFrame(frameId);
 	}, [applyOffset]);
 
-	// Drag uses window-level listeners so it never gets stuck if the
-	// cursor leaves the viewport mid-drag.
 	const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType === 'mouse' && e.button !== 0) return;
 
@@ -158,12 +169,10 @@ export default function OurServices() {
 		window.addEventListener('pointercancel', onUp);
 	};
 
-	// Block the click ONLY if a real drag happened. Pure clicks navigate.
 	const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (didDragRef.current) {
 			e.preventDefault();
 			e.stopPropagation();
-			// Reset after this event so the next click works.
 			setTimeout(() => {
 				didDragRef.current = false;
 			}, 0);
@@ -171,65 +180,43 @@ export default function OurServices() {
 	};
 
 	return (
-		<section className="our-services animate-on-scroll" aria-labelledby="our-services-title">
-			<div className="our-services__shapes" aria-hidden>
-				<div className="our-services__shape our-services__shape--1" />
-				<div className="our-services__shape our-services__shape--2" />
-				<div className="our-services__shape our-services__shape--3" />
-			</div>
-
-			<div className="our-services__container">
-				<header className="our-services__header">
-					<p className="our-services__label">OUR SERVICES</p>
-					<h2 id="our-services-title" className="our-services__title">
-						Experience the Pinnacle of Pet Care
+		<section className="pp-services pp-section" aria-labelledby="our-services-title">
+			<div className="pp-container pp-services__inner">
+				<div className="pp-services__aside" data-section-reveal="header">
+					<span className="pp-eyebrow">Our services</span>
+					<h2 id="our-services-title" className="pp-heading pp-services__title">
+						Everything your pet needs, in one place
 					</h2>
-				</header>
+					<p className="pp-subtitle">
+						Grooming, wellness, boarding and training — each booked through a vetted
+						specialist who treats your pet like their own.
+					</p>
+					<Link
+						href="/service"
+						className="pp-btn pp-btn--primary pp-services__browse"
+						data-section-reveal="cta"
+					>
+						Browse all services
+						<ArrowForwardOutlinedIcon aria-hidden />
+					</Link>
+				</div>
 
 				<div
 					ref={viewportRef}
-					className="our-services__viewport"
+					className="pp-services__viewport"
 					onPointerDown={handlePointerDown}
 					onClickCapture={handleClickCapture}
-					onMouseEnter={() => {
-						isPausedRef.current = true;
-					}}
-					onMouseLeave={() => {
-						isPausedRef.current = false;
-					}}
 				>
-					<div ref={trackRef} className="our-services__track">
-						{cards.map((card) => {
-							const imageUrl = resolveListingImageUrl(card.image, '/img/listing/default-listing.webp');
-							return (
-								<div className="our-services__slide" key={card._id}>
-									<Link href={card.href} className="our-services__card" draggable={false}>
-										<img
-											src={imageUrl}
-											alt={card.title}
-											className="our-services__card-img"
-											loading="lazy"
-											draggable={false}
-											onError={(e) => {
-												e.currentTarget.src = '/img/listing/default-listing.webp';
-											}}
-										/>
-										<div className="our-services__card-content">
-											<h3 className="our-services__card-title">{card.title}</h3>
-											<p className="our-services__card-price">{formatPrice(card.price)}</p>
-										</div>
-									</Link>
-								</div>
-							);
-						})}
+					<div ref={trackRef} className="pp-services__track">
+						{services.map((service) => (
+							<ServiceCard
+								key={service._id}
+								service={service}
+								onLike={likeServiceHandler}
+								className="services-list-card--rail"
+							/>
+						))}
 					</div>
-				</div>
-
-				<div className="our-services__cta">
-					<Link href="/service" className="our-services__browse-btn">
-						<span>Browse all services</span>
-						<ArrowForwardOutlinedIcon className="our-services__browse-icon" aria-hidden />
-					</Link>
 				</div>
 			</div>
 		</section>

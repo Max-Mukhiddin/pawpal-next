@@ -119,3 +119,21 @@
 **Rationale:** During the service detail redesign, the booking section was handled inline within the detail page layout rather than as a separate component. The name may appear in legacy import lists or TODO comments but the file was never committed.
 
 **Implications:** Do not create this file. If a dedicated booking section component is needed in future, design it fresh from the current detail page layout.
+
+---
+
+## 13. Specialist Portrait Photo Standards
+
+**Decision:** Specialist profile and directory photos must follow a consistent editorial portrait standard.
+
+**Standards:**
+
+- Face visible from chin to top of forehead in frame
+- Neutral or warm background (no distracting scenes)
+- Landscape orientation preferred (4:3 or 4:5 crop)
+- Natural, warm lighting — no harsh flash
+- Professional but approachable expression
+
+**Rationale:** Inconsistent or default avatars break the premium, photo-dominant specialist card design. Highland-inspired hover-reveal cards depend on strong portrait photography.
+
+**Implications:** Test accounts still on default avatars (`emma_vet`, `taemin_walks`, `seoyeon_stay`) need proper portrait uploads. Use verified Unsplash pet-professional portraits or curated studio shots until real photos are available.

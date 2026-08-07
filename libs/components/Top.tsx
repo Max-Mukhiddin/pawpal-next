@@ -13,14 +13,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import { CaretDown } from 'phosphor-react';
 import useDeviceDetect from '../hooks/useDeviceDetect';
 import Link from 'next/link';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { Logout } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
-import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
-import { useThemeMode } from '../theme';
+import NotificationDropdown from './common/NotificationDropdown';
+import ActivityDropdown from './common/ActivityDropdown';
 import { resolveMemberImageUrl } from '../utils/mediaUrl';
 
 const StyledLangMenu = styled((props: MenuProps) => (
@@ -57,7 +55,6 @@ const StyledLangMenu = styled((props: MenuProps) => (
 export default function Top() {
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
-	const { mode, toggleMode } = useThemeMode();
 	const { t } = useTranslation('common');
 	const router = useRouter();
 	const pathname = router.pathname;
@@ -66,7 +63,6 @@ export default function Top() {
 	const [anchorEl2, setAnchorEl2] = useState<null | HTMLElement>(null);
 	const [lang, setLang] = useState<string | null>('en');
 	const langMenuOpen = Boolean(anchorEl2);
-	const [isScrolled, setIsScrolled] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 
 	const allNav = useMemo(
@@ -77,6 +73,7 @@ export default function Top() {
 			{ href: '/specialist', label: t('Specialists'), isActive: (p: string) => p.startsWith('/specialist') },
 			{ href: '/about', label: t('About'), isActive: (p: string) => p.startsWith('/about') },
 			{ href: '/blog', label: t('Blog'), isActive: (p: string) => p.startsWith('/blog') || p.startsWith('/community') },
+			{ href: '/cs', label: t('Support'), isActive: (p: string) => p.startsWith('/cs') || p.startsWith('/support') },
 		],
 		[t],
 	);
@@ -93,13 +90,6 @@ export default function Top() {
 	useEffect(() => {
 		const jwt = getJwtToken();
 		if (jwt) updateUserInfo(jwt);
-	}, []);
-
-	useEffect(() => {
-		const onScroll = () => setIsScrolled(window.scrollY >= 8);
-		onScroll();
-		window.addEventListener('scroll', onScroll, { passive: true });
-		return () => window.removeEventListener('scroll', onScroll);
 	}, []);
 
 	useEffect(() => {
@@ -123,7 +113,28 @@ export default function Top() {
 
 	const Brand = (): React.ReactElement => (
 		<Link href="/" className="navbar-pawpal__brand" aria-label="PawPal home">
-			<img src="/img/logo/logo-primary.svg" alt="PawPal" height={36} />
+			<img
+				src="/img/logo/pawpal-logo-mark.png"
+				alt="PawPal"
+				width={36}
+				height={36}
+				className="pp-brand-honey-hover"
+				style={{ objectFit: 'contain', display: 'block', flexShrink: 0 }}
+			/>
+			<span
+				className="pp-brand-honey-hover"
+				style={{
+					fontFamily: "'Fraunces', 'Playfair Display', Georgia, serif",
+					fontWeight: 700,
+					fontSize: 21,
+					letterSpacing: '-0.5px',
+					color: '#E8F4EE',
+					lineHeight: 1,
+					marginLeft: 8,
+				}}
+			>
+				PawPal
+			</span>
 		</Link>
 	);
 
@@ -190,16 +201,13 @@ export default function Top() {
 			<>
 				<Stack component="header" className="navbar navbar-pawpal navbar-pawpal--mobile" role="banner">
 					<Stack
-						className={`navbar-pawpal__bar-mobile ${isScrolled ? 'is-scrolled' : ''}`}
+						className="navbar-pawpal__bar-mobile"
 						direction="row"
 						alignItems="center"
 						justifyContent="space-between"
 					>
 						<Brand />
 						<Stack direction="row" alignItems="center" className="navbar-pawpal__mobile-actions">
-							<IconButton size="small" className="navbar-pawpal__icon-btn" onClick={toggleMode} aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}>
-								{mode === 'dark' ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
-							</IconButton>
 							<IconButton size="small" className="navbar-pawpal__menu-btn" onClick={() => setDrawerOpen(true)} aria-label="Open menu">
 								<MenuIcon />
 							</IconButton>
@@ -217,7 +225,8 @@ export default function Top() {
 	return (
 		<>
 			<Stack component="header" className="navbar navbar-pawpal" role="banner">
-				<Stack className={`navbar-pawpal__bar ${isScrolled ? 'is-scrolled' : ''}`}>
+			{/* Full-bleed mask removed — frosted navbar stays consistent; no solid scrolled state */}
+				<Stack className="navbar-pawpal__bar">
 					<div className="navbar-pawpal__inner">
 
 						{/* LEFT: Brand/Logo */}
@@ -234,10 +243,14 @@ export default function Top() {
 
 						{/* RIGHT: Actions */}
 						<div className="navbar-pawpal__actions">
-							<IconButton size="medium" className="navbar-pawpal__icon-btn" onClick={toggleMode} aria-label={mode === 'dark' ? 'Activate light mode' : 'Activate dark mode'}>
-								{mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
+							<IconButton
+								size="small"
+								className="navbar-pawpal__menu-btn navbar-pawpal__menu-btn--tablet"
+								onClick={() => setDrawerOpen(true)}
+								aria-label="Open menu"
+							>
+								<MenuIcon />
 							</IconButton>
-
 							{user?._id ? (
 								<Link href="/mypage" className="navbar-pawpal__avatar" aria-label={t('My Page')}>
 									<img src={avatarSrc} onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }} alt="" />
@@ -250,7 +263,8 @@ export default function Top() {
 							)}
 
 							<div className="navbar-pawpal__lan-box">
-								{user?._id && <NotificationsOutlinedIcon className="navbar-pawpal__notify" aria-hidden />}
+								{user?._id && <ActivityDropdown />}
+								{user?._id && <NotificationDropdown />}
 								<Button disableRipple className="navbar-pawpal__lang-btn" onClick={langClick} endIcon={<CaretDown size={14} weight="fill" />}>
 									<Box component="span" className="navbar-pawpal__flag">
 										{lang !== null ? <img src={`/img/flag/lang${lang}.png`} alt="" /> : <img src="/img/flag/langen.png" alt="" />}

@@ -1,0 +1,953 @@
+/**
+ * Shared detail-page styling — Service Detail + Product Detail.
+ * Single source of truth (skill: service/detail.scss and product/detail.scss
+ * must stay in sync). Evergreen & Honey palette only — no warm cream/orange.
+ *
+ * Layout (CSS-only over the existing DOM):
+ *   .detail-page__main      → porcelain section, 2-col (info card | form card)
+ *   .detail-page__bottom    → sage band (reviews + write review)
+ *   .detail-related         → porcelain full-bleed band (you might also like)
+ *
+ * Page variants are resolved with :has() — product pages render a
+ * .detail-card__product-image (interactive hero + thumbs); service pages
+ * use the .detail-page__hero-bg div as the hero image.
+ */
+
+$dt-display: 'Fraunces', 'Playfair Display', Georgia, serif;
+$dt-ink: #15241e;
+$dt-muted: #50625a;
+$dt-green: #1e6b4f;
+$dt-green-hover: #15543d;
+$dt-honey: #e8a04b;
+$dt-porcelain: #eef4f0;
+$dt-sage: #cdd4c2;
+$dt-icon-muted: #6b9e85;
+$dt-line: rgba(30, 107, 79, 0.1);
+$dt-card-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+
+#pc-wrap,
+#mobile-wrap {
+	.detail-page {
+		background: $dt-porcelain;
+		min-height: 100vh;
+	}
+
+	/* ═══════════════════════════════════════════
+	   SECTION 1 — info card | inquiry form (porcelain)
+	═══════════════════════════════════════════ */
+	.detail-page__main {
+		display: grid;
+		grid-template-columns: 1.6fr 1fr;
+		gap: 32px;
+		align-items: start;
+		background: $dt-porcelain;
+		padding: 80px max(48px, calc((100% - 1280px) / 2));
+	}
+
+	/* ── LEFT: white listing-info card ── */
+	.detail-page__left-panel {
+		position: relative;
+		overflow: hidden;
+		background: var(--pp-bg-card);
+		border-radius: 20px;
+		padding: 32px;
+		box-shadow: $dt-card-shadow;
+	}
+
+	/* Hero image — service variant uses the bg div, 4:3 banner in-card */
+	.detail-page__hero-bg {
+		position: relative;
+		top: auto;
+		left: auto;
+		right: auto;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 4 / 3;
+		border-radius: 14px;
+		background-size: cover;
+		background-position: center;
+		margin-bottom: 24px;
+	}
+
+	/* Product variant ships its own interactive hero — hide the bg div */
+	.detail-page__left-panel:has(.detail-card__product-image) .detail-page__hero-bg {
+		display: none;
+		margin: 0;
+	}
+
+	/* Card content flows in-card (was absolute/floating) */
+	.detail-card--main {
+		position: static;
+		background: transparent;
+		border-radius: 0;
+		padding: 0;
+		box-shadow: none;
+		max-height: none;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.detail-card__label {
+		font-family: 'Poppins', sans-serif;
+		font-style: normal;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: $dt-honey;
+		margin: 0 0 8px;
+	}
+
+	.detail-card__title {
+		margin: 24px 0 0;
+		font-family: $dt-display;
+		font-size: clamp(1.8rem, 3vw, 2.6rem);
+		font-weight: 800;
+		line-height: 1.12;
+		letter-spacing: -0.02em;
+		color: $dt-ink;
+	}
+
+	/* When a hero image / label precedes the title, tighten the top gap */
+	.detail-page__hero-bg + .detail-card--main .detail-card__title,
+	.detail-card__label + .detail-card__title,
+	.detail-card__product-image + .detail-card__thumbs + .detail-card__title,
+	.detail-card__product-image + .detail-card__title {
+		margin-top: 16px;
+	}
+
+	.detail-card__price {
+		margin: 4px 0 0;
+		font-family: $dt-display;
+		font-size: 1.6rem;
+		font-weight: 800;
+		color: $dt-honey;
+	}
+
+	.detail-card__meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px;
+		margin-top: 12px;
+	}
+
+	.detail-card__meta-item,
+	.detail-card__location {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: $dt-muted;
+
+		svg {
+			color: $dt-green;
+		}
+	}
+
+	.detail-card__stats {
+		display: inline-flex;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.detail-card__stat {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 0.875rem;
+		color: $dt-muted;
+
+		svg {
+			color: $dt-icon-muted;
+		}
+	}
+
+	.detail-card__like-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		background: none;
+		border: none;
+		min-height: 44px;
+		min-width: 44px;
+		padding: 8px 10px;
+		cursor: pointer;
+		font-size: 0.875rem;
+		color: $dt-muted;
+
+		svg {
+			color: var(--pp-like-red);
+		}
+	}
+
+	/* Tabs — green active pill, hairline underline */
+	.detail-card__tabs {
+		display: flex;
+		gap: 8px;
+		margin-top: 24px;
+		padding-bottom: 0;
+		border-bottom: 1px solid $dt-line;
+	}
+
+	.detail-card__tab {
+		padding: 12px 22px;
+		min-height: 44px;
+		border: none;
+		border-radius: 999px 999px 0 0;
+		background: transparent;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: $dt-muted;
+		cursor: pointer;
+		transition: background 0.2s ease, color 0.2s ease;
+
+		&.is-active {
+			background: $dt-green;
+			color: $dt-honey;
+			font-weight: 700;
+		}
+
+		&:not(.is-active):hover {
+			color: $dt-ink;
+		}
+	}
+
+	.detail-card__tab-body {
+		flex: 1;
+		overflow: visible;
+
+		p {
+			margin: 20px 0 0;
+			font-size: 0.95rem;
+			line-height: 1.7;
+			color: $dt-muted;
+
+			&:first-child {
+				margin-top: 20px;
+			}
+
+			strong {
+				color: $dt-ink;
+				font-weight: 700;
+			}
+		}
+	}
+
+	/* Service gallery — additional listing images below the main hero */
+	.detail-card__gallery {
+		margin-top: 32px;
+		padding-top: 28px;
+		border-top: 1px solid $dt-line;
+	}
+
+	.detail-card__gallery-title {
+		margin: 0 0 16px;
+		font-family: $dt-display;
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: $dt-ink;
+	}
+
+	.detail-card__gallery-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 14px;
+	}
+
+	.detail-card__gallery-item {
+		margin: 0;
+		border-radius: 14px;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		background: $dt-porcelain;
+		box-shadow: 0 4px 14px rgba(21, 36, 30, 0.06);
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: center;
+			display: block;
+		}
+	}
+
+	.detail-card__type-badge {
+		display: inline-flex;
+		align-items: center;
+		margin-top: 12px;
+		align-self: flex-start;
+		background: $dt-green;
+		color: #ffffff;
+		padding: 8px 18px;
+		border-radius: 999px;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	/* Product hero image (interactive, with thumbs) */
+	.detail-card__product-image {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		height: auto;
+		margin-bottom: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: $dt-porcelain;
+		border-radius: 14px;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	.detail-card__thumbs {
+		display: flex;
+		gap: 8px;
+		margin-bottom: 16px;
+		flex-wrap: wrap;
+	}
+
+	.detail-card__thumb {
+		width: 56px;
+		height: 56px;
+		min-width: 44px;
+		min-height: 44px;
+		border: 1.5px solid $dt-line;
+		border-radius: 10px;
+		overflow: hidden;
+		background: $dt-porcelain;
+		cursor: pointer;
+		padding: 0;
+		-webkit-tap-highlight-color: transparent;
+		touch-action: manipulation;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			pointer-events: none;
+		}
+
+		&.is-active {
+			border-color: $dt-green;
+			border-width: 2px;
+		}
+	}
+
+	/* ── RIGHT: sidebar (specialist + inquiry/booking) ── */
+	.detail-page__sidebar {
+		background: transparent;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		padding: 0;
+		overflow: visible;
+	}
+
+	.detail-card--specialist {
+		background: var(--pp-bg-card);
+		border-radius: 16px;
+		padding: 18px 20px;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 14px;
+		border: 1px solid $dt-line;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+	}
+
+	.detail-card__avatar {
+		width: 64px !important;
+		height: 64px !important;
+		border-radius: 50% !important;
+		object-fit: cover !important;
+		flex-shrink: 0 !important;
+	}
+
+	.detail-card__specialist-info {
+		flex: 1;
+		min-width: 0;
+
+		strong {
+			display: block;
+			font-size: 1rem;
+			font-weight: 700;
+			color: $dt-ink;
+			line-height: 1.2;
+			margin-bottom: 2px;
+		}
+	}
+
+	.detail-card__specialist-phone {
+		margin: 0 0 4px;
+		font-size: 0.85rem;
+		color: $dt-muted;
+	}
+
+	.detail-card__specialist-link {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: $dt-green;
+		text-decoration: none;
+
+		&:hover {
+			color: $dt-honey;
+		}
+	}
+
+	/* Inquiry / booking form card */
+	.detail-card--booking,
+	.detail-card--inquiry {
+		background: var(--pp-bg-card);
+		border-radius: 20px;
+		padding: 36px;
+		border: 1px solid $dt-line;
+		box-shadow: $dt-card-shadow;
+		flex: 1;
+
+		.image-info,
+		.name-phone-listings,
+		.member-image,
+		.specialist-photo,
+		.agent-image {
+			display: none !important;
+		}
+
+		.info-box,
+		.right-config,
+		.inquiry-config {
+			display: flex !important;
+			flex-direction: column !important;
+			background: transparent !important;
+			padding: 0 !important;
+			border: none !important;
+			box-shadow: none !important;
+			gap: 4px !important;
+		}
+
+		.main-title,
+		h2,
+		h3 {
+			margin: 0 0 6px !important;
+			font-family: #{$dt-display} !important;
+			font-size: 1.4rem !important;
+			font-weight: 800 !important;
+			color: #{$dt-ink} !important;
+		}
+
+		.sub-title,
+		label {
+			font-size: 0.7rem !important;
+			font-weight: 700 !important;
+			color: #{$dt-icon-muted} !important;
+			text-transform: uppercase !important;
+			letter-spacing: 0.1em !important;
+			margin: 16px 0 6px !important;
+			display: block !important;
+		}
+
+		input,
+		textarea,
+		input[type='datetime-local'],
+		input[type='date'],
+		.MuiInputBase-input {
+			width: 100% !important;
+			border: none !important;
+			border-bottom: 1.5px solid rgba(30, 107, 79, 0.2) !important;
+			background: transparent !important;
+			border-radius: 0 !important;
+			padding: 10px 0 !important;
+			font-size: 1rem !important;
+			font-family: 'Poppins', sans-serif !important;
+			color: #{$dt-ink} !important;
+			outline: none !important;
+			box-sizing: border-box !important;
+
+			&::placeholder {
+				color: #9cafa6 !important;
+			}
+
+			&:focus {
+				border-bottom-color: #{$dt-green} !important;
+			}
+		}
+
+		textarea {
+			resize: none !important;
+			min-height: 72px !important;
+		}
+
+		/* Submit button — mirrors .pp-btn .pp-btn--primary */
+		button,
+		.MuiButtonBase-root,
+		.MuiButton-root,
+		.send-message {
+			width: 100% !important;
+			min-height: 44px !important;
+			background: #{$dt-green} !important;
+			color: #{$dt-honey} !important;
+			border-radius: 999px !important;
+			padding: 16px !important;
+			font-family: 'Poppins', sans-serif !important;
+			font-weight: 700 !important;
+			font-size: 0.9rem !important;
+			border: none !important;
+			cursor: pointer !important;
+			margin-top: 24px !important;
+			text-transform: none !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			gap: 6px !important;
+			transition: background 0.2s ease, box-shadow 0.2s ease !important;
+
+			span,
+			.MuiButton-label,
+			.title {
+				color: #{$dt-honey} !important;
+				font-weight: 700 !important;
+				text-transform: none !important;
+			}
+
+			svg {
+				color: #{$dt-honey} !important;
+				fill: #{$dt-honey} !important;
+			}
+
+			&:disabled {
+				opacity: 0.5 !important;
+				box-shadow: none !important;
+			}
+
+			&:hover:not(:disabled) {
+				background: #{$dt-green-hover} !important;
+				box-shadow: 0 8px 20px rgba(30, 107, 79, 0.25) !important;
+			}
+		}
+
+		.MuiTouchRipple-root {
+			display: none !important;
+		}
+	}
+
+	/* ═══════════════════════════════════════════
+	   SECTION 2 — reviews + write review (sage)
+	═══════════════════════════════════════════ */
+	.detail-page__bottom {
+		background: $dt-sage;
+		padding: 80px 0 0;
+	}
+
+	.detail-page__container {
+		width: min(1280px, calc(100% - 96px));
+		margin: 0 auto;
+	}
+
+	.detail-reviews {
+		background: transparent !important;
+		padding: 0 !important;
+		margin-bottom: 32px;
+	}
+
+	.detail-reviews__count {
+		font-family: $dt-display;
+		font-size: clamp(2rem, 4vw, 3rem) !important;
+		font-weight: 800 !important;
+		color: #{$dt-ink} !important;
+		margin-bottom: 48px !important;
+		text-align: center !important;
+	}
+
+	.detail-reviews__list {
+		display: grid !important;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+		gap: 20px !important;
+		max-width: 1100px;
+		margin: 0 auto;
+		flex-direction: unset !important;
+	}
+
+	.detail-reviews__pagination {
+		grid-column: 1 / -1;
+		display: flex;
+		justify-content: center;
+		margin-top: 16px;
+	}
+
+	.review-card-item {
+		background: var(--pp-bg-card);
+		border-radius: 16px;
+		padding: 24px;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		border: 1px solid $dt-line;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+
+		&__head {
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+		}
+
+		&__avatar {
+			width: 48px !important;
+			height: 48px !important;
+			min-width: 48px !important;
+			border-radius: 50% !important;
+			object-fit: cover !important;
+			flex-shrink: 0 !important;
+		}
+
+		&__meta {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		&__name {
+			font-family: $dt-display;
+			font-size: 1.05rem;
+			font-weight: 700;
+			color: $dt-ink;
+		}
+
+		&__date {
+			font-size: 0.8rem;
+			color: $dt-muted;
+		}
+
+		&__stars {
+			font-size: 0.9rem;
+			color: $dt-honey;
+			letter-spacing: 1px;
+		}
+
+		&__text {
+			margin: 0;
+			font-size: 0.9rem;
+			line-height: 1.6;
+			color: $dt-muted;
+		}
+	}
+
+	/* Write a review */
+	.detail-leave-review {
+		background: #ffffff !important;
+		border-radius: 20px;
+		padding: 36px;
+		max-width: 900px;
+		margin: 32px auto 0;
+		border: 1px solid $dt-line;
+		box-shadow: $dt-card-shadow;
+	}
+
+	.detail-leave-review__title {
+		margin: 0 0 20px;
+		font-family: $dt-display;
+		font-size: 1.6rem !important;
+		font-weight: 800 !important;
+		color: #{$dt-ink} !important;
+	}
+
+	.detail-leave-review__textarea {
+		width: 100%;
+		min-height: 120px;
+		padding: 16px;
+		border: 1.5px solid rgba(30, 107, 79, 0.15);
+		border-radius: 12px;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.95rem;
+		color: $dt-ink;
+		background: $dt-porcelain;
+		resize: vertical;
+		outline: none;
+		box-sizing: border-box;
+		margin-bottom: 16px;
+
+		&::placeholder {
+			color: #9cafa6;
+		}
+
+		&:focus {
+			border-color: $dt-green;
+			background: var(--pp-bg-card);
+		}
+	}
+
+	/* Submit review — mirrors .pp-btn .pp-btn--primary */
+	.detail-leave-review__btn {
+		width: 100% !important;
+		background: #{$dt-green} !important;
+		color: #{$dt-honey} !important;
+		border-radius: 999px !important;
+		padding: 14px !important;
+		font-family: 'Poppins', sans-serif !important;
+		font-weight: 700 !important;
+		font-size: 0.9rem !important;
+		text-transform: none !important;
+		box-shadow: none !important;
+		transition: background 0.2s ease, box-shadow 0.2s ease !important;
+
+		&:hover:not(:disabled) {
+			background: #{$dt-green-hover} !important;
+			box-shadow: 0 8px 20px rgba(30, 107, 79, 0.25) !important;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+		}
+	}
+
+	/* ═══════════════════════════════════════════
+	   SECTION 3 — you might also like (porcelain band)
+	═══════════════════════════════════════════ */
+	.detail-related {
+		position: relative;
+		margin-top: 80px;
+		padding: 80px 0;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 100vw;
+			background: $dt-porcelain;
+			z-index: 0;
+		}
+
+		> * {
+			position: relative;
+			z-index: 1;
+		}
+	}
+
+	.detail-related__title {
+		margin: 0 0 32px;
+		font-family: $dt-display;
+		font-size: clamp(1.8rem, 3vw, 2.4rem);
+		font-weight: 800;
+		color: $dt-ink;
+	}
+
+	.detail-related__grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 20px;
+	}
+
+	/* Card visual matches the listing cards: white, rounded, overflow-safe */
+	.detail-related__card {
+		position: relative;
+		display: block;
+		border-radius: 16px;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		background: var(--pp-bg-card);
+		border: 1px solid $dt-line;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+		text-decoration: none;
+		transition: transform 0.22s ease, box-shadow 0.22s ease;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform 0.4s ease;
+		}
+
+		&:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+		}
+
+		&:hover img {
+			transform: scale(1.05);
+		}
+	}
+
+	.detail-related__overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: flex-end;
+		padding: 14px;
+		min-width: 0;
+		box-sizing: border-box;
+		background: linear-gradient(to top, rgba(15, 40, 28, 0.78) 0%, transparent 62%);
+
+		strong {
+			color: #ffffff;
+			font-size: 0.9rem;
+			font-weight: 700;
+			line-height: 1.3;
+			width: 100%;
+			@include pp-line-clamp(2);
+		}
+	}
+
+	/* Include 1024px test width — matches tablet intent of $bp-tablet-max */
+	@media (max-width: 1024px) {
+		.detail-page__main {
+			grid-template-columns: 1fr;
+			gap: 24px;
+			padding: 56px max(24px, calc((100% - 1280px) / 2));
+		}
+
+		.detail-page__sidebar {
+			width: 100%;
+			max-width: none;
+		}
+
+		.detail-page__hero-bg,
+		.detail-card__product-image {
+			max-height: min(360px, 48vh);
+			aspect-ratio: 16 / 10;
+		}
+
+		.detail-page__bottom {
+			padding-top: 56px;
+		}
+
+		.detail-related {
+			margin-top: 56px;
+			padding: 56px 0;
+		}
+
+		.detail-page__container {
+			width: min(1280px, calc(100% - 48px));
+		}
+
+		.detail-reviews__list {
+			grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+		}
+
+		.detail-related__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.detail-card__gallery-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	/*
+	 * FAB clearance — LayoutFull mounts Chat only on #pc-wrap (≥769).
+	 * At ≤1024 the booking/inquiry/review forms are full-width, so their
+	 * submit CTAs land under the FAB (60×60, bottom:32px right:24px).
+	 * Extra bottom padding lets the button scroll clear of that zone.
+	 * Skips ≤768 (no FAB) and ≥1025 (2-col already clears).
+	 */
+	@media (min-width: 769px) and (max-width: 1024px) {
+		.detail-card--booking,
+		.detail-card--inquiry {
+			padding-bottom: 128px;
+		}
+
+		.detail-leave-review {
+			padding-bottom: 128px;
+		}
+	}
+
+	@media (max-width: $bp-mobile-max) {
+		.detail-page__main {
+			padding: 32px 16px;
+			gap: 20px;
+		}
+
+		.detail-page__left-panel {
+			padding: 18px;
+			border-radius: 16px;
+		}
+
+		.detail-card__title {
+			font-size: clamp(1.45rem, 6vw, 1.85rem);
+			overflow-wrap: anywhere;
+		}
+
+		.detail-card__tabs {
+			flex-wrap: wrap;
+			gap: 6px;
+		}
+
+		.detail-card__tab {
+			flex: 1 1 auto;
+			text-align: center;
+			border-radius: 999px;
+			padding: 10px 16px;
+		}
+
+		.detail-card--inquiry,
+		.detail-card--booking {
+			padding: 22px 18px;
+			border-radius: 16px;
+		}
+
+		.detail-page__hero-bg,
+		.detail-card__product-image {
+			max-height: min(280px, 42vh);
+			aspect-ratio: 4 / 3;
+			margin-bottom: 16px;
+		}
+
+		.detail-card__thumbs {
+			gap: 10px;
+		}
+
+		.detail-card__thumb {
+			width: 64px;
+			height: 64px;
+		}
+
+		.detail-page__bottom {
+			padding-top: 40px;
+		}
+
+		.detail-related {
+			margin-top: 40px;
+			padding: 40px 0;
+		}
+
+		.detail-page__container {
+			width: calc(100% - 32px);
+		}
+
+		.detail-reviews__count {
+			margin-bottom: 28px !important;
+		}
+
+		.detail-reviews__list {
+			grid-template-columns: 1fr !important;
+		}
+
+		.detail-related__grid,
+		.detail-card__gallery-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 599px) {
+		.detail-card__meta {
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+
+		.detail-card--specialist {
+			flex-wrap: wrap;
+		}
+	}
+}

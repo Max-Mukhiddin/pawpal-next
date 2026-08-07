@@ -4,7 +4,7 @@ import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Stack, Typography } from '@mui/material';
 import { BoardArticle } from '../../types/board-article/board-article';
 import Moment from 'react-moment';
-import { REACT_APP_API_URL } from '../../config';
+import { resolveArticleImage } from '../../utils/articleCardHelpers';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import IconButton from '@mui/material/IconButton';
@@ -23,9 +23,10 @@ const CommunityCard = (props: CommunityCardProps) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const imagePath: string = boardArticle?.articleImage
-		? `${REACT_APP_API_URL}/${boardArticle?.articleImage}`
-		: '/img/community/communityImg.png';
+	const imagePath: string = resolveArticleImage(
+		boardArticle?.articleImage,
+		'/img/community/communityImg.png',
+	);
 
 	/** HANDLERS **/
 	const chooseArticleHandler = (e: React.SyntheticEvent, boardArticle: BoardArticle) => {
@@ -76,9 +77,9 @@ const CommunityCard = (props: CommunityCardProps) => {
 						<Typography className="view-cnt">{boardArticle?.articleViews}</Typography>
 						<IconButton color={'default'} onClick={(e: any) => likeArticleHandler(e, user, boardArticle?._id)}>
 							{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
-								<FavoriteIcon color={'primary'} />
+								<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
 							) : (
-								<FavoriteBorderIcon />
+								<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)', '&:hover': { color: 'var(--pp-like-red-hover)' } }} />
 							)}
 						</IconButton>
 						<Typography className="view-cnt">{boardArticle?.articleLikes}</Typography>

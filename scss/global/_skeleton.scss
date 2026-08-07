@@ -1,0 +1,121 @@
+/**
+ * Skeleton loader — mist-tinted shimmering placeholders.
+ * Palette-matched so loading states don't visually detach from the site.
+ *
+ * `pp-skeleton` is the atomic block. `pp-skeleton-card` composes multiple blocks
+ * into card-shaped placeholders. The shimmer sweeps at 1.4s per pass (fast
+ * enough to feel active, slow enough to not feel frantic — Emil: "a faster
+ * spinner makes loading feel faster, but frantic breaks trust").
+ */
+
+.pp-skeleton {
+	display: inline-block;
+	position: relative;
+	overflow: hidden;
+	background: linear-gradient(
+		100deg,
+		rgba(30, 107, 79, 0.06) 0%,
+		rgba(30, 107, 79, 0.06) 40%,
+		rgba(30, 107, 79, 0.14) 50%,
+		rgba(30, 107, 79, 0.06) 60%,
+		rgba(30, 107, 79, 0.06) 100%
+	);
+	background-size: 220% 100%;
+	background-position: 100% 0;
+	animation: pp-skeleton-shimmer 1400ms linear infinite;
+	vertical-align: middle;
+}
+
+@keyframes pp-skeleton-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: -100% 0;
+	}
+}
+
+.pp-skeleton-grid {
+	display: grid;
+	gap: clamp(20px, 2.4vw, 28px);
+	width: 100%;
+
+	&--specialist {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	&--article {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: clamp(24px, 3vw, 36px);
+	}
+
+	&--listing {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	@media (max-width: 1023px) {
+		&--specialist,
+		&--listing {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 767px) {
+		&--specialist,
+		&--article,
+		&--listing {
+			grid-template-columns: 1fr;
+		}
+	}
+}
+
+.pp-skeleton-card {
+	background: #ffffff;
+	border: 1px solid var(--pp-border-subtle);
+	border-radius: var(--pp-radius, 20px);
+	overflow: hidden;
+	box-shadow: var(--pp-shadow-on-mist);
+
+	&__media {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		background: rgba(30, 107, 79, 0.04);
+		display: block;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 20px 20px 22px;
+	}
+
+	&--specialist {
+		display: flex;
+		flex-direction: column;
+
+		.pp-skeleton-card__media {
+			aspect-ratio: 4 / 5;
+			width: 100%;
+			height: auto;
+			flex-shrink: 0;
+		}
+	}
+
+	&--article {
+		min-height: clamp(500px, 32vw, 560px);
+
+		.pp-skeleton-card__media {
+			aspect-ratio: auto;
+			height: 100%;
+			min-height: 0;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pp-skeleton {
+		animation: none;
+		background: rgba(30, 107, 79, 0.08);
+	}
+}

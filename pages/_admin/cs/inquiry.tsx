@@ -9,7 +9,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { TabContext } from '@mui/lab';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import TablePagination from '@mui/material/TablePagination';
+import AdminListPagination from '../../../libs/components/admin/AdminListPagination';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import { InquiryList } from '../../../libs/components/admin/cs/InquiryList';
 
@@ -22,14 +22,14 @@ const InquiryArticles: NextPage = (props: any) => {
 
 	return (
 		<Box component={'div'} className={'content'}>
-			<Typography variant={'h2'} className={'tit'} sx={{ mb: '24px' }}>
+			<Typography variant="h2" className="admin-page-title">
 				1:1 Inquiry Management
 			</Typography>
-			<Box component={'div'} className={'table-wrap'}>
+			<Box component="div" className="admin-table-card table-wrap">
 				<Box component={'div'} sx={{ width: '100%', typography: 'body1' }}>
 					<TabContext value={'value'}>
 						<Box component={'div'}>
-							<List className={'tab-menu'}>
+							<List className="admin-filter-tabs tab-menu">
 								<ListItem
 									// onClick={(e) => handleTabChange(e, 'all')}
 									value="all"
@@ -60,18 +60,18 @@ const InquiryArticles: NextPage = (props: any) => {
 								</ListItem>
 							</List>
 							<Divider />
-							<Stack className={'search-area'} sx={{ m: '24px' }}>
-								<Select sx={{ width: '160px', mr: '20px' }} value={'searchCategory'}>
-									<MenuItem value={'mb_nick'}>mb_nick</MenuItem>
-									<MenuItem value={'mb_id'}>mb_id</MenuItem>
+							<Stack className="admin-toolbar search-area" sx={{ m: '24px' }} direction="row" alignItems="center" flexWrap="wrap" useFlexGap>
+								<Select className="admin-select" sx={{ minWidth: 160 }} value={'searchCategory'} displayEmpty renderValue={() => 'All Categories'}>
+									<MenuItem value={'searchCategory'} disabled>
+										All Categories
+									</MenuItem>
 								</Select>
 
 								<OutlinedInput
-									value={'searchInput'}
-									// onChange={(e) => handleInput(e.target.value)}
-									sx={{ width: '100%' }}
-									className={'search'}
-									placeholder="Search user name"
+									value={''}
+									sx={{ width: '100%', flex: '1 1 280px' }}
+									className="admin-search search"
+									placeholder="Search inquiries..."
 									onKeyDown={(event) => {
 										// if (event.key == 'Enter') searchTargetHandler().then();
 									}}
@@ -97,15 +97,7 @@ const InquiryArticles: NextPage = (props: any) => {
 							// generateMentorTypeHandle={generateMentorTypeHandle}
 						/>
 
-						<TablePagination
-							rowsPerPageOptions={[20, 40, 60]}
-							component="div"
-							count={4}
-							rowsPerPage={10}
-							page={1}
-							onPageChange={() => {}}
-							onRowsPerPageChange={() => {}}
-						/>
+						<AdminListPagination count={4} rowsPerPage={10} page={1} onPageChange={() => {}} onRowsPerPageChange={() => {}} />
 					</TabContext>
 				</Box>
 			</Box>

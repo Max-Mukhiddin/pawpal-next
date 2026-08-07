@@ -13,6 +13,7 @@ export interface SpecialistsFilterProps {
 	onSortingClick: (e: React.MouseEvent<HTMLElement>) => void;
 	onSortingClose: () => void;
 	onSortingSelect: (e: React.MouseEvent<HTMLLIElement>) => void;
+	hideSearch?: boolean;
 }
 
 const SpecialistsFilter: React.FC<SpecialistsFilterProps> = ({
@@ -25,8 +26,10 @@ const SpecialistsFilter: React.FC<SpecialistsFilterProps> = ({
 	onSortingClick,
 	onSortingClose,
 	onSortingSelect,
+	hideSearch = false,
 }) => (
-	<Stack className={'filter'}>
+	<Stack className={`filter ${hideSearch ? 'filter--sort-only' : ''}`}>
+		{!hideSearch && (
 		<Box component={'div'} className={'left'}>
 			<div style={{ position: 'relative' }}>
 				<input
@@ -53,6 +56,7 @@ const SpecialistsFilter: React.FC<SpecialistsFilterProps> = ({
 				</span>
 			</div>
 		</Box>
+		)}
 		<Box component={'div'} className={'right'}>
 			<span>Sort specialists by</span>
 			<div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import CatalogBrowseCard from '../listings/CatalogBrowseCard';
 import type { Listing } from '../../types/listing/listing';
 import { T } from '../../types/common';
@@ -10,9 +11,13 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { Messages } from '../../config';
-import { sweetMixinErrorAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { likeToastMessage } from '../../utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../auth';
+import { withActionGate } from '../../utils/actionGate';
 
 const MyFavorites: NextPage = () => {
+	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [myFavorites, setMyFavorites] = useState<Listing[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -45,21 +50,26 @@ const MyFavorites: NextPage = () => {
 	};
 
 	const likeListingHandler = async (user: any, id: string) => {
-		try {
-			if (!id) return;
-			if (!user._id) throw new Error(Messages.error2);
+		await withActionGate(`like:listing:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'like')) return;
 
-			await likeTargetListing({
-				variables: {
-					input: id,
-				},
-			});
+				await likeTargetListing({
+					variables: {
+						input: id,
+					},
+				});
 
-			await getFavoritesRefetch({ input: searchFavorites });
-		} catch (err: any) {
-			console.error('ERROR, likeListingHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
+				await getFavoritesRefetch({ input: searchFavorites });
+				await sweetTopSmallSuccessAlert(likeToastMessage(true), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'like')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.error('ERROR, likeListingHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
 	};
 
 	return (
@@ -98,6 +108,7 @@ const MyFavorites: NextPage = () => {
 					<Stack className="pagination-config">
 						<Stack className="pagination-box">
 							<Pagination
+								className="pp-pagination"
 								count={Math.ceil(total / searchFavorites.limit)}
 								page={searchFavorites.page}
 								shape="circular"

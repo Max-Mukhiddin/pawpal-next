@@ -6,19 +6,19 @@
 	width: 100%;
 	height: 100%;
 	border-radius: 20px;
-	background: #ffffff;
+	background: var(--pp-bg-card);
 	overflow: hidden;
 	text-decoration: none;
 	color: inherit;
-	border: 1px solid rgba(0, 0, 0, 0.05);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	border: 1px solid var(--pp-border-subtle);
+	box-shadow: var(--pp-shadow-sm);
+	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 	cursor: pointer;
 	box-sizing: border-box;
 
 	&:hover {
 		transform: translateY(-6px);
-		box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+		box-shadow: var(--pp-shadow-md);
 	}
 }
 
@@ -27,7 +27,7 @@
 	width: 100%;
 	aspect-ratio: 4 / 3;
 	overflow: hidden;
-	background: #f3ede5;
+	background: var(--pp-bg-card-alt);
 	flex-shrink: 0;
 }
 
@@ -36,6 +36,7 @@
 	height: 100%;
 	object-fit: cover;
 	display: block;
+	transition: transform 0.5s ease;
 }
 
 @mixin pawpal-media-card-body {
@@ -52,7 +53,7 @@
 	font-size: 1.25rem;
 	font-weight: 700;
 	line-height: 1.3;
-	color: #1a1a1a;
+	color: var(--pp-text-heading);
 }
 
 @mixin pawpal-media-card-subtitle {
@@ -70,5 +71,23 @@
 	font-family: $font;
 	font-size: 0.95rem;
 	line-height: 1.6;
-	color: #6b6b6b;
+	color: var(--pp-text-body);
+}
+
+/* Card image zoom on hover — listing cards sitewide */
+#pc-wrap,
+#mobile-wrap {
+	.services-list-card,
+	.pp-product-card,
+	.specialist-card,
+	.cb-card,
+	.pawpal-media-card {
+		&:hover img:not([src*='defaultUser']) {
+			transform: scale(1.05);
+		}
+
+		&.specialist-card:hover .specialist-card__avatar:not(.specialist-card__avatar--placeholder) {
+			transform: scale(1.03);
+		}
+	}
 }

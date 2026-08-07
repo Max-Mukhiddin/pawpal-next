@@ -1,0 +1,50 @@
+/**
+ * PawPal semantic surface + ink tokens (light mode only).
+ * Prefer var(--pp-*) over raw hex in component SCSS.
+ */
+
+:root {
+	color-scheme: light;
+
+	--pp-mist: #e2ede5;
+	--pp-bg-page: var(--pp-mist);
+	--pp-bg-section-alt: var(--pp-mist);
+	--pp-bg-card: #ffffff;
+	--pp-bg-card-alt: #eef4f0;
+	--pp-bg-elevated: #ffffff;
+
+	--pp-text-heading: #15241e;
+	--pp-text-body: #50625a;
+	--pp-text-muted: #6b9e85;
+	--pp-text-invert: #e8f4ee;
+
+	--pp-green: #1e6b4f;
+	--pp-green-deep: #173e32;
+	--pp-honey: #e8a04b;
+	--pp-honey-hover: #d4913f;
+
+	--pp-like-red: #e53935;
+	--pp-like-red-hover: #c62828;
+
+	--pp-border-subtle: rgba(30, 107, 79, 0.1);
+	--pp-border-strong: rgba(30, 107, 79, 0.25);
+
+	/* Layered depth — 3 stacked shadows read as one soft, dimensional lift.
+	 * The tight 1px shadow defines the card edge; the medium blur carries the
+	 * mid-fall; the wide blur is the ambient bed. Forest-tinted throughout so
+	 * shadows feel like part of the palette rather than a neutral drop. */
+	--pp-shadow-sm: 0 1px 2px rgba(23, 62, 50, 0.05), 0 2px 8px rgba(23, 62, 50, 0.06);
+	--pp-shadow-md: 0 1px 2px rgba(23, 62, 50, 0.06), 0 8px 24px rgba(23, 62, 50, 0.1);
+	--pp-shadow-on-mist:
+		0 1px 2px rgba(23, 62, 50, 0.06),
+		0 4px 12px rgba(23, 62, 50, 0.05),
+		0 12px 32px rgba(23, 62, 50, 0.06);
+	--pp-shadow-on-mist-hover:
+		0 1px 2px rgba(23, 62, 50, 0.08),
+		0 6px 16px rgba(23, 62, 50, 0.08),
+		0 20px 44px rgba(23, 62, 50, 0.12);
+}
+
+html {
+	background: var(--pp-bg-page);
+}

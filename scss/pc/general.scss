@@ -182,6 +182,7 @@
 		align-items: center;
 		width: 100%;
 		height: 80px;
+		min-width: 0;
 		.title {
 			color: #717171;
 			font-family: $font;
@@ -189,6 +190,7 @@
 			font-style: normal;
 			font-weight: 400;
 			line-height: normal;
+			@include pp-truncate-single;
 		}
 		.desc {
 			color: #181a20;
@@ -198,6 +200,7 @@
 			font-weight: 600;
 			line-height: 26px;
 			text-transform: capitalize;
+			@include pp-line-clamp(2);
 		}
 		.buttons {
 			width: auto;

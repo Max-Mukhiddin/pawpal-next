@@ -1,0 +1,214 @@
+/**
+ * PawPal toast — porcelain surface, forest text, honey accent border.
+ * Palette-consistent, gentle scale+fade entrance (no aggressive overshoot),
+ * pauses on hover, exits with a snappier ease-out.
+ *
+ * Emil principle at work: enter can be slower (200-300ms) because the user's
+ * attention is arriving; exit is fast (200ms) because the system is responding.
+ */
+
+.pp-toast-container {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	display: flex;
+	flex-direction: column-reverse;
+	gap: 10px;
+	z-index: 10000;
+	pointer-events: none;
+	max-width: min(380px, calc(100vw - 32px));
+}
+
+.pp-toast {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 280px;
+	max-width: 380px;
+	padding: 12px 20px 12px 14px;
+	background: #ffffff;
+	color: var(--pp-text-heading);
+	border: 1px solid var(--pp-border-subtle);
+	border-left: 3px solid var(--pp-honey);
+	border-radius: 14px;
+	box-shadow:
+		0 1px 2px rgba(23, 62, 50, 0.08),
+		0 8px 20px rgba(23, 62, 50, 0.1),
+		0 20px 48px rgba(23, 62, 50, 0.14);
+	pointer-events: auto;
+	overflow: hidden;
+	cursor: pointer;
+	transform-origin: bottom right;
+	animation: pp-toast-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+	transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+
+	&:hover {
+		transform: translateY(-1px);
+		box-shadow:
+			0 1px 2px rgba(23, 62, 50, 0.1),
+			0 10px 24px rgba(23, 62, 50, 0.12),
+			0 24px 52px rgba(23, 62, 50, 0.16);
+	}
+}
+
+.pp-toast--out {
+	animation: pp-toast-out 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.pp-toast__icon {
+	width: 28px;
+	height: 28px;
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--pp-honey);
+	animation: pp-toast-icon-wiggle 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms both;
+}
+
+.pp-toast__paw {
+	color: var(--pp-honey);
+}
+
+.pp-toast__paw--error {
+	color: #b23a3a;
+}
+
+.pp-toast__msg {
+	color: var(--pp-text-heading);
+	font-family: 'Poppins', sans-serif;
+	font-size: 0.9rem;
+	font-weight: 600;
+	letter-spacing: 0.005em;
+	line-height: 1.3;
+	flex: 1;
+}
+
+.pp-toast__progress {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--pp-honey), var(--pp-honey-hover));
+	border-radius: 0 2px 2px 0;
+	transition: width 60ms linear;
+}
+
+/* Error variant — deep-forest border-left flips to a muted alert red;
+ * surface stays porcelain so the toast never yells. */
+.pp-toast--error {
+	border-left-color: #b23a3a;
+
+	.pp-toast__icon {
+		color: #b23a3a;
+	}
+
+	.pp-toast__progress {
+		background: linear-gradient(90deg, #b23a3a, #d97757);
+	}
+}
+
+.pp-toast--info {
+	border-left-color: var(--pp-green);
+
+	.pp-toast__icon {
+		color: var(--pp-green);
+	}
+
+	.pp-toast__progress {
+		background: linear-gradient(90deg, var(--pp-green), var(--pp-green-deep));
+	}
+}
+
+/* Sign-in prompt — warm nudge, not an error */
+.pp-toast--signin {
+	border-left-color: var(--pp-honey);
+
+	.pp-toast__icon {
+		color: var(--pp-green);
+	}
+
+	.pp-toast__paw--signin {
+		color: var(--pp-honey);
+	}
+
+	.pp-toast__progress {
+		background: linear-gradient(90deg, var(--pp-honey), #d9923f);
+	}
+}
+
+/* Entrance: 96% scale so the toast never appears from nothing (Emil).
+ * Comes in from bottom-right (spatial consistency with its anchor position). */
+@keyframes pp-toast-in {
+	from {
+		opacity: 0;
+		transform: translate(12px, 12px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translate(0, 0) scale(1);
+	}
+}
+
+@keyframes pp-toast-out {
+	from {
+		opacity: 1;
+		transform: translate(0, 0) scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: translate(16px, 4px) scale(0.96);
+	}
+}
+
+/* Gentle icon wiggle — one soft bounce on entrance, then still.
+ * Success icon is a Lottie paw that plays its own animation, so this only
+ * affects the SVG icons (info/error). */
+@keyframes pp-toast-icon-wiggle {
+	0% {
+		transform: scale(0.6) rotate(-6deg);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(1.08) rotate(3deg);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(1) rotate(0deg);
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pp-toast {
+		animation: pp-toast-in-reduced 200ms ease-out both;
+	}
+	.pp-toast--out {
+		animation: pp-toast-out-reduced 160ms ease-out forwards;
+	}
+	.pp-toast__icon {
+		animation: none;
+	}
+	.pp-toast:hover {
+		transform: none;
+	}
+}
+
+@keyframes pp-toast-in-reduced {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes pp-toast-out-reduced {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}

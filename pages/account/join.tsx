@@ -1,7 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { NextPage } from 'next';
+import Link from 'next/link';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import { Button, Dialog, DialogContent, Divider, Stack } from '@mui/material';
+import JoinPasswordInput from '../../libs/components/auth/JoinPasswordInput';
+import SpecialistApplicationDialog from '../../libs/components/auth/SpecialistApplicationDialog';
+import { Stack } from '@mui/material';
+import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import { useRouter } from 'next/router';
 import { logIn, signUp } from '../../libs/auth';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -12,11 +21,36 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
-const infoRows = [
-	{ icon: '⏱', text: 'Review takes up to 24 hours' },
-	{ icon: '📧', text: "We'll notify you once approved" },
-	{ icon: '✅', text: 'You can login and track your status' },
-];
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * /account/join — redesign direction: "Full-bleed editorial gateway"
+ * ─────────────────────────────────────────────────────────────────────────
+ * The split-panel becomes a single full-bleed pet photo (the existing local
+ * asset) with a floating porcelain-glass form card. A forest scrim (heavier
+ * on the left/top for legibility) plus a fine CSS grain overlay give the
+ * photo editorial depth without hurting readability.
+ *
+ * Composition:
+ *   · top-left  — PawPal brand lockup over the photo
+ *   · top-right — "Back to Home" glass pill → "/"
+ *   · left      — floating testimonial (Seo-yeon P.) with a 5-star rating,
+ *                 the page's single signature element (desktop only)
+ *   · right     — floating form card: the action surface
+ *
+ * Constraints honored: Apollo/auth logic, inputs, validation, handlers and
+ * the NICKNAME field (never email) are untouched — this is visual/structural
+ * only. No fabricated statistics: social proof is one real qualitative review
+ * plus a checkmark trust line. Accent stays on the honey token (#E8A04B).
+ *
+ * Motion (preserved & adapted, all reduced-motion guarded): warm `join-rise`
+ * stagger on load, a honey focus-glow ring on inputs, and an arrow that
+ * slides on the primary button hover. Responsive: the testimonial hides and
+ * the card centres at ≤900px; the card fills comfortably at ≤767px.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+
+/** Swap this file anytime: public/images/join_page.jpg */
+const JOIN_PANEL_PHOTO = '/images/join_page.jpg';
 
 const Join: NextPage = () => {
 	const router = useRouter();
@@ -29,6 +63,15 @@ const Join: NextPage = () => {
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
 	const isPendingSpecialist = input.type === 'AGENT';
+
+	// Deep link: /account/join?specialist=true opens signup with the specialist fields visible
+	useEffect(() => {
+		if (!router.isReady) return;
+		if (router.query.specialist === 'true') {
+			setLoginView(false);
+			setInput((prev) => ({ ...prev, type: 'AGENT' }));
+		}
+	}, [router.isReady, router.query.specialist]);
 
 	/** HANDLERS **/
 	const viewChangeHandler = (state: boolean) => {
@@ -122,307 +165,271 @@ const Join: NextPage = () => {
 		}
 	}, [input.nick, input.password, input.phone, memberDesc, isPendingSpecialist, router]);
 
+	// Specialist signups return a real JWT (already stored by signUp) —
+	// the user is an active, logged-in USER, so send them home.
 	const handleApplicationDialogClose = () => {
 		setApplicationDialogOpen(false);
-		setLoginView(true);
+		void router.push('/');
 	};
 
 	return (
 		<>
 			<Stack className="join-page">
-				<div className="join-page__visual">
-					<div className="join-page__visual-overlay" />
-					<div className="join-page__brand">
-						<img src="/images/footer/pawpal-logo-light.svg" alt="PawPal" style={{ height: '36px', width: 'auto' }} />
-					</div>
-					<div className="join-page__welcome">
-						<h1>Hello!</h1>
-						<p>Welcome to PawPal. Your pet care journey starts here.</p>
-					</div>
+				<div className="join-page__bg" aria-hidden>
+					<img
+						className="join-page__photo"
+						src={JOIN_PANEL_PHOTO}
+						alt=""
+						width={1600}
+						height={1200}
+						decoding="async"
+					/>
+					<div className="join-page__bg-scrim" />
+					<div className="join-page__bg-noise" />
 				</div>
 
-				<div className="join-page__form-wrapper">
-					<div className="join-page__form-container">
-						<div className="join-page__tabs">
-							<button
-								type="button"
-								className={`join-page__tab ${loginView ? 'active' : ''}`}
-								onClick={() => {
-									setLoginView(true);
-									setErrorMessage(null);
-									setSuccessMessage(null);
-								}}
-							>
-								Sign In
-							</button>
-							<button
-								type="button"
-								className={`join-page__tab ${!loginView ? 'active' : ''}`}
-								onClick={() => {
-									setLoginView(false);
-									setErrorMessage(null);
-									setSuccessMessage(null);
-								}}
-							>
-								Sign Up
-							</button>
-						</div>
+				<header className="join-page__topbar">
+					<div className="join-page__brand join-page__brand--top">
+						<img
+							className="join-page__brand-mark"
+							src="/img/logo/pawpal-logo-mark.png"
+							alt=""
+							width={30}
+							height={30}
+						/>
+						<span className="join-page__logo">PawPal</span>
+					</div>
+					<Link href="/" className="join-page__back">
+						<ArrowBackRoundedIcon className="join-page__back-icon" aria-hidden />
+						<span>Back to Home</span>
+					</Link>
+				</header>
 
-						{loginView && (
-							<div className="join-page__form">
-								<h2>Welcome back</h2>
-								<p className="join-page__subtitle">Sign in to manage your bookings and pet profiles</p>
+				<figure className="join-page__testimonial">
+					<div className="join-page__stars" aria-hidden>
+						<StarRoundedIcon />
+						<StarRoundedIcon />
+						<StarRoundedIcon />
+						<StarRoundedIcon />
+						<StarRoundedIcon />
+					</div>
+					<blockquote>
+						Booking a groomer for my anxious rescue used to mean weeks of phone
+						calls. On PawPal it took one afternoon.
+					</blockquote>
+					<figcaption>
+						<span className="join-page__testimonial-name">Seo-yeon P.</span>
+						<span className="join-page__testimonial-role">Dog parent · Seoul</span>
+					</figcaption>
+				</figure>
 
-								<div className="form-field">
-									<span className="form-field__icon">👤</span>
-									<input
-										type="text"
-										placeholder="Nickname"
-										maxLength={16}
-										value={input.nick}
-										onChange={(e) => handleInput('nick', e.target.value)}
-										onKeyDown={(e) => e.key === 'Enter' && doLogin()}
-									/>
-								</div>
+				<div className="join-page__card">
+					<div className="join-page__card-inner">
+								{loginView && (
+									<div className="join-page__form">
+										<h2 className="hover-zoom-text hover-zoom-text--headline">
+											Welcome back
+										</h2>
+										<p className="join-page__subtitle hover-zoom-text">
+											Your specialists, bookings, and pet care — right where you left off.
+										</p>
 
-								<div className="form-field">
-									<span className="form-field__icon">🔒</span>
-									<input
-										type={showPassword ? 'text' : 'password'}
-										placeholder="Password"
-										maxLength={12}
-										value={input.password}
-										onChange={(e) => handleInput('password', e.target.value)}
-										onKeyDown={(e) => e.key === 'Enter' && doLogin()}
-									/>
-									<button
-										type="button"
-										className="form-field__toggle"
-										onClick={() => setShowPassword((prev) => !prev)}
-									>
-										{showPassword ? '🙈' : '👁'}
-									</button>
-								</div>
+										<div className="form-field">
+											<label className="form-field__label hover-zoom-text" htmlFor="join-nick">
+												Nickname
+											</label>
+											<div className="form-field__control">
+												<input
+													id="join-nick"
+													type="text"
+													placeholder="e.g. dogmom_seoyeon"
+													maxLength={16}
+													value={input.nick}
+													onChange={(e) => handleInput('nick', e.target.value)}
+													onKeyDown={(e) => e.key === 'Enter' && doLogin()}
+												/>
+											</div>
+										</div>
 
-								<div className="join-page__forgot">
-									<a href="#">Forgot password?</a>
-								</div>
+										<div className="form-field form-field--password">
+											<div className="form-field__meta">
+												<label className="form-field__label hover-zoom-text" htmlFor="join-password">
+													Password
+												</label>
+												<a href="#" className="join-page__forgot">
+													<span className="hover-zoom-text">Forgot password?</span>
+												</a>
+											</div>
+											<JoinPasswordInput
+												id="join-password"
+												value={input.password}
+												visible={showPassword}
+												onToggle={() => setShowPassword((prev) => !prev)}
+												onChange={(e) => handleInput('password', e.target.value)}
+												onKeyDown={(e) => e.key === 'Enter' && doLogin()}
+											/>
+										</div>
 
-								{errorMessage && (
-									<div className="join-page__alert join-page__alert--error">
-										<span className="join-page__alert-icon">⚠️</span>
-										<span>{errorMessage}</span>
+										{errorMessage && (
+											<div className="join-page__alert join-page__alert--error" role="alert">
+												<ErrorOutlineRoundedIcon className="join-page__alert-icon" aria-hidden />
+												<span className="hover-zoom-text">{errorMessage}</span>
+											</div>
+										)}
+
+										{successMessage && (
+											<div className="join-page__alert join-page__alert--success" role="status" aria-live="polite">
+												<CheckCircleRoundedIcon className="join-page__alert-icon" aria-hidden />
+												<span className="hover-zoom-text">{successMessage}</span>
+											</div>
+										)}
+
+										<button className="btn-primary" type="button" onClick={doLogin}>
+											<span>Sign In</span>
+											<ArrowForwardRoundedIcon className="btn-primary__arrow" aria-hidden />
+										</button>
+
+										<div className="join-page__divider">
+											<span className="hover-zoom-text hover-zoom-text--center">or continue with</span>
+										</div>
+
+										<button className="btn-social" type="button">
+											<img src="/img/icons/google.svg" alt="" width="20" height="20" />
+											<span>Continue with Google</span>
+										</button>
+
+										<p className="join-page__trust">
+											<VerifiedOutlinedIcon className="join-page__trust-icon" aria-hidden />
+											<span>Trusted by pet parents and vetted care specialists</span>
+										</p>
+
+										<div className="join-page__switch">
+											<span className="hover-zoom-text hover-zoom-text--center">New here? </span>
+											<button type="button" onClick={() => viewChangeHandler(false)}>
+												<span className="hover-zoom-text hover-zoom-text--center">Sign Up</span>
+											</button>
+										</div>
 									</div>
 								)}
 
-								{successMessage && (
-									<div className="join-page__alert join-page__alert--success">
-										<span className="join-page__alert-icon">✓</span>
-										<span>{successMessage}</span>
+								{!loginView && (
+									<div className="join-page__form">
+										<h2 className="hover-zoom-text hover-zoom-text--headline">
+											Join PawPal&apos;s pet-care community
+										</h2>
+										<p className="join-page__subtitle hover-zoom-text">
+											Create an account to book specialists and manage your pet&apos;s care.
+										</p>
+
+										<div className="form-field">
+											<label className="form-field__label hover-zoom-text" htmlFor="join-username">
+												Username
+											</label>
+											<div className="form-field__control">
+												<input
+													id="join-username"
+													type="text"
+													placeholder="Username"
+													maxLength={16}
+													value={input.nick}
+													onChange={(e) => handleInput('nick', e.target.value)}
+												/>
+											</div>
+										</div>
+
+										<div className="form-field">
+											<label className="form-field__label hover-zoom-text" htmlFor="join-phone">
+												Phone number
+											</label>
+											<div className="form-field__control">
+												<input
+													id="join-phone"
+													type="tel"
+													placeholder="Phone number"
+													maxLength={20}
+													value={input.phone}
+													onChange={(e) => handleInput('phone', e.target.value)}
+													onKeyDown={(e) => e.key === 'Enter' && doSignUp()}
+												/>
+											</div>
+										</div>
+
+										<div className="form-field form-field--password">
+											<label className="form-field__label hover-zoom-text" htmlFor="join-signup-password">
+												Password
+											</label>
+											<JoinPasswordInput
+												id="join-signup-password"
+												value={input.password}
+												visible={showPassword}
+												onToggle={() => setShowPassword((prev) => !prev)}
+												onChange={(e) => handleInput('password', e.target.value)}
+												onKeyDown={(e) => e.key === 'Enter' && doSignUp()}
+											/>
+										</div>
+
+										<label className="join-page__checkbox">
+											<input
+												type="checkbox"
+												checked={input.type === 'AGENT'}
+												onChange={(e) => handleInput('type', e.target.checked ? 'AGENT' : 'USER')}
+											/>
+											<span className="hover-zoom-text">I want to register as a specialist</span>
+										</label>
+
+										{input.type === 'AGENT' && (
+											<div className="form-field">
+												<label className="form-field__label hover-zoom-text" htmlFor="join-specialist-desc">
+													Your experience
+												</label>
+												<div className="form-field__control">
+													<textarea
+														id="join-specialist-desc"
+														placeholder="Tell us about your experience..."
+														maxLength={1000}
+														value={memberDesc}
+														onChange={(e) => setMemberDesc(e.target.value)}
+													/>
+												</div>
+											</div>
+										)}
+
+										{errorMessage && (
+											<div className="join-page__alert join-page__alert--error" role="alert">
+												<ErrorOutlineRoundedIcon className="join-page__alert-icon" aria-hidden />
+												<span className="hover-zoom-text">{errorMessage}</span>
+											</div>
+										)}
+
+										{successMessage && (
+											<div className="join-page__alert join-page__alert--success" role="status" aria-live="polite">
+												<CheckCircleRoundedIcon className="join-page__alert-icon" aria-hidden />
+												<span className="hover-zoom-text">{successMessage}</span>
+											</div>
+										)}
+
+										<button className="btn-primary" type="button" onClick={doSignUp}>
+											<span>Create Account</span>
+											<ArrowForwardRoundedIcon className="btn-primary__arrow" aria-hidden />
+										</button>
+
+										<div className="join-page__switch">
+											<span className="hover-zoom-text hover-zoom-text--center">Already have an account? </span>
+											<button type="button" onClick={() => viewChangeHandler(true)}>
+												<span className="hover-zoom-text hover-zoom-text--center">Sign In</span>
+											</button>
+										</div>
 									</div>
 								)}
-
-								<button className="btn-primary" type="button" onClick={doLogin}>
-									Sign In
-								</button>
-
-								<div className="join-page__divider">
-									<span>or continue with</span>
-								</div>
-
-								<button className="btn-social" type="button">
-									<img src="/img/icons/google.svg" alt="" width="20" height="20" />
-									<span>Continue with Google</span>
-								</button>
-
-								<div className="join-page__switch">
-									Don&apos;t have an account?{' '}
-									<button type="button" onClick={() => viewChangeHandler(false)}>
-										Sign Up
-									</button>
-								</div>
-							</div>
-						)}
-
-						{!loginView && (
-							<div className="join-page__form">
-								<h2>Create Account</h2>
-								<p className="join-page__subtitle">Join our community of pet lovers</p>
-
-								<div className="form-field">
-									<input
-										type="text"
-										placeholder="Username"
-										maxLength={16}
-										value={input.nick}
-										onChange={(e) => handleInput('nick', e.target.value)}
-									/>
-								</div>
-
-								<div className="form-field">
-									<input
-										type="tel"
-										placeholder="Phone number"
-										maxLength={20}
-										value={input.phone}
-										onChange={(e) => handleInput('phone', e.target.value)}
-										onKeyDown={(e) => e.key === 'Enter' && doSignUp()}
-									/>
-								</div>
-
-								<div className="form-field">
-									<input
-										type={showPassword ? 'text' : 'password'}
-										placeholder="Password"
-										maxLength={12}
-										value={input.password}
-										onChange={(e) => handleInput('password', e.target.value)}
-										onKeyDown={(e) => e.key === 'Enter' && doSignUp()}
-									/>
-									<button
-										type="button"
-										className="form-field__toggle"
-										onClick={() => setShowPassword((prev) => !prev)}
-									>
-										{showPassword ? '🙈' : '👁'}
-									</button>
-								</div>
-
-								<label className="join-page__checkbox">
-									<input
-										type="checkbox"
-										checked={input.type === 'AGENT'}
-										onChange={(e) => handleInput('type', e.target.checked ? 'AGENT' : 'USER')}
-									/>
-									<span>I want to register as a specialist</span>
-								</label>
-
-								{input.type === 'AGENT' && (
-									<div className="form-field">
-										<textarea
-											placeholder="Tell us about your experience..."
-											maxLength={1000}
-											value={memberDesc}
-											onChange={(e) => setMemberDesc(e.target.value)}
-										/>
-									</div>
-								)}
-
-								{errorMessage && (
-									<div className="join-page__alert join-page__alert--error">
-										<span className="join-page__alert-icon">⚠️</span>
-										<span>{errorMessage}</span>
-									</div>
-								)}
-
-								{successMessage && (
-									<div className="join-page__alert join-page__alert--success">
-										<span className="join-page__alert-icon">✓</span>
-										<span>{successMessage}</span>
-									</div>
-								)}
-
-								<button className="btn-primary" type="button" onClick={doSignUp}>
-									Create Account
-								</button>
-
-								<div className="join-page__switch">
-									Already have an account?{' '}
-									<button type="button" onClick={() => viewChangeHandler(true)}>
-										Sign In
-									</button>
-								</div>
-							</div>
-						)}
 					</div>
 				</div>
 			</Stack>
 
 			{/* Specialist application submitted dialog */}
-			<Dialog
+			<SpecialistApplicationDialog
 				open={applicationDialogOpen}
 				onClose={handleApplicationDialogClose}
-				maxWidth="sm"
-				fullWidth
-				PaperProps={{ sx: { borderRadius: '16px' } }}
-			>
-				<DialogContent>
-					<div style={{ padding: '40px', textAlign: 'center' }}>
-						{/* Paw icon */}
-						<div
-							style={{
-								width: 80,
-								height: 80,
-								background: 'var(--pp-primary-soft)',
-								borderRadius: '50%',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								fontSize: '40px',
-								margin: '0 auto',
-							}}
-						>
-							🐾
-						</div>
-
-							{/* Title */}
-							<p
-								style={{
-									fontSize: '24px',
-									fontWeight: 700,
-									marginTop: '16px',
-									marginBottom: 0,
-									color: '#181A20',
-								}}
-							>
-								Application Submitted!
-							</p>
-
-							{/* Subtitle */}
-							<p style={{ color: '#666', fontSize: '14px', marginTop: '8px', marginBottom: 0 }}>
-								We&apos;re reviewing your specialist profile
-							</p>
-
-							<Divider sx={{ my: '24px' }} />
-
-							{/* Info rows */}
-							<div style={{ textAlign: 'left', marginBottom: '28px' }}>
-								{infoRows.map((row) => (
-									<div
-										key={row.text}
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: '12px',
-											padding: '8px 0',
-										}}
-									>
-										<span style={{ fontSize: '20px', lineHeight: 1 }}>{row.icon}</span>
-										<span style={{ fontSize: '14px', color: '#333' }}>{row.text}</span>
-									</div>
-								))}
-							</div>
-
-							{/* CTA button */}
-							<Button
-								fullWidth
-								onClick={handleApplicationDialogClose}
-								sx={{
-									background: 'var(--pp-primary)',
-									color: '#fff',
-									borderRadius: '50px',
-									padding: '12px 0',
-									fontSize: '15px',
-									fontWeight: 600,
-									textTransform: 'none',
-									'&:hover': { background: 'var(--pp-primary-hover)' },
-								}}
-							>
-								Got it!
-							</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
+			/>
 		</>
 	);
 };

@@ -1,0 +1,272 @@
+/**
+ * Hover-reveal article card — fixed card size, image opacity 0→1 on hover.
+ * Single text layer; colors transition via CSS custom properties (no duplicates).
+ * Shared by homepage preview + blog listing grid.
+ */
+
+.pp-article-card {
+	/* Default ink tokens — overridden on hover */
+	--pp-article-title: var(--pp-primary-hover);
+	--pp-article-excerpt: #50625a;
+	--pp-article-read: var(--pp-primary-hover);
+	--pp-article-date: #50625a;
+	--pp-article-cat-bg: transparent;
+	--pp-article-cat-color: #e8a04b;
+	--pp-article-cat-border: rgba(232, 160, 75, 0.45);
+
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
+	padding: 24px;
+	border-radius: var(--pp-radius);
+	background: #eef4f0;
+	border: 1px solid var(--pp-border-subtle);
+	box-shadow: var(--pp-shadow-on-mist);
+	overflow: hidden;
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+	box-sizing: border-box;
+	transition: box-shadow 400ms ease-out;
+
+	/* Image layer — always in DOM, fills card, hidden until hover */
+	&__media {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	&__img {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-width: 100%;
+		min-height: 100%;
+		object-fit: cover;
+		object-position: center top;
+		opacity: 0;
+		transition: opacity 400ms ease-out;
+	}
+
+	/* Dark gradient — fades in with image for text legibility */
+	&__scrim {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: linear-gradient(
+			to top,
+			rgba(23, 62, 50, 0.85) 0%,
+			rgba(23, 62, 50, 0.4) 42%,
+			transparent 70%
+		);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 400ms ease-out;
+	}
+
+	/* Single text stack — always visible, sits above image + scrim */
+	&__body {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 100%;
+		min-width: 0;
+	}
+
+	&__top {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		column-gap: 16px;
+		row-gap: 8px;
+		align-items: center;
+		width: 100%;
+		margin-bottom: 12px;
+	}
+
+	&__cat {
+		display: inline-block;
+		justify-self: start;
+		flex-shrink: 0;
+		max-width: 100%;
+		padding: 4px 10px;
+		border-radius: 999px;
+		background: var(--pp-article-cat-bg);
+		border: 1px solid var(--pp-article-cat-border);
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.58rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--pp-article-cat-color);
+		line-height: 1.3;
+		word-break: break-word;
+		transition:
+			background 400ms ease-out,
+			color 400ms ease-out,
+			border-color 400ms ease-out;
+	}
+
+	&__date {
+		justify-self: end;
+		flex-shrink: 0;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.7rem;
+		font-weight: 500;
+		color: var(--pp-article-date);
+		white-space: nowrap;
+		text-align: right;
+		transition: color 400ms ease-out;
+	}
+
+	&__title {
+		margin: 0 0 10px;
+		font-family: 'Fraunces', 'Playfair Display', serif;
+		font-size: clamp(1rem, 1.5vw, 1.2rem);
+		font-weight: 800;
+		line-height: 1.2;
+		color: var(--pp-article-title);
+		@include pp-line-clamp(2);
+		transition: color 400ms ease-out;
+	}
+
+	&__excerpt {
+		margin: 0;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.82rem;
+		line-height: 1.55;
+		color: var(--pp-article-excerpt);
+		flex: 1;
+		@include pp-line-clamp(2);
+		transition: color 400ms ease-out;
+	}
+
+	&__read {
+		margin-top: 16px;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--pp-article-read);
+		transition: color 400ms ease-out;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		&:hover {
+			--pp-article-title: #f0f8f3;
+			--pp-article-excerpt: rgba(240, 248, 243, 0.92);
+			--pp-article-read: #f0f8f3;
+			--pp-article-date: #f0f8f3;
+			--pp-article-cat-bg: #e8a04b;
+			--pp-article-cat-color: #15241e;
+			--pp-article-cat-border: #e8a04b;
+
+			box-shadow: var(--pp-shadow-on-mist-hover);
+
+			.pp-article-card__img {
+				opacity: 1;
+			}
+
+			.pp-article-card__scrim {
+				opacity: 1;
+			}
+		}
+	}
+}
+
+/**
+ * Editorial article grid — identical card scale on homepage preview + blog listing.
+ * 2 columns, same gap, same min-height / typography everywhere.
+ */
+.pp-article-card-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: clamp(24px, 3vw, 36px);
+	align-items: stretch;
+
+	.pp-article-card {
+		height: 100%;
+		min-height: clamp(500px, 32vw, 560px);
+		padding: clamp(28px, 3vw, 36px);
+		border-radius: 20px;
+
+		.pp-article-card__top {
+			margin-bottom: 20px;
+		}
+
+		.pp-article-card__cat {
+			padding: 5px 12px;
+			font-size: 0.62rem;
+			letter-spacing: 0.14em;
+		}
+
+		.pp-article-card__date {
+			font-size: 0.75rem;
+		}
+
+		.pp-article-card__title {
+			margin-bottom: 16px;
+			font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+			line-height: 1.15;
+			-webkit-line-clamp: 3;
+			line-clamp: 3;
+		}
+
+		.pp-article-card__excerpt {
+			font-size: 0.92rem;
+			line-height: 1.65;
+			-webkit-line-clamp: 3;
+			line-clamp: 3;
+		}
+
+		.pp-article-card__read {
+			margin-top: 28px;
+			font-size: 0.88rem;
+		}
+	}
+}
+
+@media (max-width: 1023px) {
+	.pp-article-card-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767px) {
+	.pp-article-card-grid {
+		grid-template-columns: 1fr;
+
+		.pp-article-card {
+			min-height: clamp(480px, 55vw, 540px);
+			padding: 32px;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pp-article-card {
+		&__img,
+		&__scrim,
+		&__cat,
+		&__date,
+		&__title,
+		&__excerpt,
+		&__read {
+			transition: none !important;
+		}
+
+		@media (hover: hover) and (pointer: fine) {
+			&:hover .pp-article-card__img,
+			&:hover .pp-article-card__scrim {
+				opacity: 1;
+			}
+		}
+	}
+}

@@ -1,126 +1,167 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { Member } from '../../types/member/member';
 import { T } from '../../types/common';
 import { resolveMemberImageUrl } from '../../utils/mediaUrl';
+import { getMemberSpecialtyCategory, hasRealMemberPhoto } from '../../utils/memberSpecialty';
+import { getMemberTypeLabel } from '../../utils/memberDisplay';
+import { MemberType } from '../../enums/member.enum';
 
 export interface SpecialistListCardProps {
 	specialist: Member;
 	onLike: (user: T, id: string) => Promise<void>;
+	/** `editorial` — open portrait layout for /specialist listing only. */
+	variant?: 'default' | 'editorial';
+	/** 1-based grid position for editorial eyebrow numbering. */
+	index?: number;
 }
 
-// Warm PawPal-palette avatar backgrounds — cycles by position
-const AVATAR_BG_COLORS = [
-	'rgba(255, 122, 26, 0.18)',   // orange
-	'rgba(255, 200, 100, 0.22)',  // golden
-	'rgba(150, 210, 180, 0.25)',  // sage green
-	'rgba(160, 200, 240, 0.25)',  // sky blue
-	'rgba(230, 180, 220, 0.22)',  // soft lilac
-	'rgba(250, 210, 140, 0.22)',  // warm yellow
-	'rgba(200, 230, 190, 0.25)',  // mint
-	'rgba(255, 160, 120, 0.2)',   // peach
-];
-
 const formatRole = (memberType?: string): string => {
-	if (!memberType) return 'Specialist';
-	if (memberType === 'AGENT') return 'Pet Care Specialist';
-	return memberType.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+	if (!memberType || memberType === MemberType.AGENT) return getMemberTypeLabel(MemberType.AGENT);
+	return getMemberTypeLabel(memberType);
 };
 
-const getExperienceYears = (desc: string, listings: number): number => {
-	const match = desc?.match(/(\d+)\s*years?/i);
-	return match
-		? parseInt(match[1], 10)
-		: Math.max(1, Math.min(20, Math.round(listings / 8) + 1));
+const getMemberInitial = (name: string): string => {
+	const trimmed = name.trim();
+	if (!trimmed) return 'P';
+	return trimmed.charAt(0).toUpperCase();
 };
 
-// Deterministic color index from member ID
-const getColorIndex = (id: string): number => {
-	const sum = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-	return sum % AVATAR_BG_COLORS.length;
-};
+const formatEditorialIndex = (index: number): string => String(index).padStart(2, '0');
 
-const SpecialistListCard: React.FC<SpecialistListCardProps> = ({ specialist, onLike }) => {
+const DEFAULT_PROFILE_AVATAR = '/img/profile/defaultUser.svg';
+
+const SpecialistListCard: React.FC<SpecialistListCardProps> = ({
+	specialist,
+	onLike,
+	variant = 'default',
+	index = 1,
+}) => {
 	const user = useReactiveVar(userVar);
-	const memberListings = specialist?.memberListings ?? 0;
-	const imgSrc = resolveMemberImageUrl(specialist?.memberImage, '/img/profile/defaultUser.svg');
-	const displayName = specialist?.memberFullName?.trim() || specialist?.memberNick || 'Specialist';
-	const bio = specialist?.memberDesc?.trim() || 'Pet care specialist on PawPal.';
-	const points = specialist?.totalEngagement ?? specialist?.memberLikes ?? 0;
-	const experienceYears = getExperienceYears(specialist?.memberDesc || '', memberListings);
+	const [imageFailed, setImageFailed] = useState(false);
+	const displayName = specialist?.memberFullName?.trim() || specialist?.memberNick || getMemberTypeLabel(MemberType.AGENT);
+	const hasPhoto = hasRealMemberPhoto(specialist?.memberImage) && !imageFailed;
+	const agentImage = hasPhoto ? resolveMemberImageUrl(specialist.memberImage) : '';
+	const bio = specialist?.memberDesc?.trim() || 'Trusted pet care professional on PawPal.';
 	const detailHref = { pathname: '/specialist/detail', query: { id: specialist?._id } };
-	const bgColor = AVATAR_BG_COLORS[getColorIndex(specialist?._id ?? '0')];
-	const isDefaultAvatar = !specialist?.memberImage;
+	const isLiked = Boolean(specialist?.meLiked?.[0]?.myFavorite);
+	const rating =
+		typeof specialist?.specialistScore === 'number' && specialist.specialistScore > 0
+			? specialist.specialistScore.toFixed(1)
+			: null;
+	const listingsCount = specialist?.memberListings ?? 0;
+	const showListings = listingsCount > 0;
+
+	const heartButton = (
+		<IconButton
+			className={`specialist-card__heart${isLiked ? ' liked' : ''}`}
+			size="small"
+			aria-label="Like specialist"
+			type="button"
+			onClick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				void onLike(user, specialist?._id);
+			}}
+			onPointerDown={(e) => {
+				// Keep the parent <Link> from treating this tap as navigation on touch.
+				e.stopPropagation();
+			}}
+		>
+			{isLiked ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
+		</IconButton>
+	);
+
+	if (variant === 'editorial') {
+		const category = getMemberSpecialtyCategory(specialist);
+
+		return (
+			<Link href={detailHref} className="specialist-card specialist-card--editorial">
+				<div className="specialist-card__media">
+					<div
+						className={`specialist-card__photo-wrap${
+							hasPhoto ? '' : ' specialist-card__photo-wrap--placeholder'
+						}`}
+					>
+						{hasPhoto ? (
+							<img
+								className="specialist-card__photo"
+								src={agentImage}
+								alt={displayName}
+								loading="lazy"
+								onError={() => setImageFailed(true)}
+							/>
+						) : (
+							<div className="specialist-card__photo-fallback" aria-hidden>
+								<img src={DEFAULT_PROFILE_AVATAR} alt="" />
+							</div>
+						)}
+					</div>
+					{heartButton}
+				</div>
+
+				<div className="specialist-card__copy">
+					<p className="specialist-card__eyebrow">
+						{formatEditorialIndex(index)} / {category}
+					</p>
+					<h3 className="specialist-card__name">{displayName}</h3>
+					<p className="specialist-card__role">{formatRole(specialist?.memberType)}</p>
+					<span className="specialist-card__cta">
+						View profile
+						<ArrowForwardOutlinedIcon className="specialist-card__cta-icon" aria-hidden />
+					</span>
+				</div>
+			</Link>
+		);
+	}
 
 	return (
-		<Link href={detailHref} className="specialist-list-card">
-			{/* Avatar circle */}
-			<div className="specialist-list-card__avatar-wrap">
-				<div
-					className="specialist-list-card__avatar-bg"
-					style={{ background: bgColor }}
-				>
+		<Link href={detailHref} className="specialist-card">
+			{heartButton}
+
+			<div className="specialist-card__avatar-wrap">
+				{hasPhoto ? (
 					<img
-						src={imgSrc}
+						className="specialist-card__avatar"
+						src={agentImage}
 						alt={displayName}
-						className={`specialist-list-card__avatar${isDefaultAvatar ? ' specialist-list-card__avatar--default' : ''}`}
-						onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }}
+						onError={() => setImageFailed(true)}
 					/>
-				</div>
-
-				{memberListings > 0 && (
-					<span className="specialist-list-card__badge">
-						{memberListings} {memberListings === 1 ? 'listing' : 'listings'}
-					</span>
+				) : (
+					<div className="specialist-card__avatar specialist-card__avatar--placeholder" aria-hidden>
+						<span>{getMemberInitial(displayName)}</span>
+					</div>
 				)}
-
-				<IconButton
-					className="specialist-list-card__like"
-					size="small"
-					aria-label="Like specialist"
-					onClick={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						onLike(user, specialist?._id);
-					}}
-				>
-					{specialist?.meLiked?.[0]?.myFavorite ? (
-						<FavoriteIcon fontSize="small" color="primary" />
-					) : (
-						<FavoriteBorderIcon fontSize="small" />
-					)}
-				</IconButton>
 			</div>
 
-			{/* Info */}
-			<div className="specialist-list-card__body">
-				<h3 className="specialist-list-card__name">{displayName}</h3>
-				<p className="specialist-list-card__role">{formatRole(specialist?.memberType)}</p>
-				<p className="specialist-list-card__bio">{bio}</p>
+			<div className="specialist-card__body">
+				<h3 className="specialist-card__name">{displayName}</h3>
+				<p className="specialist-card__role">{formatRole(specialist?.memberType)}</p>
+				<p className="specialist-card__bio">{bio}</p>
 
-				<div className="specialist-list-card__stats">
-					<div className="specialist-list-card__stat">
-						<strong>{experienceYears}y</strong>
-						<span>Exp</span>
+				{(rating || showListings) && (
+					<div className="specialist-card__stats">
+						{rating && (
+							<span className="specialist-card__stat">
+								<strong>{rating}</strong> rating
+							</span>
+						)}
+						{showListings && (
+							<span className="specialist-card__stat">
+								<strong>{listingsCount}</strong>{' '}
+								{listingsCount === 1 ? 'listing' : 'listings'}
+							</span>
+						)}
 					</div>
-					<div className="specialist-list-card__stat">
-						<strong>{memberListings}+</strong>
-						<span>Jobs</span>
-					</div>
-					<div className="specialist-list-card__stat">
-						<strong style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-							{points >= 1000 ? (points / 1000).toFixed(1) + 'k' : points}
-							<StarRoundedIcon style={{ fontSize: '1.1rem', color: '#e8745a', marginBottom: '2px' }} />
-						</strong>
-						<span>Points</span>
-					</div>
-				</div>
+				)}
+
+				<span className="specialist-card__cta">View profile</span>
 			</div>
 		</Link>
 	);

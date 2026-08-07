@@ -15,12 +15,12 @@ import {
 	Tooltip,
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import OpenInBrowserRoundedIcon from '@mui/icons-material/OpenInBrowserRounded';
 import Moment from 'react-moment';
 import { BoardArticle } from '../../../types/board-article/board-article';
-import { REACT_APP_API_URL } from '../../../config';
+import AdminMemberAvatar from '../AdminMemberAvatar';
+import { getAdminStatusBadgeClass } from '../../../utils/adminDisplay';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Typography from '@mui/material/Typography';
 import { BoardArticleStatus } from '../../../enums/board-article.enum';
@@ -149,7 +149,7 @@ const CommunityArticleList = (props: CommunityArticleListProps) => {
 
 						{articles.length !== 0 &&
 							articles.map((article: BoardArticle, index: number) => (
-								<TableRow hover key={article._id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+								<TableRow hover key={article._id} className="admin-table-row" sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
 									<TableCell align="left">{article._id}</TableCell>
 									<TableCell align="left">
 										<Box component={'div'}>
@@ -169,18 +169,15 @@ const CommunityArticleList = (props: CommunityArticleListProps) => {
 										</Box>
 									</TableCell>
 									<TableCell align="left">{article.articleCategory}</TableCell>
-									<TableCell align="left" className={'name'}>
-										<Link href={`/member?memberId=${article?.memberData?._id}`}>
-											<Avatar
-												alt="Remy Sharp"
-												src={
-													article?.memberData?.memberImage
-														? `${REACT_APP_API_URL}/${article?.memberData?.memberImage}`
-														: `/img/profile/defaultUser.svg`
-												}
-												sx={{ ml: '2px', mr: '10px' }}
-											/>
-											{article?.memberData?.memberNick}
+									<TableCell align="left" className="name">
+										<Link href={`/member?memberId=${article?.memberData?._id}`} className="admin-table-link">
+											<Stack direction="row" alignItems="center">
+												<AdminMemberAvatar
+													imagePath={article?.memberData?.memberImage}
+													alt={article?.memberData?.memberNick || ''}
+												/>
+												{article?.memberData?.memberNick}
+											</Stack>
 										</Link>
 									</TableCell>
 									<TableCell align="center">{article?.articleViews}</TableCell>
@@ -199,12 +196,15 @@ const CommunityArticleList = (props: CommunityArticleListProps) => {
 											</Button>
 										) : (
 											<>
-												<Button onClick={(e: any) => menuIconClickHandler(e, index)} className={'badge success'}>
+												<Button
+													onClick={(e: any) => menuIconClickHandler(e, index)}
+													className={getAdminStatusBadgeClass(article.articleStatus)}
+												>
 													{article.articleStatus}
 												</Button>
 
 												<Menu
-													className={'menu-modal'}
+													className="admin-menu-modal menu-modal"
 													MenuListProps={{
 														'aria-labelledby': 'fade-button',
 													}}

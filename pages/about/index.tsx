@@ -1,326 +1,260 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NextPage } from 'next';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Stack } from '@mui/material';
 import Link from 'next/link';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useQuery } from '@apollo/client';
-import { GET_AGENTS, GET_LISTINGS } from '../../apollo/user/query';
-import { ListingType } from '../../libs/enums/listing.enum';
-import type { Listing } from '../../libs/types/listing/listing';
-import type { Member } from '../../libs/types/member/member';
-import { resolveMemberImageUrl, resolveListingImageUrl } from '../../libs/utils/mediaUrl';
+import { useTranslation } from 'next-i18next';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import HealthAndSafetyOutlinedIcon from '@mui/icons-material/HealthAndSafetyOutlined';
+import RestaurantOutlinedIcon from '@mui/icons-material/RestaurantOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import { useFadeUpOnScroll } from '../../libs/hooks/useFadeUpOnScroll';
+import type { SvgIconComponent } from '@mui/icons-material';
 
 export const getStaticProps = async ({ locale }: any) => ({
-    props: {
-        ...(await serverSideTranslations(locale, ['common'])),
-    },
+	props: {
+		...(await serverSideTranslations(locale, ['common'])),
+	},
 });
 
 const HISTORY = [
-    {
-        year: '2022',
-        image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80',
-        text: 'PawPal launched to help pet parents find trusted specialists and book care with confidence.',
-    },
-    {
-        year: '2023',
-        image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&q=80',
-        text: 'We grew our specialist network and introduced guided booking so visits are easy to schedule.',
-    },
-    {
-        year: '2024',
-        image: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&q=80',
-        text: 'The service catalog went live with clearer listings and stronger tools for questions and follow-ups.',
-    },
-    {
-        year: '2025',
-        image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',
-        text: 'We scaled community support and follow-up care to help every pet stay on track after a visit.',
-    },
+	{
+		year: '2022',
+		image: '/img/listing/minjun_trainer_puppy-training.jpg',
+		text: 'PawPal launched to help pet parents find trusted specialists and book care with confidence.',
+	},
+	{
+		year: '2023',
+		image: '/img/listing/haerin_vet_vaccine.jpg',
+		text: 'We grew our specialist network and introduced guided booking so visits are easy to schedule.',
+	},
+	{
+		year: '2024',
+		image: '/img/listing/jiwoo_catcare_consult.jpg',
+		text: 'The service catalog went live with clearer listings and stronger tools for questions and follow-ups.',
+	},
+	{
+		year: '2025',
+		image: '/img/listing/junho_groom_fullgroom.jpg',
+		text: 'We scaled community support and follow-up care to help every pet stay on track after a visit.',
+	},
 ];
 
-const TRUST_BADGES = [
-    { icon: '🛡️', label: 'Vetted, safety-first care' },
-    { icon: '🎓', label: 'Experienced pet specialists' },
-    { icon: '📅', label: 'Simple booking & messaging' },
-    { icon: '🐾', label: 'Personalized for your pet' },
+/** Row1: DARK, LIGHT, DARK, LIGHT · Row2: LIGHT, DARK, LIGHT, LIGHT */
+type FeatureTone = 'dark' | 'light';
+
+const FEATURE_CARDS: {
+	title: string;
+	desc: string;
+	tone: FeatureTone;
+	Icon: SvgIconComponent;
+}[] = [
+	{
+		title: 'Skilled Caregivers',
+		desc: 'Hands-on specialists who know breed and temperament.',
+		tone: 'dark',
+		Icon: PeopleAltOutlinedIcon,
+	},
+	{
+		title: 'Licensed Vets',
+		desc: 'Clinical care you can trust for every life stage.',
+		tone: 'light',
+		Icon: HealthAndSafetyOutlinedIcon,
+	},
+	{
+		title: 'Nutrition & Diet',
+		desc: "Guidance that fits your pet's routine and needs.",
+		tone: 'dark',
+		Icon: RestaurantOutlinedIcon,
+	},
+	{
+		title: 'Quality Products',
+		desc: 'Curated essentials recommended by our network.',
+		tone: 'light',
+		Icon: Inventory2OutlinedIcon,
+	},
+	{
+		title: 'Grooming Tips',
+		desc: 'Practical advice for coats, nails, and calm visits.',
+		tone: 'light',
+		Icon: ContentCutOutlinedIcon,
+	},
+	{
+		title: 'Emergency Help',
+		desc: 'Clear next steps when something feels urgent.',
+		tone: 'dark',
+		Icon: WarningAmberOutlinedIcon,
+	},
+	{
+		title: 'Safety First',
+		desc: 'Background-checked pros and transparent standards.',
+		tone: 'light',
+		Icon: VerifiedUserOutlinedIcon,
+	},
+	{
+		title: 'Thoughtful Service',
+		desc: 'Communication that keeps you in the loop.',
+		tone: 'light',
+		Icon: ChatBubbleOutlineOutlinedIcon,
+	},
 ];
 
-const TESTIMONIALS = [
-    {
-        name: 'Aisha K.',
-        role: 'Pet Parent',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-        text: 'PawPal made booking care simple. The specialist updates gave me total peace of mind.',
-    },
-    {
-        name: 'Liam R.',
-        role: 'Dog Owner',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
-        text: 'From first consult to follow-up, everything felt thoughtful and professional.',
-    },
-    {
-        name: 'Mina S.',
-        role: 'Cat Parent',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
-        text: 'Great communication, kind specialists, and clear service details before booking.',
-    },
-    {
-        name: 'Dani P.',
-        role: 'Pet Parent',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80',
-        text: 'I found reliable care quickly and the whole process was smooth and transparent.',
-    },
-];
+/** Single warm pet portrait — not a collage */
+const HERO_PHOTO = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1200&q=80';
 
-const MISSION_IMAGES = [
-    'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&q=80',
-    'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=80',
-    'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=600&q=80',
-];
+const prefersReducedMotion = () =>
+	typeof window !== 'undefined' &&
+	window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const About: NextPage = () => {
-    const [selectedSpecialistId, setSelectedSpecialistId] = useState<string>('');
+	const { t } = useTranslation('common');
+	const introRef = useFadeUpOnScroll<HTMLElement>();
+	const featuresRef = useFadeUpOnScroll<HTMLElement>();
+	const ctaRef = useFadeUpOnScroll<HTMLElement>();
+	const historyRef = useRef<HTMLElement>(null);
+	const [historyVisible, setHistoryVisible] = useState(false);
 
-    const servicesVariables = useMemo(() => ({
-        input: {
-            page: 1,
-            limit: 4,
-            sort: 'createdAt',
-            direction: 'DESC',
-            search: { typeList: [ListingType.SERVICE] },
-        },
-    }), []);
+	useEffect(() => {
+		if (prefersReducedMotion()) {
+			setHistoryVisible(true);
+			return;
+		}
 
-    const agentsVariables = useMemo(() => ({
-        input: {
-            page: 1,
-            limit: 4,
-            sort: 'memberRank',
-            direction: 'DESC',
-            search: {},
-        },
-    }), []);
+		const node = historyRef.current;
+		if (!node) return;
 
-    const { data: servicesData } = useQuery(GET_LISTINGS, {
-        variables: servicesVariables,
-        fetchPolicy: 'cache-and-network',
-    });
+		const reveal = () => setHistoryVisible(true);
 
-    const { data: agentsData } = useQuery(GET_AGENTS, {
-        variables: agentsVariables,
-        fetchPolicy: 'cache-and-network',
-    });
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry?.isIntersecting) {
+					reveal();
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.18, rootMargin: '0px 0px -40px 0px' },
+		);
 
-    const serviceListings: Listing[] = servicesData?.getListings?.list ?? [];
-    const specialists: Member[] = agentsData?.getAgents?.list ?? [];
+		const rect = node.getBoundingClientRect();
+		const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+		if (rect.height > 0 && visibleHeight / rect.height >= 0.18) {
+			reveal();
+			return;
+		}
 
-    const selectedSpecialist =
-        specialists.find((s) => s._id === selectedSpecialistId) ?? specialists[0] ?? null;
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, []);
 
-    const getMemberImage = (img?: string) =>
-        resolveMemberImageUrl(img, 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80');
+	return (
+		<Stack className="about-page about-pawpal" component="div">
+			{/* ── A. Hero intro ── */}
+			<section ref={introRef} className="about-page__intro">
+				<div className="about-page__intro-inner container">
+					<header className="about-page__intro-head">
+						<span className="about-page__intro-eyebrow">Our Promise</span>
+						<h1 className="about-page__intro-title">
+							Fully Committed To Your Pet&apos;s Well-Being
+						</h1>
+					</header>
 
-    const getServiceImage = (img?: string) =>
-        resolveListingImageUrl(img, 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80');
+					<div className="about-page__intro-row">
+						<article className="about-page__intro-copy">
+							<h2>Care built around pets and the people who love them</h2>
+							<p>
+								PawPal connects you with vetted specialists, clear communication, and services
+								designed for every stage of your pet&apos;s life — so booking care feels calm,
+								confident, and personal.
+							</p>
+						</article>
+						<figure className="about-page__intro-photo">
+							<img src={HERO_PHOTO} alt="Happy puppy" />
+						</figure>
+					</div>
+				</div>
+			</section>
 
-    return (
-        <Stack className="about-page about-pawpal" component="div">
+			{/* ── B. Feature cards 4×2 ── */}
+			<section ref={featuresRef} className="about-page__features" aria-label="What we stand for">
+				<div className="about-page__features-inner container">
+					<div className="about-page__features-grid">
+						{FEATURE_CARDS.map(({ title, desc, tone, Icon }) => (
+							<article
+								key={title}
+								className={`about-page__feature-card about-page__feature-card--${tone}`}
+							>
+								<span className="about-page__feature-icon" aria-hidden>
+									<Icon fontSize="small" />
+								</span>
+								<strong>{title}</strong>
+								<p>{desc}</p>
+							</article>
+						))}
+					</div>
+				</div>
+			</section>
 
-            {/* ── 1. Mission ── */}
-            <section className="about-page__mission container">
-                <div className="about-page__mission-left">
-                    <span className="eyebrow">About PawPal</span>
-                    <h2>We Are Fully Committed To Your Pet&apos;s Well-Being</h2>
-                    <p className="about-page__mission-lead">
-                        Trusted care, clear communication, and services built around pets and their families.
-                    </p>
-                    <div className="check-grid">
-                        <span>Skilled caregivers</span>
-                        <span>Licensed veterinarians</span>
-                        <span>Nutrition &amp; diet</span>
-                        <span>Quality products</span>
-                        <span>Grooming tips</span>
-                        <span>Emergency guidance</span>
-                        <span>Safety first</span>
-                        <span>Thoughtful service</span>
-                    </div>
-                    <div className="mission-actions">
-                        <Link href="/service" className="pill-btn">Learn more</Link>
-                        <div className="phone-row">
-                            <span>📞</span>
-                            <span>+1 (800) 555-1234</span>
-                        </div>
-                    </div>
-                </div>
-                <div className="about-page__mission-right">
-                    <img src={MISSION_IMAGES[0]} alt="Pet grooming" />
-                    <img src={MISSION_IMAGES[1]} alt="Dog walking" />
-                    <div className="about-page__mission-right-accent" aria-hidden>
-                        <span className="about-page__mission-paw">🐾</span>
-                    </div>
-                    <img src={MISSION_IMAGES[2]} alt="Pet care" />
-                </div>
-            </section>
+			{/* ── C. Milestones (closing beat before CTA) ── */}
+			<section
+				ref={historyRef}
+				className={`about-page__history${historyVisible ? ' is-visible' : ''}`}
+				aria-labelledby="about-milestones-title"
+			>
+				<div className="about-page__history-inner container">
+					<header className="about-page__history-head">
+						<span className="about-page__section-label">Our story</span>
+						<h2 id="about-milestones-title">Milestones along the way</h2>
+					</header>
 
-            {/* ── 2. History ── */}
-            <section className="about-page__history container">
-                <span className="about-page__section-label">Our story</span>
-                <h2>Milestones along the way</h2>
-                <div className="history-track">
-                    {HISTORY.map((item) => (
-                        <article key={item.year} className="history-item">
-                            <strong>{item.year}</strong>
-                            <img className="history-item__thumb" src={item.image} alt="" />
-                            <p>{item.text}</p>
-                        </article>
-                    ))}
-                </div>
-            </section>
+					<div className="history-timeline">
+						<div className="history-timeline__line" aria-hidden />
+						<div className="history-track">
+							{HISTORY.map((item, index) => (
+								<article
+									key={item.year}
+									className="history-item"
+									style={{ '--history-delay': `${index * 100}ms` } as React.CSSProperties}
+								>
+									<div className="history-item__media-wrap">
+										<div className="history-item__media">
+											<span className="history-item__year-pill">{item.year}</span>
+											<img
+												className="history-item__thumb"
+												src={item.image}
+												alt=""
+												loading="lazy"
+											/>
+										</div>
+									</div>
+									<p className="history-item__text">{item.text}</p>
+								</article>
+							))}
+						</div>
+					</div>
+				</div>
+			</section>
 
-            {/* ── 3. Services grid ── */}
-            <section className="about-page__services container">
-                <div className="section-head">
-                    <h2>Our pet care services</h2>
-                    <Link href="/service" className="section-head__link">Browse all services</Link>
-                </div>
-                {serviceListings.length > 0 ? (
-                    <div className="services-grid">
-                        {serviceListings.map((item) => (
-                            <Link href={`/service/detail?id=${item._id}`} key={item._id} className="service-card">
-                                <img
-                                    src={getServiceImage(item.listingImages?.[0])}
-                                    alt={item.listingTitle}
-                                    onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=80'; }}
-                                />
-                                <div className="overlay">
-                                    <strong>{item.listingTitle}</strong>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="about-page__services-empty">Services will appear here as our specialists add them</p>
-                )}
-            </section>
-
-            {/* ── 4. How we help ── */}
-            <section className="about-page__help container">
-                <div className="help-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80"
-                        alt="Pet care"
-                    />
-                </div>
-                <div className="help-steps">
-                    <h2>How We Help Your Pet</h2>
-                    <div className="step">
-                        <strong>01. Schedule a consultation</strong>
-                        <p>Browse our specialists and book a time that suits you</p>
-                    </div>
-                    <div className="step">
-                        <strong>02. Specialist comes to you</strong>
-                        <p>We coordinate details and confirm your specialist</p>
-                    </div>
-                    <div className="step">
-                        <strong>03. Care &amp; follow-up</strong>
-                        <p>Your pet gets expert care with a clear follow-up summary</p>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── 5. Team ── */}
-            <section className="about-page__team container">
-                <div className="section-head">
-                    <h2>Loyal, passionate, and driven</h2>
-                    <Link href="/specialist" className="pill-btn">Explore all specialists</Link>
-                </div>
-
-                {specialists.length > 0 && (
-                    <div className="team-layout">
-                        <div className="team-list">
-                            {specialists.map((sp) => (
-                                <button
-                                    type="button"
-                                    key={sp._id}
-                                    className={selectedSpecialist?._id === sp._id ? 'active' : ''}
-                                    onClick={() => setSelectedSpecialistId(sp._id)}
-                                >
-                                    <img
-                                        src={getMemberImage(sp.memberImage)}
-                                        alt={sp.memberFullName || sp.memberNick}
-                                        onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }}
-                                    />
-                                    <span>{sp.memberFullName || sp.memberNick}</span>
-                                </button>
-                            ))}
-                        </div>
-
-                        {selectedSpecialist && (
-                            <div className="team-detail">
-                                <img
-                                    src={getMemberImage(selectedSpecialist.memberImage)}
-                                    alt={selectedSpecialist.memberFullName || selectedSpecialist.memberNick}
-                                    onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }}
-                                />
-                                <div className="copy">
-                                    <h3>{selectedSpecialist.memberFullName || selectedSpecialist.memberNick}</h3>
-                                    <p className="role">Pet specialist</p>
-                                    <p>{selectedSpecialist.memberDesc || 'Dedicated pet care professional at PawPal.'}</p>
-                                    <div className="stats">
-                                        <span>{selectedSpecialist.memberListings || 0} active services</span>
-                                        <span>{selectedSpecialist.memberFollowers || 0} followers</span>
-                                    </div>
-                                    <div className="actions">
-                                        <Link href="/service" className="pill-btn">Book appointment</Link>
-                                        <Link href={`/specialist/detail?id=${selectedSpecialist._id}`}>View profile</Link>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Trust badges — emoji icons, no missing SVG files */}
-                <div className="about-pawpal-trust" aria-label="Why pet parents choose PawPal">
-                    <p className="about-pawpal-trust__eyebrow">Trusted by pet parents</p>
-                    <ul className="about-pawpal-trust__badges">
-                        {TRUST_BADGES.map((b) => (
-                            <li key={b.label} className="about-pawpal-trust__badge">
-                                <span className="about-pawpal-trust__badge-icon">{b.icon}</span>
-                                <span>{b.label}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-
-            {/* ── 6. Testimonials ── */}
-            <section className="about-page__testimonials container">
-                <h2>Loyal hearts, forever homes</h2>
-                <div className="testimonial-grid">
-                    {TESTIMONIALS.map((item) => (
-                        <article key={item.name} className="testimonial-card">
-                            <div className="top">
-                                <img
-                                    src={item.avatar}
-                                    alt={item.name}
-                                    onError={(e) => { e.currentTarget.src = '/img/profile/defaultUser.svg'; }}
-                                />
-                                <div>
-                                    <strong>{item.name}</strong>
-                                    <span>{item.role}</span>
-                                </div>
-                            </div>
-                            <p className="stars">★★★★★</p>
-                            <p>{item.text}</p>
-                        </article>
-                    ))}
-                </div>
-            </section>
-        </Stack>
-    );
+			{/* ── D. CTA banner ── */}
+			<section ref={ctaRef} className="about-page__cta-band">
+				<div className="about-page__cta-band-inner container">
+					<div className="about-page__cta-banner">
+						<div className="about-page__cta-copy">
+							<h2>Ready to experience the difference?</h2>
+							<p>Join our network of happy pets and parents today.</p>
+						</div>
+						<Link href="/service" className="about-page__cta-btn">
+							{t('Learn More')}
+						</Link>
+					</div>
+				</div>
+			</section>
+		</Stack>
+	);
 };
 
 export default withLayoutBasic(About);

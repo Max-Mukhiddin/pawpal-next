@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { useTranslation } from 'next-i18next';
 
 export default function AppointmentCta() {
+	const { t } = useTranslation('common');
+
 	return (
 		<section className="section-pawpal section-pawpal--white appointment-cta animate-on-scroll" aria-labelledby="appointment-cta-title">
 			<div className="section-container">
@@ -13,7 +16,7 @@ export default function AppointmentCta() {
 				</header>
 				<div className="appointment-cta__actions">
 					<Link href="/service" className="appointment-cta__btn appointment-cta__btn--primary">
-						Book Now
+						{t('Book Now')}
 					</Link>
 					<Link href="/service" className="appointment-cta__btn appointment-cta__btn--outline">
 						Browse Services

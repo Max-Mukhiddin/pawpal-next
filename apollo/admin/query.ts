@@ -5,61 +5,6 @@ import { gql } from '@apollo/client';
  *************************/
 
 /**************************
- *        PROPERTY        *
- *************************/
-
-export const GET_ALL_PROPERTIES_BY_ADMIN = gql`
-	query GetAllPropertiesByAdmin($input: AllPropertiesInquiry!) {
-		getAllPropertiesByAdmin(input: $input) {
-			list {
-				_id
-				propertyType
-				propertyStatus
-				propertyLocation
-				propertyAddress
-				propertyTitle
-				propertyPrice
-				propertySquare
-				propertyBeds
-				propertyRooms
-				propertyViews
-				propertyLikes
-				propertyImages
-				propertyDesc
-				propertyBarter
-				propertyRent
-				memberId
-				soldAt
-				deletedAt
-				createdAt
-				updatedAt
-				memberData {
-					_id
-					memberType
-					memberStatus
-					memberPhone
-					memberNick
-					memberFullName
-					memberImage
-					memberAddress
-					memberDesc
-					memberListings
-					memberRank
-					memberPoints
-					memberLikes
-					memberViews
-					createdAt
-					updatedAt
-				}
-			}
-			metaCounter {
-				total
-			}
-		}
-	}
-`;
-
-/**************************
  *      BOARD-ARTICLE     *
  *************************/
 

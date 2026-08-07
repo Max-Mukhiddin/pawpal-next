@@ -1,213 +1,52 @@
 /**
- * Homepage — Brand Showcase (About PawPal)
- * Gold/cream background with large organic blob shapes,
- * stylized outlined serif typography, gold pill button,
- * family-with-dogs image in a gold-bordered frame.
+ * Homepage — About / Brand (pp-about)
+ * Full-width cinematic video showcase.
  */
 
 #pc-wrap .home-page,
 #mobile-wrap .home-page {
-	.brand-showcase {
+	.pp-about {
 		position: relative;
 		width: 100%;
+		background: var(--pp-mist);
 		overflow: hidden;
-		padding: clamp(80px, 10vw, 140px) 0;
-		background: linear-gradient(180deg, #f6e9d2 0%, #ebdcbe 100%);
 
-		&__shapes {
-			position: absolute;
-			inset: 0;
-			pointer-events: none;
-			z-index: 0;
-		}
-
-		&__shape {
-			position: absolute;
-			border-radius: 50%;
-			background: radial-gradient(circle, rgba(232, 215, 180, 0.85), rgba(232, 215, 180, 0) 70%);
-
-			&--1 {
-				width: clamp(500px, 55vw, 800px);
-				height: clamp(500px, 55vw, 800px);
-				top: -260px;
-				right: -260px;
-				opacity: 0.7;
-			}
-
-			&--2 {
-				width: clamp(420px, 42vw, 640px);
-				height: clamp(420px, 42vw, 640px);
-				bottom: -200px;
-				left: -200px;
-				opacity: 0.65;
-			}
-
-			&--3 {
-				width: clamp(280px, 26vw, 420px);
-				height: clamp(280px, 26vw, 420px);
-				top: 40%;
-				left: 48%;
-				opacity: 0.35;
-			}
-		}
-
-		&__container {
-			position: relative;
-			z-index: 1;
-			max-width: 1400px;
-			margin: 0 auto;
-			padding: 0 clamp(24px, 4vw, 60px);
-			box-sizing: border-box;
-		}
-
-		&__grid {
-			display: grid;
-			grid-template-columns: 1fr 1.05fr;
-			gap: clamp(40px, 6vw, 96px);
-			align-items: center;
-		}
-
-		&__content {
-			display: flex;
-			flex-direction: column;
-			gap: clamp(20px, 2.4vw, 30px);
-		}
-
-		&__label {
-			margin: 0;
-			color: var(--pp-primary);
-			font-family: $font;
-			font-size: 13px;
-			font-weight: 700;
-			letter-spacing: 0.22em;
-			text-transform: uppercase;
-			text-align: center;
+		&__inner {
+			display: block;
 			width: 100%;
-			display: block;
-		}
-
-		&__title {
-			margin: 0;
-			font-family: 'Playfair Display', 'Bodoni 72', Georgia, 'Times New Roman', serif;
-			font-size: clamp(2.8rem, 6vw, 5.2rem);
-			font-weight: 700;
-			line-height: 0.96;
-			letter-spacing: -0.005em;
-			text-transform: uppercase;
-			display: flex;
-			flex-direction: column;
-		}
-
-		&__title-line {
-			display: block;
-
-			&--outline {
-				color: transparent;
-				-webkit-text-stroke: 2px #1a1a1a;
-			}
-
-			&--solid {
-				color: #1a1a1a;
-			}
-		}
-
-		&__description {
-			margin: 0;
-			color: #4a4233;
-			font-family: $font;
-			font-size: clamp(15px, 1.1vw, 17px);
-			font-weight: 400;
-			line-height: 1.7;
-			max-width: 52ch;
-		}
-
-		&__btn {
-			display: inline-flex;
-			align-items: center;
-			gap: 10px;
-			padding: 14px 36px;
-			border-radius: 999px;
-			background: linear-gradient(135deg, #e0b27e 0%, #c89464 50%, #a87544 100%);
-			color: #fff;
-			font-family: $font;
-			font-size: 15px;
-			font-weight: 600;
-			text-decoration: none;
-			box-shadow: 0 12px 28px rgba(168, 117, 68, 0.35);
-			transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-			width: fit-content;
-
-			&:hover {
-				transform: translateY(-2px);
-				box-shadow: 0 16px 36px rgba(168, 117, 68, 0.48);
-				filter: brightness(1.05);
-
-				.brand-showcase__btn-icon {
-					transform: translateX(4px);
-				}
-			}
-		}
-
-		&__btn-icon {
-			transition: transform 0.25s ease;
+			/* Vertical inset only — keep section rhythm via .pp-section */
+			padding-block: clamp(8px, 1.5vw, 20px);
+			/* Modestly wider than default --pp-gutter; still contained, not full-bleed */
+			padding-inline: clamp(12px, 2vw, 28px);
 		}
 
 		&__media {
 			position: relative;
+			width: 100%;
+			min-width: 0;
 		}
 
-		&__frame {
+		&__video-wrap {
 			position: relative;
-			aspect-ratio: 4 / 3;
-			border-radius: 22px;
+			width: 100%;
+			/* Tall centerpiece, but never a full-viewport takeover */
+			aspect-ratio: 3 / 2;
+			max-height: min(80vh, 720px);
+			border-radius: 24px;
 			overflow: hidden;
-			border: 3px solid #c89464;
-			box-shadow: 0 24px 56px rgba(80, 60, 30, 0.22);
-
-			&::after {
-				content: '';
-				position: absolute;
-				inset: 6px;
-				border: 1px solid rgba(255, 255, 255, 0.35);
-				border-radius: 16px;
-				pointer-events: none;
-			}
+			box-shadow: 0 28px 72px rgba(21, 36, 30, 0.2);
+			background: var(--pp-primary-hover);
 		}
 
-		&__img {
+		&__video,
+		&__poster {
+			position: absolute;
+			inset: 0;
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
+			object-position: center;
 			display: block;
-		}
-
-		&__play {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 82px;
-			height: 82px;
-			border-radius: 50%;
-			background: rgba(255, 255, 255, 0.94);
-			border: none;
-			cursor: pointer;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-			transition: transform 0.25s ease, background 0.25s ease;
-			color: var(--pp-primary);
-
-			svg {
-				font-size: 40px;
-				margin-left: 4px;
-			}
-
-			&:hover {
-				transform: translate(-50%, -50%) scale(1.08);
-				background: #fff;
-			}
 		}
 	}
 }
@@ -215,15 +54,14 @@
 @media (max-width: 1023px) {
 	#pc-wrap .home-page,
 	#mobile-wrap .home-page {
-		.brand-showcase {
-			&__grid {
-				grid-template-columns: 1fr;
-				gap: 40px;
-			}
+		.pp-about__inner {
+			padding-inline: clamp(14px, 3vw, 24px);
+		}
 
-			&__media {
-				order: -1;
-			}
+		.pp-about__video-wrap {
+			aspect-ratio: 16 / 9;
+			max-height: min(65vh, 480px);
+			border-radius: 20px;
 		}
 	}
 }
@@ -231,25 +69,26 @@
 @media (max-width: 767px) {
 	#pc-wrap .home-page,
 	#mobile-wrap .home-page {
-		.brand-showcase {
-			padding: 60px 0;
+		.pp-about__inner {
+			padding-block: 4px;
+			padding-inline: 16px;
+		}
 
-			&__title {
-				font-size: clamp(2.2rem, 9vw, 3.4rem);
-			}
+		.pp-about__video-wrap {
+			aspect-ratio: 16 / 9;
+			/* Tighter cap so short/landscape phones still show section end */
+			max-height: min(50vh, 300px);
+			border-radius: 16px;
+			box-shadow: 0 16px 40px rgba(21, 36, 30, 0.16);
+		}
+	}
+}
 
-			&__title-line--outline {
-				-webkit-text-stroke-width: 1.5px;
-			}
-
-			&__play {
-				width: 64px;
-				height: 64px;
-
-				svg {
-					font-size: 30px;
-				}
-			}
+@media (prefers-reduced-motion: reduce) {
+	#pc-wrap .home-page,
+	#mobile-wrap .home-page {
+		.pp-about__video {
+			display: none;
 		}
 	}
 }

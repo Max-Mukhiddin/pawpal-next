@@ -1,0 +1,425 @@
+/**
+ * PawPal homepage design system — "Evergreen & Honey".
+ * Tokens + shared primitives (eyebrow, heading, buttons, card, scroll-reveal).
+ * Imported first by homepage.scss. Classes are global `pp-*` but only the
+ * homepage components use them, so nothing leaks visually to other pages.
+ */
+
+:root {
+	--pp-forest: var(--pp-primary-hover); /* drench: hero + closing band */
+	--pp-green: var(--pp-primary); /* primary action */
+	--pp-green-700: #17543e; /* primary hover */
+	--pp-honey: #e8a04b; /* sparing warm accent (rating, underline) */
+	--pp-mint: #9fd9be; /* on-dark accent */
+	--pp-ink: #15241e; /* text on light */
+	--pp-muted: #50625a; /* secondary text on light (≥4.5:1 on porcelain) */
+	--pp-porcelain: #eef4f0; /* in-card / chip surfaces */
+	--pp-mist: #e2ede5; /* unified section + page wash */
+	--pp-surface: #ffffff; /* cards */
+	--pp-tile: #eef2ee; /* faint neutral behind contain-fit product imgs */
+	--pp-on-dark: #f3f7f2;
+	--pp-on-dark-muted: rgba(243, 247, 242, 0.72);
+	--pp-border: rgba(23, 62, 50, 0.15); /* card / divider hairline */
+	--pp-line: rgba(23, 62, 50, 0.15); /* alias of --pp-border (legacy refs) */
+	--pp-line-dark: rgba(243, 247, 242, 0.16);
+	--pp-radius: 16px;
+	--pp-shadow: 0 18px 44px -20px rgba(21, 36, 30, 0.28);
+	--pp-section-y: clamp(144px, 14vw, 192px); /* doubled section rhythm (was 72–96px) */
+	--pp-gutter: clamp(20px, 4vw, 56px);
+	--pp-max: 1360px;
+	--pp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--pp-display: 'Fraunces', 'Playfair Display', Georgia, serif;
+}
+
+/* ── Section shell helpers ── */
+#pc-wrap .home-page,
+#mobile-wrap .home-page {
+	background: var(--pp-mist);
+
+	@media (max-width: 1023px) {
+		--pp-section-y: clamp(128px, 18vw, 160px);
+	}
+
+	@media (max-width: 767px) {
+		--pp-section-y: clamp(96px, 24vw, 128px);
+	}
+
+	.pp-section {
+		/* One section-y between blocks — avoid doubling when sections stack. */
+		padding-top: 0;
+		padding-bottom: var(--pp-section-y);
+	}
+
+	/* First mist section after hero + trust marquee: symmetric inset above and below content. */
+	> .pp-hero-stage + .pp-section {
+		padding-top: var(--pp-section-y);
+		padding-bottom: var(--pp-section-y);
+	}
+
+	section,
+	.pp-section,
+	.pp-section-wrap {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+
+		&::before,
+		&::after {
+			z-index: -1;
+			pointer-events: none;
+		}
+	}
+
+	/* Do NOT set z-index on all section children — combined with scroll-reveal
+	 * translateY transforms this promoted text layers above the fixed nav. */
+
+	.pp-container {
+		max-width: var(--pp-max);
+		margin: 0 auto;
+		padding: 0 var(--pp-gutter);
+		box-sizing: border-box;
+	}
+}
+
+/* ── Heading system ── */
+.pp-eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: 'Poppins', sans-serif;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--pp-honey);
+}
+
+.pp-section-head {
+	max-width: 640px;
+
+	&.centered {
+		max-width: 720px;
+		margin-left: auto;
+		margin-right: auto;
+		text-align: center;
+
+		.pp-eyebrow {
+			justify-content: center;
+		}
+		.pp-subtitle {
+			margin-left: auto;
+			margin-right: auto;
+		}
+	}
+}
+
+.pp-heading {
+	margin: 14px 0 0;
+	font-family: var(--pp-display);
+	font-optical-sizing: auto;
+	font-size: clamp(2rem, 3.6vw, 3rem);
+	font-weight: 600;
+	color: var(--pp-ink);
+	line-height: 1.08;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+.pp-subtitle {
+	margin: 16px 0 0;
+	max-width: 540px;
+	font-family: 'Poppins', sans-serif;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.7;
+	color: var(--pp-muted);
+	text-wrap: pretty;
+}
+
+.pp-accent {
+	font-style: italic;
+	color: var(--pp-green);
+}
+
+/* ── Buttons ── */
+.pp-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	border-radius: 999px;
+	font-family: 'Poppins', sans-serif;
+	font-size: 0.92rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	box-sizing: border-box;
+	white-space: nowrap;
+	transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s var(--pp-ease),
+		box-shadow 0.2s ease;
+
+	svg {
+		font-size: 1.1rem;
+		transition: transform 0.25s var(--pp-ease);
+	}
+	&:active {
+		transform: scale(0.97);
+	}
+
+	&--primary {
+		padding: 12px 28px;
+		background: var(--pp-primary);
+		color: #e8a04b;
+		border: none;
+		font-size: 0.9rem;
+		font-weight: 700;
+		gap: 8px;
+		box-shadow: 0 1px 2px rgba(23, 62, 50, 0.15);
+		transition: background 200ms ease, transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+			box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+
+		&:hover {
+			background: var(--pp-primary-hover);
+			color: #e8a04b;
+			transform: translateY(-2px);
+			box-shadow: 0 2px 4px rgba(23, 62, 50, 0.12), 0 10px 24px rgba(23, 62, 50, 0.22);
+		}
+		&:hover svg {
+			transform: translateX(3px);
+		}
+		&:active {
+			transform: translateY(0) scale(0.97);
+			box-shadow: 0 1px 2px rgba(23, 62, 50, 0.15);
+		}
+	}
+
+	&--secondary {
+		padding: 13px 28px;
+		background: transparent;
+		color: var(--pp-green);
+		border: 1.5px solid var(--pp-line);
+
+		&:hover {
+			border-color: var(--pp-green);
+			background: rgba(30, 107, 79, 0.06);
+			transform: translateY(-2px);
+		}
+		&:active {
+			transform: scale(0.97);
+		}
+	}
+
+	/* Type B — hero / closing band honey CTA */
+	&--on-dark {
+		padding: 16px 40px;
+		background: var(--pp-primary);
+		color: var(--pp-honey);
+		border: none;
+		font-size: 0.95rem;
+		font-weight: 700;
+		gap: 8px;
+		box-shadow: 0 1px 2px rgba(23, 62, 50, 0.18);
+		transition: background 200ms ease, transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+			box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+
+		&:hover {
+			background: var(--pp-primary-hover);
+			color: var(--pp-honey);
+			transform: translateY(-2px);
+			box-shadow: 0 2px 4px rgba(23, 62, 50, 0.16), 0 10px 28px rgba(232, 160, 75, 0.35);
+		}
+		&:hover svg {
+			transform: translateX(3px);
+		}
+		&:active {
+			transform: translateY(0) scale(0.97);
+			box-shadow: 0 1px 2px rgba(23, 62, 50, 0.18);
+		}
+	}
+
+	/* Honey CTA for dark sections (var(--pp-primary-hover), #0D1F18) — shared token */
+	&--honey {
+		padding: 12px 26px;
+		background: var(--pp-primary);
+		color: var(--pp-honey);
+		border: none;
+		font-size: 0.9rem;
+		font-weight: 700;
+		gap: 8px;
+		box-shadow: 0 1px 2px rgba(23, 62, 50, 0.18);
+		transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), background 200ms ease,
+			box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+
+		&:hover {
+			background: var(--pp-primary-hover);
+			color: var(--pp-honey);
+			transform: translateY(-2px);
+			box-shadow: 0 2px 4px rgba(23, 62, 50, 0.16), 0 10px 24px rgba(232, 160, 75, 0.32);
+		}
+		&:hover svg {
+			transform: translateX(3px);
+		}
+		&:active {
+			transform: translateY(0) scale(0.97);
+		}
+	}
+
+	/* Outlined CTA for light sections (EEF4F0, CDD4C2, white) — shared token */
+	&--ghost {
+		padding: 12px 26px;
+		background: transparent;
+		color: var(--pp-primary);
+		border: 1.5px solid var(--pp-primary);
+		font-size: 0.9rem;
+		font-weight: 700;
+		gap: 8px;
+		transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+
+		&:hover {
+			background: #eef4f0;
+		}
+	}
+
+	&--ghost-dark {
+		padding: 14px 26px;
+		background: transparent;
+		color: var(--pp-on-dark);
+		border: 1.5px solid var(--pp-line-dark);
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.08);
+			border-color: rgba(255, 255, 255, 0.5);
+			transform: translateY(-2px);
+		}
+		&:active {
+			transform: scale(0.97);
+		}
+	}
+}
+
+/* text link + arrow */
+.pp-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-family: 'Poppins', sans-serif;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--pp-green);
+	text-decoration: none;
+	cursor: pointer;
+
+	svg {
+		font-size: 1.05rem;
+		transition: transform 0.25s var(--pp-ease);
+	}
+	&:hover svg {
+		transform: translateX(4px);
+	}
+	&.on-dark {
+		color: var(--pp-mint);
+	}
+}
+
+/* ── One card DNA (framed differently per section) ── */
+.pp-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	background: #ffffff;
+	border: 1px solid var(--pp-border-subtle);
+	border-radius: var(--pp-radius);
+	overflow: hidden;
+	text-decoration: none;
+	box-shadow: var(--pp-shadow-on-mist);
+	/* Explicit properties (never `all`) — transform + box-shadow only, GPU-cheap. */
+	transition: transform 320ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 320ms cubic-bezier(0.23, 1, 0.32, 1),
+		border-color 320ms ease;
+
+	.pp-card__img {
+		transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+}
+@media (hover: hover) and (pointer: fine) {
+	.pp-card:hover {
+		/* Subtle scale (1.008) alongside the -6px lift = feels like the card
+		 * physically rises toward the viewer instead of just sliding up. */
+		transform: translateY(-6px) scale(1.008);
+		border-color: rgba(23, 62, 50, 0.22);
+		box-shadow: var(--pp-shadow-on-mist-hover);
+	}
+	.pp-card:hover .pp-card__img {
+		transform: scale(1.05);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.pp-card,
+	.pp-card__img {
+		transition: box-shadow 200ms ease, border-color 200ms ease;
+	}
+	.pp-card:hover {
+		transform: none;
+	}
+	.pp-card:hover .pp-card__img {
+		transform: none;
+	}
+}
+
+/* ── Scroll reveal — content is ALWAYS visible by default (no JS / SSR / headless
+ * never ship blank). The hidden state applies only while JS is present (`.pp-js`)
+ * AND the element has not yet been revealed (`:not(.is-visible)`). ── */
+.pp-reveal,
+.pp-reveal--left,
+.pp-reveal--right,
+.pp-reveal--clip {
+	opacity: 1;
+	transform: none;
+	transition: opacity 0.65s var(--pp-ease), transform 0.65s var(--pp-ease), clip-path 0.85s var(--pp-ease);
+}
+
+.pp-js {
+	.pp-reveal:not(.is-visible) {
+		opacity: 0;
+		transform: translateY(28px);
+	}
+	.pp-reveal--left:not(.is-visible) {
+		opacity: 0;
+		transform: translateX(-36px);
+	}
+	.pp-reveal--right:not(.is-visible) {
+		opacity: 0;
+		transform: translateX(36px);
+	}
+	.pp-reveal--clip:not(.is-visible) {
+		opacity: 1;
+		transform: none;
+		clip-path: inset(0 0 100% 0);
+	}
+
+	@for $i from 1 through 8 {
+		.pp-stagger > *:nth-child(#{$i}) {
+			transition-delay: #{($i - 1) * 80}ms;
+		}
+	}
+
+	.pp-reveal.is-visible,
+	.pp-reveal--left.is-visible,
+	.pp-reveal--right.is-visible,
+	.pp-reveal--clip.is-visible {
+		opacity: 1;
+		transform: none;
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pp-reveal,
+	.pp-reveal--left,
+	.pp-reveal--right,
+	.pp-reveal--clip {
+		opacity: 1 !important;
+		transform: none !important;
+		clip-path: none !important;
+	}
+}

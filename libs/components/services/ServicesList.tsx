@@ -1,5 +1,4 @@
 import React from 'react';
-import { Stack } from '@mui/material';
 import type { Service } from '../../types/services/service';
 import { T } from '../../types/common';
 import ServiceCard from './ServiceCard';
@@ -11,16 +10,18 @@ export interface ServicesListProps {
 
 /** Catalog grid + empty state; keeps `services-catalog-page__grid` / `__no-data` classes. */
 const ServicesList: React.FC<ServicesListProps> = ({ services, onLike }) => (
-	<Stack className={'services-catalog-page__grid'}>
+	<div className={'services-catalog-page__grid'}>
 		{services?.length === 0 ? (
 			<div className={'services-catalog-page__no-data'}>
-				<img src="/img/icons/icoAlert.svg" alt="" />
+				<span className="services-catalog-page__no-data-icon" aria-hidden>
+					<img src="/img/icons/icoAlert.svg" alt="" />
+				</span>
 				<p>No Services found!</p>
 			</div>
 		) : (
 			services.map((service: Service) => <ServiceCard service={service} onLike={onLike} key={service._id} />)
 		)}
-	</Stack>
+	</div>
 );
 
 export default ServicesList;

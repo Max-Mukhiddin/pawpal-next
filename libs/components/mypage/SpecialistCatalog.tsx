@@ -176,6 +176,7 @@ const SpecialistCatalog: NextPage = ({ initialInput, ...props }: any) => {
 						<Stack className="pagination-config">
 							<Stack className="pagination-box">
 								<Pagination
+									className="pp-pagination"
 									count={Math.ceil(total / searchFilter.limit)}
 									page={searchFilter.page}
 									shape="circular"

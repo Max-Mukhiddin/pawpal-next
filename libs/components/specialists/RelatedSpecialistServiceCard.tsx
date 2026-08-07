@@ -2,6 +2,7 @@ import React from 'react';
 import { Stack, Box, Divider, Typography, Button } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Listing } from '../../types/listing/listing';
 import { topListingRank } from '../../config';
 import { formatterStr } from '../../utils';
@@ -104,9 +105,9 @@ const RelatedSpecialistServiceCard: React.FC<RelatedSpecialistServiceCardProps> 
 							}}
 						>
 							{listing?.meLiked && listing?.meLiked[0]?.myFavorite ? (
-								<FavoriteIcon style={{ color: 'red' }} />
+								<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
 							) : (
-								<FavoriteIcon />
+								<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
 							)}
 						</IconButton>
 						<Typography className="view-cnt">{listing?.listingLikes}</Typography>

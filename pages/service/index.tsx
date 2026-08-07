@@ -2,6 +2,7 @@ import React, { ChangeEvent, MouseEvent, useEffect, useMemo, useRef, useState } 
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import { useDebouncedValue } from '../../libs/hooks/useDebouncedValue';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
 import { ServicesInquiry } from '../../libs/types/services/service.input';
@@ -15,17 +16,20 @@ import { GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import ServicesFilterBar from '../../libs/components/services/ServicesFilterBar';
+import { likeToastMessage, readWasLiked } from '../../libs/utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../libs/auth';
+import { withActionGate } from '../../libs/utils/actionGate';
+import CatalogSidebarFilter from '../../libs/components/listings/CatalogSidebarFilter';
+import CatalogSortToolbar from '../../libs/components/listings/CatalogSortToolbar';
 import ServicesList from '../../libs/components/services/ServicesList';
-import ServiceCategories, { SERVICE_CATEGORIES } from '../../libs/components/services/ServiceCategories';
+import { SERVICE_CATEGORIES } from '../../libs/components/services/ServiceCategories';
+import ServiceFeatureBanner from '../../libs/components/services/ServiceFeatureBanner';
 import ServicePackages from '../../libs/components/services/ServicePackages';
-import ServiceBenefits from '../../libs/components/services/ServiceBenefits';
 import ServiceFaq from '../../libs/components/services/ServiceFaq';
 import ServicesCta from '../../libs/components/services/ServicesCta';
 import type {
 	ServicesBlockHeading,
 	ServicePackageItem,
-	ServiceBenefitItem,
 	ServicesFaqSection,
 	ServicesCtaContent,
 } from '../../libs/types/services/services.page';
@@ -39,6 +43,17 @@ export const getStaticProps = async ({ locale }: any) => ({
 
 // ─── Static page data ────────────────────────────────────────────────────────
 
+const featureBannerData = {
+	title: 'Premium Grooming for Every Breed',
+	description:
+		'Gentle, breed-aware grooming from vetted specialists — bath, style, and spa care that keeps coats healthy and pets calm.',
+	chips: ['Breed-aware', 'Low-stress', 'Vetted specialists', 'Easy booking'],
+	ctaPrimary: 'Book Now',
+	ctaSecondary: 'Learn More',
+	image:
+		'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?fm=jpg&q=80&w=2000&auto=format&fit=crop',
+};
+
 const packagesBlock: ServicesBlockHeading = {
 	heading: 'Our Best Packages',
 	subheading: 'Curated bundles for every pet — from quick grooming sessions to full-day pampering.',
@@ -46,7 +61,7 @@ const packagesBlock: ServicesBlockHeading = {
 
 const packagesItems: ServicePackageItem[] = [
 	{
-		image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80',
+		image: '/img/listing/junho_groom_bath.jpg',
 		title: 'Relax Bath & Full Grooming',
 		desc: 'Grooming service for a small pet including bathing, ear cleaning and grooming.',
 		price: 'From ₩35,000',
@@ -60,35 +75,12 @@ const packagesItems: ServicePackageItem[] = [
 		cta: 'Enquire Now',
 	},
 	{
-		image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80',
+		image:
+			'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?fm=jpg&q=80&w=2000&auto=format&fit=crop',
 		title: 'Spa & Nail Cutting',
 		desc: 'Spa & Manicure service for a small pet including bathing, ear cleaning and grooming.',
 		price: 'From ₩50,000',
 		cta: 'Enquire Now',
-	},
-];
-
-const benefitsBlock: ServicesBlockHeading = {
-	heading: 'Why Choose PawPal?',
-	subheading: 'We combine expert care with a calm, stress-free experience for your pet and peace of mind for you.',
-};
-
-const benefitsItems: ServiceBenefitItem[] = [
-	{
-		title: 'Certified Specialists',
-		text: 'Every specialist on PawPal is vetted, certified, and passionate about animal wellbeing.',
-	},
-	{
-		title: 'Stress-Free Experience',
-		text: 'We use gentle, pet-first techniques that keep your companion calm and comfortable throughout.',
-	},
-	{
-		title: 'Easy Online Booking',
-		text: 'Browse, compare, and book your preferred service in minutes — no phone calls needed.',
-	},
-	{
-		title: 'Satisfaction Guaranteed',
-		text: "If you're not happy, we'll make it right. Your pet's happiness is our number one priority.",
 	},
 ];
 
@@ -119,7 +111,7 @@ const faqData: ServicesFaqSection = {
 			answer: 'Yes — anxiety is common in pets, especially around strangers or new environments. Our specialists are trained to work with anxious animals in a calm, reassuring way.',
 		},
 	],
-	mediaImageSrc: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=800&q=80',
+	mediaImageSrc: '/img/listing/haerin_vet_checkup.jpg',
 	mediaImageAlt: 'Specialist caring for a pet',
 };
 
@@ -147,7 +139,9 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	const [sortingOpen, setSortingOpen] = useState(false);
 	const [filterSortName, setFilterSortName] = useState('New');
 	const [searchText, setSearchText] = useState<string>('');
+	const debouncedSearchText = useDebouncedValue(searchText, 300);
 	const [activeCategory, setActiveCategory] = useState<string>('All');
+	const [isCatalogReady, setIsCatalogReady] = useState(false);
 
 	const serviceCatalogInquiry = useMemo(
 		() => withServicesListingTypeFilter(serviceInquiry),
@@ -178,6 +172,30 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 		setCurrentPage(page);
 	}, [router.isReady, router.query.page]);
 
+	useEffect(() => {
+		if (router.isReady) {
+			setIsCatalogReady(true);
+		}
+	}, [router.isReady]);
+
+	const showCatalogSkeleton = !isCatalogReady || (servicesLoading && services.length === 0);
+	const searchBusy =
+		searchText !== debouncedSearchText || (servicesLoading && services.length > 0);
+
+	useEffect(() => {
+		const nextText = debouncedSearchText.trim();
+		setServiceInquiry((prev) => {
+			const prevText = (prev.search?.text ?? '').trim();
+			if (nextText === prevText) return prev;
+			setCurrentPage(1);
+			return withServicesListingTypeFilter({
+				...prev,
+				page: 1,
+				search: { ...prev.search, text: nextText },
+			});
+		});
+	}, [debouncedSearchText]);
+
 	const filteredServices = useMemo(() => {
 		if (activeCategory === 'All') return services;
 		const cat = SERVICE_CATEGORIES.find((c) => c.label === activeCategory);
@@ -188,6 +206,13 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 		});
 	}, [services, activeCategory]);
 
+	const resetCatalogPage = (patch: Partial<ServicesInquiry> = {}) => {
+		const next = withServicesListingTypeFilter({ ...serviceInquiry, page: 1, ...patch });
+		setServiceInquiry(next);
+		setCurrentPage(1);
+		void router.push(`/service?page=1`, undefined, { shallow: true });
+	};
+
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
 		const next = withServicesListingTypeFilter({ ...serviceInquiry, page: value });
 		setServiceInquiry(next);
@@ -197,20 +222,25 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 
 	const handleCategorySelect = (label: string) => {
 		setActiveCategory(label);
-		setCurrentPage(1);
+		resetCatalogPage();
 	};
 
 	const likeServiceHandler = async (user: T, id: string) => {
-		try {
-			if (!id) return;
-			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-			await likeTargetListing({ variables: { input: id } });
-			await getServicesCatalogRefetch({ input: serviceCatalogInquiryRef.current });
-			await sweetTopSmallSuccessAlert('success', 800);
-		} catch (err: any) {
-			console.log('ERROR likeServiceHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
+		await withActionGate(`like:listing:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'like')) return;
+				const wasLiked = readWasLiked(services.find((s) => s._id === id));
+				await likeTargetListing({ variables: { input: id } });
+				await getServicesCatalogRefetch({ input: serviceCatalogInquiryRef.current });
+				await sweetTopSmallSuccessAlert(likeToastMessage(wasLiked), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'like')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.log('ERROR likeServiceHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
 	};
 
 	const sortingClickHandler = (e: MouseEvent<HTMLElement>) => {
@@ -226,16 +256,16 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	const sortingHandler = (e: React.MouseEvent<HTMLLIElement>) => {
 		switch (e.currentTarget.id) {
 			case 'new':
-				setServiceInquiry(withServicesListingTypeFilter({ ...serviceInquiry, sort: 'createdAt', direction: Direction.ASC }));
 				setFilterSortName('New');
+				resetCatalogPage({ sort: 'createdAt', direction: Direction.ASC });
 				break;
 			case 'lowest':
-				setServiceInquiry(withServicesListingTypeFilter({ ...serviceInquiry, sort: 'listingPrice', direction: Direction.ASC }));
 				setFilterSortName('Lowest Price');
+				resetCatalogPage({ sort: 'listingPrice', direction: Direction.ASC });
 				break;
 			case 'highest':
-				setServiceInquiry(withServicesListingTypeFilter({ ...serviceInquiry, sort: 'listingPrice', direction: Direction.DESC }));
 				setFilterSortName('Highest Price');
+				resetCatalogPage({ sort: 'listingPrice', direction: Direction.DESC });
 				break;
 		}
 		setSortingOpen(false);
@@ -243,90 +273,121 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	};
 
 	const handleSearchEnter = () => {
-		setServiceInquiry(withServicesListingTypeFilter({
-			...serviceInquiry,
-			search: { ...serviceInquiry.search, text: searchText },
-		}));
+		const nextText = searchText.trim();
+		setServiceInquiry((prev) =>
+			withServicesListingTypeFilter({
+				...prev,
+				page: 1,
+				search: { ...prev.search, text: nextText },
+			}),
+		);
+		setCurrentPage(1);
+	};
+
+	const handleFilterReset = () => {
+		setSearchText('');
+		setActiveCategory('All');
+		resetCatalogPage({ search: { ...serviceInquiry.search, text: '' } });
 	};
 
 	return (
 		<Stack className="pawpal-static-page pawpal-static-page--services">
 			<Stack className="container" sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
 
-				{/* ── 1. Category pills ── */}
-				<ServiceCategories
-					activeCategory={activeCategory}
-					onSelect={handleCategorySelect}
-				/>
+				<div className="catalog-directory">
+					<CatalogSidebarFilter
+						searchPlaceholder="Search for a service"
+						searchText={searchText}
+						onSearchTextChange={setSearchText}
+						onSearchEnter={handleSearchEnter}
+						searchLoading={searchBusy}
+						categoryGroupLabel="Service type"
+						categories={SERVICE_CATEGORIES.map(({ label, icon }) => ({ label, icon }))}
+						activeCategory={activeCategory}
+						onCategorySelect={handleCategorySelect}
+						onReset={handleFilterReset}
+					/>
 
-				{/* ── 2. Filter bar ── */}
-				<ServicesFilterBar
-					searchText={searchText}
-					onSearchTextChange={setSearchText}
-					onSearchEnter={handleSearchEnter}
-					filterSortName={filterSortName}
-					anchorEl={anchorEl}
-					sortingOpen={sortingOpen}
-					onSortingClick={sortingClickHandler}
-					onSortingClose={sortingCloseHandler}
-					onSortingSelect={sortingHandler}
-				/>
+					<div className={`catalog-directory__main${searchBusy ? ' is-filter-loading' : ''}`}>
+						<CatalogSortToolbar
+							filterSortName={filterSortName}
+							anchorEl={anchorEl}
+							sortingOpen={sortingOpen}
+							onSortingClick={sortingClickHandler}
+							onSortingClose={sortingCloseHandler}
+							onSortingSelect={sortingHandler}
+						/>
 
-				{/* ── 3. Services grid + pagination ── */}
-				<Stack className="services-catalog-page__main" mb={device === 'mobile' ? '32px' : '76px'}>
-					{servicesLoading && services.length === 0 ? (
-						<Stack className="services-catalog-page__grid">
-							{Array.from({ length: 4 }).map((_, i) => (
-								<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
-							))}
+						<Stack className="services-catalog-page__main" mb={device === 'mobile' ? '32px' : '48px'}>
+							{showCatalogSkeleton ? (
+								<div className="services-catalog-page__grid">
+									{Array.from({ length: 6 }).map((_, i) => (
+										<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
+									))}
+								</div>
+							) : (
+								<ServicesList services={filteredServices} onLike={likeServiceHandler} />
+							)}
+
+							<Stack className="pagination-config">
+								{filteredServices.length !== 0 && (
+									<Stack className="pagination-box">
+										<Pagination
+											className="pp-pagination"
+											page={currentPage}
+											count={Math.ceil(total / serviceInquiry.limit)}
+											onChange={handlePaginationChange}
+											shape="circular"
+											color="primary"
+											size={device === 'mobile' ? 'small' : 'medium'}
+										/>
+									</Stack>
+								)}
+								{filteredServices.length !== 0 && (
+									<Stack className="total-result">
+										<Typography>
+											Total {filteredServices.length} service{filteredServices.length > 1 ? 's' : ''}
+											{activeCategory !== 'All' ? ` in ${activeCategory}` : ' available'}
+										</Typography>
+									</Stack>
+								)}
+								{filteredServices.length === 0 && services.length > 0 && (
+									<Stack className="total-result">
+										<Typography>No services found in {activeCategory}</Typography>
+									</Stack>
+								)}
+							</Stack>
 						</Stack>
-					) : (
-						<ServicesList services={filteredServices} onLike={likeServiceHandler} />
-					)}
+					</div>
+				</div>
 
-					<Stack className="pagination-config">
-						{filteredServices.length !== 0 && (
-							<Stack className="pagination-box">
-								<Pagination
-									page={currentPage}
-									count={Math.ceil(total / serviceInquiry.limit)}
-									onChange={handlePaginationChange}
-									shape="circular"
-									color="primary"
-									size={device === 'mobile' ? 'small' : 'medium'}
-								/>
-							</Stack>
-						)}
-						{filteredServices.length !== 0 && (
-							<Stack className="total-result">
-								<Typography>
-									Total {filteredServices.length} service{filteredServices.length > 1 ? 's' : ''}
-									{activeCategory !== 'All' ? ` in ${activeCategory}` : ' available'}
-								</Typography>
-							</Stack>
-						)}
-						{filteredServices.length === 0 && services.length > 0 && (
-							<Stack className="total-result">
-								<Typography>No services found in {activeCategory}</Typography>
-							</Stack>
-						)}
-					</Stack>
-				</Stack>
+				{/* ── Featured service hero (matches Products feature banner) ── */}
+				<ServiceFeatureBanner
+					data={featureBannerData}
+					onPrimaryClick={() => {
+						const first = filteredServices[0] ?? services[0];
+						if (first?._id) void router.push(`/service/detail?id=${first._id}`);
+					}}
+					onSecondaryClick={() => {
+						const el = document.querySelector('.pawpal-static-page__packages');
+						el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					}}
+				/>
 
-				{/* ── 4. Packages ── */}
+				{/* ── Packages (secondary vertical list) ── */}
 				<ServicePackages
 					block={packagesBlock}
 					items={packagesItems}
-					onPackageCtaClick={(pkg) => router.push('/cs')}
+					onPackageCtaClick={(pkg) => {
+						const pkgIndex = packagesItems.findIndex((item) => item.title === pkg.title);
+						const target = services[pkgIndex] ?? filteredServices[0] ?? services[0];
+						if (target?._id) {
+							void router.push(`/service/detail?id=${target._id}`);
+						}
+					}}
 				/>
 
-				{/* ── 5. Benefits ── */}
-				<ServiceBenefits
-					block={benefitsBlock}
-					items={benefitsItems}
-				/>
-
-				{/* ── 6. FAQ ── */}
+				{/* ── FAQ ── */}
 				<ServiceFaq data={faqData} />
 
 				{/* ── 7. CTA banner ── */}

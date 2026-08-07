@@ -69,6 +69,11 @@ query GetMember($input: String!) {
 					followerId
 					myFollowing
 				}
+        meLiked {
+					memberId
+					likeRefId
+					myFavorite
+				}
     }
 }
 `);
@@ -350,6 +355,8 @@ export const GET_BOARD_ARTICLE = gql`
 				memberPoints
 				memberLikes
 				memberViews
+				memberComments
+				specialistScore
 				createdAt
 				updatedAt
 			}
@@ -705,7 +712,36 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 		}
 	}
 `;
-/** Admin member directory — includes specialist approval flag */
+
+/**************************
+ *      NOTIFICATION      *
+ *************************/
+
+export const GET_NOTIFICATIONS = gql`
+	query GetNotifications($input: NotificationsInquiry!) {
+		getNotifications(input: $input) {
+			list {
+				_id
+				notificationType
+				notificationStatus
+				notificationGroup
+				notificationTitle
+				notificationDesc
+				receiverId
+				authorId
+				notificationRefId
+				createdAt
+				updatedAt
+				authorData {
+					_id
+					memberNick
+					memberImage
+				}
+			}
+			unreadCount
+		}
+	}
+`;
 export const GET_ALL_MEMBERS_BY_ADMIN = gql`
 	query GetAllMembersByAdmin($input: MembersInquiry!) {
 		getAllMembersByAdmin(input: $input) {
@@ -728,6 +764,48 @@ export const GET_ALL_MEMBERS_BY_ADMIN = gql`
 				memberViews
 				createdAt
 				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+/**************************
+ *           CS           *
+ *************************/
+
+export const GET_NOTICES = gql`
+	query GetNotices($input: NoticesInquiry!) {
+		getNotices(input: $input) {
+			list {
+				_id
+				noticeCategory
+				noticeStatus
+				noticeTitle
+				noticeContent
+				noticeViews
+				createdAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+export const GET_FAQS = gql`
+	query GetFaqs($input: FaqsInquiry!) {
+		getFaqs(input: $input) {
+			list {
+				_id
+				faqCategory
+				faqStatus
+				faqQuestion
+				faqAnswer
+				faqOrder
+				createdAt
 			}
 			metaCounter {
 				total

@@ -11,7 +11,7 @@ PawPal is a B2C pet services and products platform built by migrating the Nestar
 | Framework | NestJS |
 | API | GraphQL (code-first) |
 | Database | MongoDB (Mongoose) |
-| Port | 5007 |
+| Port | 3007 |
 
 ## Member Types
 

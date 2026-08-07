@@ -1,7 +1,8 @@
 import { useMutation } from '@apollo/client';
+import { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
 import { CREATE_INQUIRY } from '../../apollo/user/mutation';
-import { Message } from '../enums/common.enum';
+import { requireSignIn } from '../auth';
 import type { T } from '../types/common';
 import type { ListingInquiryFormValues } from '../types/inquiry/listing-inquiry.form';
 import { emptyListingInquiryForm } from '../types/inquiry/listing-inquiry.form';
@@ -28,6 +29,7 @@ export interface UseListingInquiryFormResult {
 }
 
 export function useListingInquiryForm({ listingId, user }: UseListingInquiryFormOptions): UseListingInquiryFormResult {
+	const router = useRouter();
 	const [values, setValues] = useState<ListingInquiryFormValues>(() => emptyListingInquiryForm());
 	const [errors, setErrors] = useState<ListingInquiryFieldErrors>({});
 	const [createInquiry, { loading: submitting }] = useMutation(CREATE_INQUIRY);
@@ -47,10 +49,7 @@ export function useListingInquiryForm({ listingId, user }: UseListingInquiryForm
 			await sweetMixinErrorAlert('Listing is not available. Please refresh and try again.');
 			return;
 		}
-		if (!user?._id) {
-			await sweetMixinErrorAlert(Message.NOT_AUTHENTICATED);
-			return;
-		}
+		if (requireSignIn(router, user?._id, 'inquiry')) return;
 
 		const trimmed = trimListingInquiryValues(values);
 		setValues(trimmed);
@@ -72,12 +71,12 @@ export function useListingInquiryForm({ listingId, user }: UseListingInquiryForm
 					},
 				},
 			});
-			await sweetTopSmallSuccessAlert('Inquiry sent successfully', 2000);
+			await sweetTopSmallSuccessAlert('Sent', 2000);
 			reset();
 		} catch (err: any) {
-			await sweetErrorHandling(err);
+			await sweetErrorHandling(err, { router, action: 'inquiry' });
 		}
-	}, [listingId, user, values, createInquiry, reset]);
+	}, [listingId, user, values, createInquiry, reset, router]);
 
 	return {
 		values,

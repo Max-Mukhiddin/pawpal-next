@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import { Button, Stack, Typography } from '@mui/material';
 import axios from 'axios';
 import { Messages, REACT_APP_API_GRAPHQL_URL } from '../../config';
-import { getJwtToken, updateStorage, updateUserInfo } from '../../auth';
+import { getJwtToken, updateStorage, updateUserInfo, requireSignIn } from '../../auth';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { MemberUpdate } from '../../types/member/member.update';
@@ -13,6 +14,7 @@ import { sweetErrorHandling, sweetMixinSuccessAlert } from '../../sweetAlert';
 import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 
 const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
+	const router = useRouter();
 	const token = getJwtToken();
 	const user = useReactiveVar(userVar);
 	const [updateData, setUpdateData] = useState<MemberUpdate>(initialValues);
@@ -72,7 +74,7 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 
 	const updateProfileHandler = useCallback(async () => {
 		try {
-			if (!user?._id) throw new Error(Messages.error2);
+			if (requireSignIn(router, user?._id, 'general')) return;
 			const input: MemberUpdate = { ...updateData, _id: user._id };
 			const result = await updateMember({ variables: { input } });
 			const jwtToken = result.data.updateMember?.accessToken;
@@ -80,9 +82,9 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			updateUserInfo(jwtToken);
 			await sweetMixinSuccessAlert('Profile updated successfully! 🐾');
 		} catch (err: any) {
-			sweetErrorHandling(err).then();
+			sweetErrorHandling(err, { router, action: 'general' }).then();
 		}
-	}, [updateData, user?._id, updateMember]);
+	}, [updateData, user?._id, updateMember, router]);
 
 	// Only require the two schema-required fields
 	const doDisabledCheck = () => {

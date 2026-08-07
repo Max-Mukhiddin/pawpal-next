@@ -34,6 +34,11 @@ const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {})
 
 		const memoizedValues = useMemo(() => {
 			const routeMap: Record<string, { title: string; breadcrumb: string; bgImage?: string }> = {
+				'/activity': {
+					title: 'Activity',
+					breadcrumb: 'Activity',
+					bgImage: '/images/hero/pawpal-hero.jpg',
+				},
 				'/mypage': {
 					title: 'My Profile',
 					breadcrumb: 'My Profile',
@@ -47,7 +52,7 @@ const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {})
 				'/blog': {
 					title: 'Pet Care Tips & Stories',
 					breadcrumb: 'Pet Care Tips & Stories',
-					bgImage: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1600&q=80',
+					bgImage: '/img/community/haerin_vet_article1.jpg',
 				},
 				'/service': {
 					title: 'Find The Right Care For Your Pet',
@@ -57,37 +62,37 @@ const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {})
 				'/product': {
 					title: 'Everyday Essentials For Your Pet',
 					breadcrumb: 'Everyday Essentials For Your Pet',
-					bgImage: 'https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=1600&q=80',
+					bgImage: '/images/hero/pawpal-hero-3.jpg',
 				},
 				'/specialist': {
 					title: 'Our Specialists',
 					breadcrumb: 'Specialists',
-					bgImage: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1600&q=80',
+					bgImage: '/img/banner/specialists-default.webp',
 				},
 				'/specialist/detail': {
 					title: 'Specialist Profile',
 					breadcrumb: 'Specialists',
-					bgImage: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1600&q=80',
+					bgImage: '/img/banner/specialists-default.webp',
 				},
 				'/about': {
 					title: 'About Us',
 					breadcrumb: 'About Us',
-					bgImage: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1600&q=80',
+					bgImage: '/img/listing/minjun_trainer_puppy-training_2.jpg',
 				},
 				'/cs': {
-					title: 'Customer Support',
-					breadcrumb: 'Customer Support',
-					bgImage: 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=1600&q=80',
+					title: 'Support',
+					breadcrumb: 'Support',
+					bgImage: '/img/listing/haerin_vet_dental.jpg',
 				},
 				'/member': {
 					title: 'Members',
 					breadcrumb: 'Members',
-					bgImage: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1600&q=80',
+					bgImage: 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=1600&q=80',
 				},
 				'/agent': {
 					title: 'Our Specialists',
 					breadcrumb: 'Specialists',
-					bgImage: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1600&q=80',
+					bgImage: '/img/banner/specialists-default.webp',
 				},
 				'/listings': {
 					title: 'All Listings',
@@ -143,14 +148,15 @@ const withLayoutBasic = (Component: any, layoutOptions: LayoutBasicOptions = {})
 								<Top />
 							</Stack>
 						)}
-						<Stack id={'main'}>
-							<Component {...props} />
+					<Stack id={'main'}>
+						<Component {...props} />
+					</Stack>
+					{!isAuthPage && <Chat />}
+					{!isAuthPage && (
+						<Stack id={'footer'}>
+							<Footer />
 						</Stack>
-						{!isAuthPage && (
-							<Stack id={'footer'}>
-								<Footer />
-							</Stack>
-						)}
+					)}
 					</Stack>
 				</>
 			);

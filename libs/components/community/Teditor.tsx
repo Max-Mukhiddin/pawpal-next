@@ -1,115 +1,46 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Box, Button, FormControl, IconButton, MenuItem, Stack, Typography, Select, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import type { Editor } from '@tiptap/core';
 import { BoardArticleCategory } from '../../enums/board-article.enum';
 import { ARTICLE_CATEGORY_FORM_OPTIONS, getArticleCategoryLabel } from '../../utils/articleCategoryMap';
-import { Editor } from '@toast-ui/react-editor';
 import { getJwtToken } from '../../auth';
-import { REACT_APP_API_GRAPHQL_URL, REACT_APP_API_URL } from '../../config';
+import { REACT_APP_API_GRAPHQL_URL } from '../../config';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { T } from '../../types/common';
-import '@toast-ui/editor/dist/toastui-editor.css';
-import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
-import { useMutation } from '@apollo/client';
+import { useMutation, useReactiveVar } from '@apollo/client';
 import { CREATE_BOARD_ARTICLE, UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { sweetErrorHandling, sweetTopSuccessAlert } from '../../sweetAlert';
 import { Message } from '../../enums/common.enum';
 import { BoardArticle } from '../../types/board-article/board-article';
+import { userVar } from '../../../apollo/store';
+import { sanitizeArticleContent, stripHtmlToPlainText } from '../../utils/articleContentHelpers';
+import { resolveArticleImage } from '../../utils/articleCardHelpers';
+import ArticleEditorPreview from '../articles/ArticleEditorPreview';
+
+const TiptapArticleBody = dynamic(() => import('./TiptapArticleBody'), { ssr: false });
 
 const MAX_ARTICLE_CONTENT_LENGTH = 5000;
-const ARTICLE_BODY_PLACEHOLDER = 'Write your article here…';
 
-const ALLOWED_CONTENT_TAGS = new Set(['p', 'strong', 'em', 'b', 'i', 'br', 'ul', 'ol', 'li']);
+type EditorViewMode = 'edit' | 'preview';
 
 interface TuiEditorProps {
 	initialArticle?: BoardArticle;
 	mode?: 'create' | 'edit';
 }
 
-/** Strip tags/entities so WYSIWYG placeholders like `<p><br></p>` count as empty. */
-function stripHtmlToPlainText(html: string): string {
-	return html
-		.replace(/<[^>]*>/g, '')
-		.replace(/&nbsp;/gi, ' ')
-		.replace(/\u200B/g, '')
-		.trim();
-}
-
-const EDITOR_CHROME_LABELS = new Set(['write', 'preview', 'markdown', 'wysiwyg']);
-
-function isPlaceholderOnlyContent(content: string): boolean {
-	const plain = stripHtmlToPlainText(content);
-	if (!plain) return true;
-	const normalized = plain.replace(/\u2026/g, '...').toLowerCase();
-	const placeholderNorm = ARTICLE_BODY_PLACEHOLDER.replace(/\u2026/g, '...').toLowerCase();
-	return normalized === placeholderNorm;
-}
-
-/** True when body is empty or only Toast UI tab labels / placeholder leaked into the field. */
-function isSpuriousEditorContent(content: string): boolean {
-	const plain = stripHtmlToPlainText(content);
-	if (!plain) return true;
-	if (isPlaceholderOnlyContent(content)) return true;
-
-	const normalized = plain.replace(/\u2026/g, '...').toLowerCase();
-	const withoutPlaceholder = normalized
-		.replace(/write your article here\.\.\./g, '')
-		.replace(/write your article here…/g, '')
-		.trim();
-
-	const lines = withoutPlaceholder
-		.split(/\n+/)
-		.map((line) => line.trim())
-		.filter(Boolean);
-
-	if (lines.length === 0) return true;
-	return lines.every((line) => EDITOR_CHROME_LABELS.has(line));
-}
-
 function hasArticleBody(content: string): boolean {
-	if (isSpuriousEditorContent(content)) return false;
-	if (stripHtmlToPlainText(content).length > 0) return true;
-	return content.trim().length > 0;
-}
-
-/** Keep only text formatting tags; drop images, links, tables, headings, etc. */
-function sanitizeArticleContent(html: string): string {
-	if (!html) return '';
-
-	let result = html
-		.replace(/!\[[^\]]*\]\([^)]+\)/g, '')
-		.replace(/<img\b[^>]*\/?>/gi, '')
-		.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1');
-
-	result = result.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*\/?>/gi, (match, tagName) => {
-		const tag = tagName.toLowerCase();
-		if (!ALLOWED_CONTENT_TAGS.has(tag)) return '';
-		if (match.startsWith('</')) return `</${tag}>`;
-		if (tag === 'br') return '<br>';
-		return `<${tag}>`;
-	});
-
-	return result.trim();
-}
-
-/** Read live editor output (HTML in WYSIWYG; fall back to markdown if HTML is empty). */
-function readEditorContent(editor: Editor | null): string {
-	const instance = editor?.getInstance();
-	if (!instance) return '';
-
-	const html = typeof instance.getHTML === 'function' ? String(instance.getHTML() ?? '') : '';
-	if (hasArticleBody(html)) return html;
-
-	const markdown = typeof instance.getMarkdown === 'function' ? String(instance.getMarkdown() ?? '') : '';
-	return markdown.trim() ? markdown : html;
+	return stripHtmlToPlainText(content).length > 0;
 }
 
 const TuiEditor = ({ initialArticle, mode = 'create' }: TuiEditorProps) => {
-	const editorRef = useRef<Editor>(null);
+	const editorInstanceRef = useRef<Editor | null>(null);
 	const coverInputRef = useRef<HTMLInputElement>(null);
 	const token = getJwtToken();
 	const router = useRouter();
+	const user = useReactiveVar(userVar);
 
 	const [articleCategory, setArticleCategory] = useState<BoardArticleCategory>(
 		mode === 'edit' ? (initialArticle?.articleCategory ?? BoardArticleCategory.FREE) : BoardArticleCategory.FREE,
@@ -124,18 +55,14 @@ const TuiEditor = ({ initialArticle, mode = 'create' }: TuiEditorProps) => {
 	);
 
 	const [bodyCharCount, setBodyCharCount] = useState(0);
-	const [editorMounted, setEditorMounted] = useState(false);
+	const [readMinutes, setReadMinutes] = useState(1);
+	const [previewHtml, setPreviewHtml] = useState('');
+	const [viewMode, setViewMode] = useState<EditorViewMode>('edit');
 
-	useEffect(() => {
-		setEditorMounted(true);
-	}, []);
-
-	/** APOLLO REQUESTS **/
 	const [createBoardArticle] = useMutation(CREATE_BOARD_ARTICLE);
 	const [updateBoardArticle] = useMutation(UPDATE_BOARD_ARTICLE);
 
-
-	const uploadCoverImage = async (file: File) => {
+	const uploadBoardImage = async (file: File) => {
 		const formData = new FormData();
 		formData.append(
 			'operations',
@@ -181,7 +108,7 @@ const TuiEditor = ({ initialArticle, mode = 'create' }: TuiEditorProps) => {
 		}
 
 		try {
-			const path = await uploadCoverImage(file);
+			const path = await uploadBoardImage(file);
 			setCoverImagePath(path);
 		} catch (err) {
 			console.log('Error, uploadCoverImage:', err);
@@ -204,45 +131,31 @@ const TuiEditor = ({ initialArticle, mode = 'create' }: TuiEditorProps) => {
 		setArticleTitle(e.target.value);
 	};
 
-	const updateBodyCharCount = () => {
-		const raw = readEditorContent(editorRef.current);
-		const sanitized = sanitizeArticleContent(raw);
-		const plain = isSpuriousEditorContent(sanitized) ? '' : stripHtmlToPlainText(sanitized);
-		setBodyCharCount(plain.length);
+	const handleBodyChange = useCallback(
+		({ html, plainLength, readMinutes: minutes }: { html: string; plainLength: number; readMinutes: number }) => {
+			setPreviewHtml(html);
+			setBodyCharCount(plainLength);
+			setReadMinutes(minutes);
+		},
+		[],
+	);
+
+	const readEditorHtml = (): string => {
+		const raw = editorInstanceRef.current?.getHTML() ?? previewHtml;
+		return sanitizeArticleContent(raw);
 	};
 
-	const initializeEditorOnLoad = () => {
-		const instance = editorRef.current?.getInstance();
-		if (!instance) return;
-
-		if (typeof instance.isMarkdownMode === 'function' && instance.isMarkdownMode()) {
-			instance.changeMode('wysiwyg');
-		}
-
-		if (mode === 'create') {
-			setTimeout(() => {
-				const inst = editorRef.current?.getInstance();
-				if (!inst) return;
-				inst.setMarkdown('');
-				if (typeof inst.setHTML === 'function') inst.setHTML('');
-				inst.focus();
-				inst.blur();
-				setBodyCharCount(0);
-			}, 100);
-			return;
-		}
-
-		if (mode === 'edit' && initialArticle?.articleContent) {
-			const sanitized = sanitizeArticleContent(initialArticle.articleContent);
-			instance.setHTML(sanitized);
-			setBodyCharCount(stripHtmlToPlainText(sanitized).length);
-		}
+	const openPreview = () => {
+		const html = readEditorHtml();
+		const plain = stripHtmlToPlainText(html);
+		setPreviewHtml(html);
+		setBodyCharCount(plain.length);
+		setViewMode('preview');
 	};
 
 	const handleSubmitButton = async () => {
 		try {
-			const rawContent = readEditorContent(editorRef.current);
-			const articleContent = sanitizeArticleContent(rawContent);
+			const articleContent = readEditorHtml();
 
 			if (!hasArticleBody(articleContent) || !articleTitle.trim()) {
 				throw new Error(Message.INSERT_ALL_INPUTS);
@@ -250,7 +163,9 @@ const TuiEditor = ({ initialArticle, mode = 'create' }: TuiEditorProps) => {
 
 			const plainLength = stripHtmlToPlainText(articleContent).length;
 			if (plainLength > MAX_ARTICLE_CONTENT_LENGTH) {
-				throw new Error(`Article body must be ${MAX_ARTICLE_CONTENT_LENGTH} characters or less (currently ${plainLength}).`);
+				throw new Error(
+					`Article body must be ${MAX_ARTICLE_CONTENT_LENGTH} characters or less (currently ${plainLength}).`,
+				);
 			}
 
 			const articleImageInput = coverImagePath ? { articleImage: coverImagePath } : {};
@@ -294,121 +209,163 @@ const TuiEditor = ({ initialArticle, mode = 'create' }: TuiEditorProps) => {
 		}
 	};
 
-	const coverPreviewUrl = coverImagePath ? `${REACT_APP_API_URL}/${coverImagePath}` : '';
+	const coverPreviewUrl = coverImagePath ? resolveArticleImage(coverImagePath) : '';
 	const isNearCharLimit =
 		bodyCharCount > MAX_ARTICLE_CONTENT_LENGTH * 0.9 && bodyCharCount <= MAX_ARTICLE_CONTENT_LENGTH;
 
+	const editorKey =
+		mode === 'edit' ? `edit-${initialArticle?._id ?? 'article'}` : 'create-article';
+
 	return (
 		<Stack className="article-form">
-			<Stack className="article-form__fields-row" direction="row">
-				<Box component="div" className="article-form__field form_row">
-					<Typography className="article-form__label" variant="h3">
-						Category
-					</Typography>
-					<FormControl className="article-form__select" fullWidth>
-						<Select
-							value={articleCategory}
-							onChange={changeCategoryHandler}
-							displayEmpty
-							inputProps={{ 'aria-label': 'Article category' }}
-							disabled={mode === 'edit'}
-						>
-							{ARTICLE_CATEGORY_FORM_OPTIONS.map((category) => (
-								<MenuItem key={category} value={category}>
-									{getArticleCategoryLabel(category)}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-					{mode === 'edit' && (
-						<Typography className="article-form__hint">
-							Category cannot be changed after publishing
-						</Typography>
-					)}
-				</Box>
-				<Box component="div" className="article-form__field">
-					<Typography className="article-form__label" variant="h3">
-						Title
-					</Typography>
-					<TextField
-						className="article-form__text-input"
-						value={articleTitle}
-						onChange={articleTitleHandler}
-						id="article-title"
-						placeholder="Enter article title"
-						variant="outlined"
-						fullWidth
-					/>
-				</Box>
-			</Stack>
-
-			<div className="article-cover-upload">
-				<Typography className="article-form__label">Cover image (optional)</Typography>
-				<Typography className="article-cover-upload__hint">
-					Upload a cover for the article listing. Images cannot be embedded in the body — use formatting only in the
-					editor below.
-				</Typography>
-				<div className="article-cover-upload__row">
-					{coverImagePath ? (
-						<div className="article-cover-upload__preview">
-							<img src={coverPreviewUrl} alt="Article cover preview" />
-							<IconButton
-								className="article-cover-upload__remove"
-								size="small"
-								onClick={removeCoverImage}
-								aria-label="Remove cover image"
-							>
-								<CloseIcon fontSize="small" />
-							</IconButton>
-						</div>
-					) : null}
-					<Button className="article-form__upload-btn" component="label">
-						{coverImagePath ? 'Change cover' : 'Upload cover image'}
-						<input
-							ref={coverInputRef}
-							type="file"
-							hidden
-							accept="image/jpeg,image/jpg,image/png"
-							onChange={handleCoverFileChange}
-						/>
-					</Button>
-				</div>
-			</div>
-
-			<div className="article-body-meta">
-				<Typography className="article-form__label">Article body</Typography>
-				<Typography
-					className={
-						bodyCharCount > MAX_ARTICLE_CONTENT_LENGTH
-							? 'article-body-meta__count article-body-meta__count--over'
-							: isNearCharLimit
-								? 'article-body-meta__count article-body-meta__count--near'
-								: 'article-body-meta__count'
-					}
+			<div className="article-form__mode-toggle" role="tablist" aria-label="Article editor mode">
+				<button
+					type="button"
+					role="tab"
+					aria-selected={viewMode === 'edit'}
+					className={`article-form__mode-btn${viewMode === 'edit' ? ' is-active' : ''}`}
+					onClick={() => setViewMode('edit')}
 				>
-					{bodyCharCount} / {MAX_ARTICLE_CONTENT_LENGTH} characters (text only)
-				</Typography>
+					Write
+				</button>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={viewMode === 'preview'}
+					className={`article-form__mode-btn${viewMode === 'preview' ? ' is-active' : ''}`}
+					onClick={openPreview}
+				>
+					Preview
+				</button>
 			</div>
 
-			<div className="article-editor-wrap toastui-editor-shell">
-				{editorMounted ? (
-					<Editor
-						key={mode === 'edit' ? `edit-${initialArticle?._id ?? 'article'}` : 'create-article'}
-						initialValue=" "
-						placeholder={ARTICLE_BODY_PLACEHOLDER}
-						height="640px"
-						initialEditType="wysiwyg"
-						hideModeSwitch={true}
-						usageStatistics={false}
-						toolbarItems={[['bold', 'italic'], ['ul', 'ol']]}
-						ref={editorRef}
-						onLoad={initializeEditorOnLoad}
-						onChange={updateBodyCharCount}
-					/>
-				) : null}
-			</div>
+			{viewMode === 'edit' ? (
+				<div className="article-form__edit-panel">
+					<Stack className="article-form__fields-row" direction="row">
+						<Box component="div" className="article-form__field form_row">
+							<Typography className="article-form__label" variant="h3">
+								Category
+							</Typography>
+							<FormControl className="article-form__select" fullWidth>
+								<Select
+									value={articleCategory}
+									onChange={changeCategoryHandler}
+									displayEmpty
+									inputProps={{ 'aria-label': 'Article category' }}
+									disabled={mode === 'edit'}
+								>
+									{ARTICLE_CATEGORY_FORM_OPTIONS.map((category) => (
+										<MenuItem key={category} value={category}>
+											{getArticleCategoryLabel(category)}
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
+							{mode === 'edit' && (
+								<Typography className="article-form__hint">
+									Category cannot be changed after publishing
+								</Typography>
+							)}
+						</Box>
+						<Box component="div" className="article-form__field">
+							<Typography className="article-form__label" variant="h3">
+								Title
+							</Typography>
+							<TextField
+								className="article-form__text-input"
+								value={articleTitle}
+								onChange={articleTitleHandler}
+								id="article-title"
+								placeholder="Enter article title"
+								variant="outlined"
+								fullWidth
+							/>
+						</Box>
+					</Stack>
+
+					<div className="article-cover-upload">
+						<Typography className="article-form__label">Cover image (optional)</Typography>
+						<Typography className="article-cover-upload__hint">
+							Upload a cover for listings and the article hero. You can also insert images within the
+							body using the image tool in the editor toolbar.
+						</Typography>
+						<div className="article-cover-upload__row">
+							{coverImagePath ? (
+								<div className="article-cover-upload__preview">
+									<img src={coverPreviewUrl} alt="Article cover preview" />
+									<IconButton
+										className="article-cover-upload__remove"
+										size="small"
+										onClick={removeCoverImage}
+										aria-label="Remove cover image"
+									>
+										<CloseIcon fontSize="small" />
+									</IconButton>
+								</div>
+							) : null}
+							<Button className="article-form__upload-btn" component="label">
+								{coverImagePath ? 'Change cover' : 'Upload cover image'}
+								<input
+									ref={coverInputRef}
+									type="file"
+									hidden
+									accept="image/jpeg,image/jpg,image/png"
+									onChange={handleCoverFileChange}
+								/>
+							</Button>
+						</div>
+					</div>
+
+					<div className="article-form__body-block">
+						<div className="article-body-meta">
+							<Typography className="article-form__label">Article body</Typography>
+							<div className="article-body-meta__stats">
+								<Typography
+									className={
+										bodyCharCount > MAX_ARTICLE_CONTENT_LENGTH
+											? 'article-body-meta__count article-body-meta__count--over'
+											: isNearCharLimit
+												? 'article-body-meta__count article-body-meta__count--near'
+												: 'article-body-meta__count'
+									}
+								>
+									{bodyCharCount} / {MAX_ARTICLE_CONTENT_LENGTH} characters (text only)
+								</Typography>
+								<Typography className="article-body-meta__read-time">~{readMinutes} min read</Typography>
+							</div>
+						</div>
+
+						<TiptapArticleBody
+							key={editorKey}
+							initialContent={mode === 'edit' ? (initialArticle?.articleContent ?? '') : ''}
+							onChange={handleBodyChange}
+							onEditorReady={(ed) => {
+								editorInstanceRef.current = ed;
+							}}
+							uploadImage={uploadBoardImage}
+						/>
+					</div>
+				</div>
+			) : (
+				<ArticleEditorPreview
+					title={articleTitle}
+					category={articleCategory}
+					contentHtml={previewHtml}
+					coverImagePath={coverImagePath}
+					author={user}
+				/>
+			)}
 
 			<Stack className="article-form__submit-row" direction="row" justifyContent="center">
+				{viewMode === 'preview' ? (
+					<Button
+						className="article-form__submit article-form__submit--secondary"
+						variant="outlined"
+						onClick={() => setViewMode('edit')}
+					>
+						Back to editor
+					</Button>
+				) : null}
 				<Button className="article-form__submit update-button" variant="contained" onClick={handleSubmitButton}>
 					{mode === 'edit' ? 'Save Changes' : 'Register'}
 				</Button>

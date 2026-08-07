@@ -1,359 +1,308 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@apollo/client';
-import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
-import FacebookOutlinedIcon from '@mui/icons-material/FacebookOutlined';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import StarIcon from '@mui/icons-material/Star';
 import { GET_AGENTS } from '../../../apollo/user/query';
 import { Direction } from '../../enums/common.enum';
 import type { Member } from '../../types/member/member';
-import { REACT_APP_API_URL } from '../../config';
+import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
+import { resolveMemberImageUrl } from '../../utils/mediaUrl';
+import { hasRealMemberPhoto } from '../../utils/memberSpecialty';
+import { getMemberTypeLabel } from '../../utils/memberDisplay';
+import { MemberType } from '../../enums/member.enum';
 
-const SPECIALISTS = [
-    {
-        id: '1',
-        name: 'Maya Alvarez',
-        role: 'Lead groomer',
-        thumb: '/images/team/team-1.jpg',
-        featured: '/images/team/team-main.jpg',
-        bio: [
-            'Maya has spent a decade refining gentle handling techniques that keep anxious pets calm from check-in to finish.',
-            'She trains our grooming team on breed-specific care and PawPal’s safety-first standards.',
-        ],
-    },
-    {
-        id: '2',
-        name: 'Jordan Lee',
-        role: 'Certified dog trainer',
-        thumb: '/images/team/team-2.jpg',
-        featured: '/images/team/team-2.jpg',
-        bio: [
-            'Jordan builds positive-reinforcement plans for puppies, rescues, and energetic adolescents.',
-            'Their sessions focus on real-world routines so training sticks at home.',
-        ],
-    },
-    {
-        id: '3',
-        name: 'Priya Nair',
-        role: 'Vet care coordinator',
-        thumb: '/images/team/team-3.jpg',
-        featured: '/images/team/team-3.jpg',
-        bio: [
-            'Priya coordinates wellness visits and follow-ups so nothing slips through the cracks.',
-            'Pet parents rely on her clear guidance before and after every appointment.',
-        ],
-    },
-    {
-        id: '4',
-        name: 'Ethan Brooks',
-        role: 'Head of pet experiences',
-        thumb: '/images/team/team-4.jpg',
-        featured: '/images/team/team-4.jpg',
-        bio: [
-            'Ethan makes sure every PawPal touchpoint feels thoughtful — from booking to pickup.',
-            'He works across specialists to keep quality consistent in every neighborhood we serve.',
-        ],
-    },
+const SPECIALTY_PILLARS = [
+	{
+		id: 'vets',
+		icon: '🩺',
+		title: 'Veterinarians',
+		description: 'Licensed clinicians for wellness visits, urgent concerns, and ongoing care plans.',
+	},
+	{
+		id: 'groomers',
+		icon: '✂️',
+		title: 'Groomers',
+		description: 'Patient, breed-savvy groomers who keep coats healthy and anxious pets at ease.',
+	},
+	{
+		id: 'trainers',
+		icon: '🎓',
+		title: 'Trainers',
+		description: 'Positive-reinforcement coaches for puppies, rescues, and everyday behavior goals.',
+	},
+	{
+		id: 'sitters',
+		icon: '🐾',
+		title: 'Sitters & Walkers',
+		description: 'Reliable companions for walks, boarding, and the routines your pet already knows.',
+	},
 ] as const;
 
-function backendMemberImageUrl(memberImage?: string | null): string {
-    if (!memberImage?.trim()) return '';
-    const clean = String(memberImage).replace(/^\/+/, '');
-    if (clean.startsWith('http')) return clean;
-    if (clean.startsWith('uploads/')) return `${REACT_APP_API_URL}/${clean}`;
-    return `${REACT_APP_API_URL}/uploads/member/${clean}`;
-}
+const EDITORIAL_BODY =
+	'Every PawPal specialist is reviewed for credentials, responsiveness, and real care standards before they can list services. Families book with confidence knowing each profile reflects verified experience — not just a photo and a bio.';
 
-function initialsFromMember(memberFullName: string | undefined | null, memberNick: string | undefined | null): string {
-    return (memberFullName || memberNick || '?')
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-}
-
-const initialsPlaceholderDivStyleLg: React.CSSProperties = {
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(135deg, rgba(198, 138, 89, 0.15), rgba(160, 106, 66, 0.25))',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 48,
-    fontWeight: 700,
-    color: '#a06a42',
-};
-
-function initialsFromFallbackName(name: string): string {
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    const w = name.trim();
-    if (w.length >= 2) return w.slice(0, 2).toUpperCase();
-    if (w.length === 1) return (w + w).toUpperCase();
-    return '??';
-}
-
-type TeamRow = {
-    id: string;
-    name: string;
-    role: string;
-    thumb: string;
-    featured: string;
-    initials: string;
-    bioParas: readonly string[];
-    profileHref: string;
-    jobsCount: number;
-    likesCount: number;
-    experienceYears: number;
-};
-
-// Formats large numbers cleanly (e.g., 1200 -> 1.2k)
-function formatLikes(num: number): string {
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-    return num.toString();
-}
-
-function mapMemberToRow(m: Member): TeamRow {
-    const n = m.jobsCount ?? m.memberListings ?? 0;
-    const desc = m.memberDesc?.trim() || '';
-    const img = backendMemberImageUrl(m.memberImage);
-    
-    // Real total engagement from backend: profile likes + listing likes + article likes
-    const baseLikes = m.totalEngagement ?? m.memberLikes ?? 0;
-    
-    const expMatch = desc.match(/(\d+)\s*years?/i);
-    const experienceYears = expMatch ? parseInt(expMatch[1], 10) : Math.max(1, Math.min(20, Math.round(n / 8) + 1));
-
-    return {
-        id: m._id,
-        name: m.memberFullName?.trim() || m.memberNick || 'Specialist',
-        role: m.memberType ? String(m.memberType).toLowerCase().replaceAll('_', ' ') : 'Pet specialist',
-        thumb: img,
-        featured: img,
-        initials: initialsFromMember(m.memberFullName, m.memberNick),
-        bioParas: [desc || 'Pet care specialist'],
-        profileHref: `/specialist/detail?id=${m._id}`,
-        jobsCount: n,
-        likesCount: baseLikes,
-        experienceYears,
-    };
-}
-
-function mapFallbackToRow(m: (typeof SPECIALISTS)[number]): TeamRow {
-    const jobsCount = 120 + Number(m.id) * 18;
-    const likesCount = 840 + Number(m.id) * 115;
-    
-    const bioText = m.bio.join(' ');
-    const expMatch = bioText.match(/(\d+)\s*years?/i);
-    const experienceYears = expMatch ? parseInt(expMatch[1], 10) : 7 + Number(m.id);
-
-    return {
-        id: m.id,
-        name: m.name,
-        role: m.role,
-        thumb: m.thumb,
-        featured: m.featured,
-        initials: initialsFromFallbackName(m.name),
-        bioParas: m.bio,
-        profileHref: '/specialist',
-        jobsCount,
-        likesCount,
-        experienceYears,
-    };
-}
+const DEFAULT_AVATAR = '/img/profile/defaultUser.svg';
 
 const AGENTS_QUERY_VARS = {
-    input: {
-        page: 1,
-        limit: 8,
-        sort: 'specialistScore',
-        direction: Direction.DESC,
-        search: {},
-    },
+	input: {
+		page: 1,
+		limit: 8,
+		sort: 'specialistScore',
+		direction: Direction.DESC,
+		search: {},
+	},
 };
 
-function TeamLoadingSkeleton() {
-    return <p className="section-subtitle" style={{ color: '#5c4433' }}>Loading specialists...</p>;
-}
+const formatRole = (memberType?: string): string => {
+	if (!memberType || memberType === MemberType.AGENT) return getMemberTypeLabel(MemberType.AGENT);
+	return getMemberTypeLabel(memberType);
+};
+
+const getMemberInitial = (name: string): string => {
+	const trimmed = name.trim();
+	if (!trimmed) return 'P';
+	return trimmed.charAt(0).toUpperCase();
+};
+
+const formatStatCount = (value: number, fallback: string): string => {
+	if (value <= 0) return fallback;
+	if (value >= 10000) return `${Math.floor(value / 1000)}K+`;
+	if (value >= 500) return '500+';
+	return `${value}+`;
+};
+
+const prefersFinePointer = () =>
+	typeof window !== 'undefined' &&
+	window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+const prefersReducedMotion = () =>
+	typeof window !== 'undefined' &&
+	window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export default function TopPetSpecialists() {
-    const { data, loading } = useQuery(GET_AGENTS, {
-        variables: AGENTS_QUERY_VARS,
-        fetchPolicy: 'cache-and-network',
-    });
+	const [imageFailed, setImageFailed] = useState(false);
+	const featuredRef = useRef<HTMLAnchorElement>(null);
+	const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+	const [tiltActive, setTiltActive] = useState(false);
 
-    const specialists: TeamRow[] = useMemo(() => {
-        const list = data?.getAgents?.list;
-        const fallbackRows = SPECIALISTS.map(mapFallbackToRow);
-        if (list && list.length > 0) {
-            const activeSpecialists = list.filter((sp: Member) => (sp.memberListings ?? 0) > 0);
-            const specialistsToShow = activeSpecialists.length > 0 ? activeSpecialists : list;
-            const apiRows = specialistsToShow.map(mapMemberToRow);
-            return apiRows.length > 0 ? apiRows : fallbackRows;
-        }
-        return fallbackRows;
-    }, [data]);
+	const { data, loading } = useQuery(GET_AGENTS, {
+		variables: AGENTS_QUERY_VARS,
+		fetchPolicy: 'cache-and-network',
+	});
 
-    const [selectedId, setSelectedId] = useState<string>('');
+	const agentsList = useMemo(
+		() => (data?.getAgents?.list as Member[] | undefined) ?? [],
+		[data],
+	);
 
-    useEffect(() => {
-        if (!selectedId && specialists.length > 0) setSelectedId(specialists[0].id);
-    }, [selectedId, specialists]);
+	const totalSpecialists = data?.getAgents?.metaCounter?.[0]?.total ?? 0;
 
-    const selectedSpecialist = specialists.find((s) => s.id === selectedId) ?? specialists[0];
-    const selectedIndex = Math.max(
-        0,
-        specialists.findIndex((s) => s.id === selectedId),
-    );
+	const featuredSpecialist = useMemo(() => {
+		if (!agentsList.length) return null;
+		const active = agentsList.filter((sp) => (sp.memberListings ?? 0) > 0);
+		const pool = active.length > 0 ? active : agentsList;
+		return pool[0] ?? null;
+	}, [agentsList]);
 
-    return (
-        <section className="section-pawpal team-pawpal animate-on-scroll" aria-labelledby="team-pawpal-title">
-            <div className="section-container">
-                <header className="section-header team-pawpal__header">
-                    <p className="section-label team-pawpal__label">OUR SPECIALISTS</p>
-                    <h2 id="team-pawpal-title" className="section-title team-pawpal__title">
-                        Loyal, Passionate, And Driven
-                    </h2>
-                    <p className="section-subtitle team-pawpal__subtitle">Meet the experts who treat your pets like family.</p>
-                    <Link href="/specialist" className="section-action team-pawpal__top-action">
-                        Explore all specialists
-                        <ArrowForwardOutlinedIcon fontSize="small" />
-                    </Link>
-                </header>
+	const networkAvatars = useMemo(() => {
+		if (!featuredSpecialist) return [];
+		return agentsList.filter((member) => member._id !== featuredSpecialist._id).slice(0, 4);
+	}, [agentsList, featuredSpecialist]);
 
-                {loading ? (
-                    <TeamLoadingSkeleton />
-                ) : (
-                    <>
-                        <div className="team-pawpal__showcase">
-                            <div className="team-pawpal__list" role="list" aria-label="Specialist list">
-                                {specialists.map((person) => (
-                                    <button
-                                        type="button"
-                                        key={person.id}
-                                        className={`team-pawpal__list-item ${person.id === selectedId ? 'is-active' : ''}`}
-                                        onClick={() => setSelectedId(person.id)}
-                                        role="listitem"
-                                    >
-                                        <div className="team-pawpal__mini-avatar">
-                                            {person.thumb ? (
-                                                <img
-                                                    src={person.thumb}
-                                                    alt=""
-                                                    width={60}
-                                                    height={60}
-                                                    loading="lazy"
-                                                    onError={(e) => {
-                                                        e.currentTarget.src = '/img/listing/default-listing.webp';
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="team-pawpal__mini-initials" aria-hidden>
-                                                    {person.initials}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="team-pawpal__mini-copy">
-                                            <span className="team-pawpal__mini-name">{person.name}</span>
-                                            <span className="team-pawpal__mini-role">{person.role}</span>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
+	const moreSpecialistsCount = useMemo(() => {
+		if (totalSpecialists <= networkAvatars.length + 1) return 0;
+		return totalSpecialists - networkAvatars.length - 1;
+	}, [networkAvatars.length, totalSpecialists]);
 
-                            <div className="team-pawpal__featured-photo" aria-label="Featured specialist photo">
-                                {selectedSpecialist?.featured ? (
-                                    <img
-                                        key={selectedSpecialist.id}
-                                        src={selectedSpecialist.featured}
-                                        alt={`${selectedSpecialist.name} with a pet`}
-                                        onError={(e) => {
-                                            e.currentTarget.src = '/img/listing/default-listing.webp';
-                                        }}
-                                    />
-                                ) : (
-                                    <div style={initialsPlaceholderDivStyleLg} aria-hidden>
-                                        {selectedSpecialist?.initials}
-                                    </div>
-                                )}
-                            </div>
+	useAnimeSectionReveal({
+		sectionSelector: '.pp-spec',
+		featuredSelector: '[data-section-reveal="featured"]',
+		supportSelector: '[data-section-reveal="support"]',
+		pillarSelector: '[data-section-reveal="pillar"]',
+		deps: [loading, featuredSpecialist?._id],
+	});
 
-                            <div className="team-pawpal__details" aria-live="polite">
-                                <div key={selectedSpecialist?.id} className="team-pawpal__details-inner">
-                                    <h3 className="team-pawpal__featured-name">{selectedSpecialist?.name}</h3>
-                                    <p className="team-pawpal__featured-role">{selectedSpecialist?.role}</p>
-                                    <p className="team-pawpal__featured-bio">
-                                        {selectedSpecialist?.bioParas?.[0] ?? 'Pet care specialist'}
-                                    </p>
+	const handleFeaturedMove = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+		if (!prefersFinePointer() || prefersReducedMotion()) return;
+		const node = featuredRef.current;
+		if (!node) return;
 
-                                    <div className="team-pawpal__metrics" role="list" aria-label="Specialist stats">
-                                        <div className="team-pawpal__metric" role="listitem">
-                                            <strong>{selectedSpecialist?.experienceYears ?? 1}y</strong>
-                                            <span>Experience</span>
-                                        </div>
-                                        <div className="team-pawpal__metric" role="listitem">
-                                            <strong>{selectedSpecialist?.jobsCount ?? 0}+</strong>
-                                            <span>Jobs</span>
-                                        </div>
-                                        <div className="team-pawpal__metric" role="listitem">
-                                            <strong style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                {formatLikes(selectedSpecialist?.likesCount ?? 0)}
-                                                <StarRoundedIcon style={{ fontSize: '1.1rem', color: '#e8745a', marginBottom: '2px' }} />
-                                            </strong>
-                                            <span>Points</span>
-                                        </div>
-                                    </div>
+		const rect = node.getBoundingClientRect();
+		const x = (event.clientX - rect.left) / rect.width - 0.5;
+		const y = (event.clientY - rect.top) / rect.height - 0.5;
 
-                                    <Link href={selectedSpecialist?.profileHref ?? '/specialist'} className="team-pawpal__contact">
-                                        Contact Specialist
-                                    </Link>
+		setTiltActive(true);
+		setTilt({
+			rx: Math.max(-6, Math.min(6, -y * 6)),
+			ry: Math.max(-6, Math.min(6, x * 6)),
+		});
+	}, []);
 
-                                    <div className="team-pawpal__social" aria-label="Social links">
-                                        <a className="team-pawpal__social-btn" href="#" aria-label="Facebook" onClick={(e) => e.preventDefault()}>
-                                            <FacebookOutlinedIcon fontSize="small" />
-                                        </a>
-                                        <a className="team-pawpal__social-btn" href="#" aria-label="Instagram" onClick={(e) => e.preventDefault()}>
-                                            <InstagramIcon fontSize="small" />
-                                        </a>
-                                        <a className="team-pawpal__social-btn" href="#" aria-label="Twitter" onClick={(e) => e.preventDefault()}>
-                                            <TwitterIcon fontSize="small" />
-                                        </a>
-                                        <a className="team-pawpal__social-btn" href="#" aria-label="LinkedIn" onClick={(e) => e.preventDefault()}>
-                                            <LinkedInIcon fontSize="small" />
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+	const handleFeaturedLeave = useCallback(() => {
+		setTiltActive(false);
+		setTilt({ rx: 0, ry: 0 });
+	}, []);
 
-                        <div className="team-pawpal__dots" role="tablist" aria-label="Specialist navigation">
-                            {specialists.slice(0, 6).map((sp, idx) => (
-                                <button
-                                    key={sp.id}
-                                    type="button"
-                                    className={`team-pawpal__dot ${idx === selectedIndex ? 'is-active' : ''}`}
-                                    onClick={() => setSelectedId(sp.id)}
-                                    aria-label={`Show ${sp.name}`}
-                                    role="tab"
-                                    aria-selected={idx === selectedIndex}
-                                />
-                            ))}
-                        </div>
+	const displayName =
+		featuredSpecialist?.memberFullName?.trim() ||
+		featuredSpecialist?.memberNick ||
+		getMemberTypeLabel(MemberType.AGENT);
+	const hasPhoto = hasRealMemberPhoto(featuredSpecialist?.memberImage) && !imageFailed;
+	const imageUrl = hasPhoto ? resolveMemberImageUrl(featuredSpecialist?.memberImage) : '';
+	const credential = featuredSpecialist?.memberDesc?.trim() || '';
 
-                        <div className="team-pawpal__logos" aria-label="Partner logos">
-                            <span className="team-pawpal__logo team-pawpal__logo--serif">ROYAL CANIN</span>
-                            <span className="team-pawpal__logo team-pawpal__logo--script">Purina Pro Plan</span>
-                            <span className="team-pawpal__logo team-pawpal__logo--caps">VETAPPROVED</span>
-                            <span className="team-pawpal__logo team-pawpal__logo--light">GLOBAL PET CARE</span>
-                            <span className="team-pawpal__logo team-pawpal__logo--mono">EcoPaws</span>
-                        </div>
-                    </>
-                )}
-            </div>
-        </section>
-    );
+	const ratingValue =
+		typeof featuredSpecialist?.specialistScore === 'number' && featuredSpecialist.specialistScore > 0
+			? featuredSpecialist.specialistScore.toFixed(1)
+			: '4.9';
+	const reviewCount =
+		(featuredSpecialist?.memberLikes ?? 0) > 0 ? featuredSpecialist?.memberLikes : 128;
+
+	const specialistsStat = formatStatCount(totalSpecialists, '500+');
+	const bookingsStat = '10K+';
+
+	const featuredTransform =
+		tilt.rx !== 0 || tilt.ry !== 0
+			? `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`
+			: 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+
+	return (
+		<section className="pp-spec pp-section" aria-labelledby="team-pawpal-title">
+			<div className="pp-container">
+				{loading ? (
+					<p className="pp-spec__loading">Loading specialists…</p>
+				) : featuredSpecialist ? (
+					<div className="pp-spec__showcase">
+						<Link
+							ref={featuredRef}
+							href={{
+								pathname: '/specialist/detail',
+								query: { id: featuredSpecialist._id },
+							}}
+							className="pp-spec__featured"
+							data-section-reveal="featured"
+							onMouseMove={handleFeaturedMove}
+							onMouseLeave={handleFeaturedLeave}
+							style={{
+								transform: featuredTransform,
+								transition: tiltActive ? 'none' : 'transform 250ms ease-out',
+							}}
+						>
+							<span className="pp-spec__featured-verified">
+								<CheckCircleOutlinedIcon fontSize="inherit" aria-hidden />
+								Verified
+							</span>
+
+							<div className="pp-spec__featured-media">
+								{hasPhoto ? (
+									<img
+										src={imageUrl}
+										alt=""
+										onError={() => setImageFailed(true)}
+									/>
+								) : (
+									<div className="pp-spec__featured-initials" aria-hidden>
+										{getMemberInitial(displayName)}
+									</div>
+								)}
+							</div>
+							<div className="pp-spec__featured-scrim" aria-hidden />
+							<div className="pp-spec__featured-copy">
+								<span className="pp-spec__featured-rating">
+									<StarIcon fontSize="inherit" aria-hidden />
+									{ratingValue} ({reviewCount} reviews)
+								</span>
+								<p className="pp-spec__featured-role">
+									{formatRole(featuredSpecialist.memberType)}
+								</p>
+								<h3 className="pp-spec__featured-name">{displayName}</h3>
+								{credential && (
+									<p className="pp-spec__featured-credential">{credential}</p>
+								)}
+							</div>
+						</Link>
+
+						<aside className="pp-spec__editorial" data-section-reveal="support">
+							<span className="pp-spec__editorial-eyebrow">Our specialists</span>
+							<h2 id="team-pawpal-title" className="pp-spec__editorial-title">
+								Loyal, passionate, and driven
+							</h2>
+							<p className="pp-spec__editorial-body">{EDITORIAL_BODY}</p>
+
+							{(networkAvatars.length > 0 || moreSpecialistsCount > 0) && (
+								<div className="pp-spec__editorial-network">
+									{networkAvatars.length > 0 && (
+										<div className="pp-spec__editorial-avatars" aria-hidden>
+											{networkAvatars.map((member, index) => {
+												const avatarSrc = hasRealMemberPhoto(member.memberImage)
+													? resolveMemberImageUrl(member.memberImage)
+													: DEFAULT_AVATAR;
+												return (
+													<img
+														key={member._id}
+														src={avatarSrc}
+														alt=""
+														style={{ zIndex: networkAvatars.length - index }}
+														onError={(e) => {
+															e.currentTarget.src = DEFAULT_AVATAR;
+														}}
+													/>
+												);
+											})}
+										</div>
+									)}
+									{moreSpecialistsCount > 0 && (
+										<span className="pp-spec__editorial-network-label">
+											+ {moreSpecialistsCount} more
+										</span>
+									)}
+								</div>
+							)}
+
+							<div className="pp-spec__editorial-stats" aria-label="Specialist network highlights">
+								<div className="pp-spec__editorial-stat">
+									<strong>{specialistsStat}</strong>
+									<span>Verified Specialists</span>
+								</div>
+								<span className="pp-spec__editorial-stat-divider" aria-hidden />
+								<div className="pp-spec__editorial-stat">
+									<strong>{ratingValue}</strong>
+									<span>Avg Rating</span>
+								</div>
+								<span className="pp-spec__editorial-stat-divider" aria-hidden />
+								<div className="pp-spec__editorial-stat">
+									<strong>{bookingsStat}</strong>
+									<span>Bookings</span>
+								</div>
+							</div>
+
+							<Link href="/specialist" className="pp-spec__editorial-cta">
+								Meet all specialists →
+							</Link>
+						</aside>
+					</div>
+				) : (
+					<p className="pp-spec__loading">No specialists available yet.</p>
+				)}
+
+				<div className="pp-spec__pillars" role="list">
+					{SPECIALTY_PILLARS.map((pillar) => (
+						<div
+							key={pillar.id}
+							className="pp-spec__pillar"
+							role="listitem"
+							data-section-reveal="pillar"
+						>
+							<span className="pp-spec__pillar-icon" aria-hidden>
+								{pillar.icon}
+							</span>
+							<h4 className="pp-spec__pillar-title">{pillar.title}</h4>
+							<p className="pp-spec__pillar-desc">{pillar.description}</p>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+	);
 }

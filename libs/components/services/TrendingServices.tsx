@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Stack, Box } from '@mui/material';
+import { useRouter } from 'next/router';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
@@ -14,7 +15,9 @@ import { GET_LISTINGS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
-import { Message } from '../../enums/common.enum';
+import { likeToastMessage, readWasLiked } from '../../utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../auth';
+import { withActionGate } from '../../utils/actionGate';
 
 interface TrendingServicesProps {
 	initialInput: ListingsInquiry;
@@ -23,6 +26,7 @@ interface TrendingServicesProps {
 const TrendingServices = (props: TrendingServicesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
+	const router = useRouter();
 	const [trendServices, setTrendServices] = useState<Listing[]>([]);
 
 	/** APOLLO REQUESTS **/
@@ -44,19 +48,25 @@ const TrendingServices = (props: TrendingServicesProps) => {
 	/** HANDLERS **/
 
 	const likeListingHandler = async (user: T, id: string) => {
-		try {
-			if (!id) return;
-			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
+		await withActionGate(`like:listing:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'like')) return;
 
-			await likeTargetListing({
-				variables: { input: id },
-			});
-			await getListingsRefetch({ input: initialInput });
-			await sweetTopSmallSuccessAlert('success', 800);
-		} catch (err: any) {
-			console.log('ERROR likeListingHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
+				const wasLiked = readWasLiked(trendServices?.find((l) => l._id === id));
+
+				await likeTargetListing({
+					variables: { input: id },
+				});
+				await getListingsRefetch({ input: initialInput });
+				await sweetTopSmallSuccessAlert(likeToastMessage(wasLiked), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'like')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.log('ERROR likeListingHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
 	};
 
 	if (!trendServices) return null;

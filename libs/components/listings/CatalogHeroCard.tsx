@@ -3,6 +3,7 @@ import { Stack, Box, Divider, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Listing } from '../../types/listing/listing';
 import { ListingType } from '../../enums/listing.enum';
 import { topListingRank } from '../../config';
@@ -12,6 +13,7 @@ import { userVar } from '../../../apollo/store';
 import { useRouter } from 'next/router';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
+import { getListingDetailHref } from '../../utils/inboxListingContext';
 
 interface CatalogHeroCardProps {
 	listing: Listing;
@@ -23,11 +25,12 @@ const CatalogHeroCard = (props: CatalogHeroCardProps) => {
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
-	const cardImage = resolveListingImageUrl(listing?.listingImages?.[0], '/img/banner/header1.svg');
+	const cardImage = resolveListingImageUrl(listing?.listingImages?.[0], '/img/listing/default-listing.webp');
 
 	/** HANDLERS **/
 	const goListingDetailPage = (listingId: string) => {
-		router.push(`/listings/detail?id=${listingId}`);
+		const href = getListingDetailHref(listingId, listing?.listingType);
+		if (href) void router.push(href);
 	};
 
 	if (device === 'mobile') {
@@ -83,9 +86,9 @@ const CatalogHeroCard = (props: CatalogHeroCardProps) => {
 								}}
 							>
 								{listing?.meLiked && listing?.meLiked[0]?.myFavorite ? (
-									<FavoriteIcon style={{ color: 'red' }} />
+									<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
 								) : (
-									<FavoriteIcon />
+									<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
 								)}
 							</IconButton>
 							<Typography className="view-cnt">{listing?.listingLikes}</Typography>

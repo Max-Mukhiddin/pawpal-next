@@ -13,6 +13,7 @@ import { userVar } from '../../../apollo/store';
 import IconButton from '@mui/material/IconButton';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
+import { getListingDetailHref } from '../../utils/inboxListingContext';
 
 interface CatalogBrowseCardProps {
 	listing: Listing;
@@ -26,6 +27,7 @@ const CatalogBrowseCard = (props: CatalogBrowseCardProps) => {
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const imagePath: string = resolveListingImageUrl(listing?.listingImages?.[0], '/img/listing/default-listing.webp');
+	const detailHref = getListingDetailHref(listing?._id, listing?.listingType) ?? '/service';
 
 	if (device === 'mobile') {
 		return <div>CATALOG CARD</div>;
@@ -33,12 +35,7 @@ const CatalogBrowseCard = (props: CatalogBrowseCardProps) => {
 		return (
 			<Stack className="card-config">
 				<Stack className="top">
-					<Link
-						href={{
-							pathname: '/listings/detail',
-							query: { id: listing?._id },
-						}}
-					>
+					<Link href={detailHref}>
 						<img
 							src={imagePath}
 							onError={(e) => {
@@ -60,12 +57,7 @@ const CatalogBrowseCard = (props: CatalogBrowseCardProps) => {
 				<Stack className="bottom">
 					<Stack className="name-address">
 						<Stack className="name">
-							<Link
-								href={{
-									pathname: '/listings/detail',
-									query: { id: listing?._id },
-								}}
-							>
+							<Link href={detailHref}>
 								<Typography>{listing.listingTitle}</Typography>
 							</Link>
 						</Stack>
@@ -99,13 +91,20 @@ const CatalogBrowseCard = (props: CatalogBrowseCardProps) => {
 									<RemoveRedEyeIcon />
 								</IconButton>
 								<Typography className="view-cnt">{listing?.listingViews}</Typography>
-								<IconButton color={'default'} onClick={() => likeListingHandler(user, listing?._id)}>
-									{myFavorites ? (
-										<FavoriteIcon color="primary" />
-									) : listing?.meLiked && listing?.meLiked[0]?.myFavorite ? (
-										<FavoriteIcon color="primary" />
+								<IconButton
+									color={'default'}
+									type="button"
+									onClick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										void likeListingHandler(user, listing?._id);
+									}}
+									onPointerDown={(e) => e.stopPropagation()}
+								>
+									{myFavorites || (listing?.meLiked && listing?.meLiked[0]?.myFavorite) ? (
+										<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
 									) : (
-										<FavoriteBorderIcon />
+										<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
 									)}
 								</IconButton>
 								<Typography className="view-cnt">{listing?.listingLikes}</Typography>

@@ -3,6 +3,7 @@ import { Stack, Box, Divider, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import type { Listing } from '../../types/listing/listing';
 import { ListingType } from '../../enums/listing.enum';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
@@ -75,9 +76,9 @@ const TopServiceCard = (props: TopServiceCardProps) => {
 							<Typography className="view-cnt">{listing?.listingViews}</Typography>
 							<IconButton color={'default'} onClick={() => likeListingHandler(user, listing?._id)}>
 								{listing?.meLiked && listing?.meLiked[0]?.myFavorite ? (
-									<FavoriteIcon style={{ color: 'red' }} />
+									<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
 								) : (
-									<FavoriteIcon />
+									<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
 								)}
 							</IconButton>
 							<Typography className="view-cnt">{listing?.listingLikes}</Typography>
@@ -132,9 +133,9 @@ const TopServiceCard = (props: TopServiceCardProps) => {
 							<Typography className="view-cnt">{listing?.listingViews}</Typography>
 							<IconButton color={'default'} onClick={() => likeListingHandler(user, listing?._id)}>
 								{listing?.meLiked && listing?.meLiked[0]?.myFavorite ? (
-									<FavoriteIcon style={{ color: 'red' }} />
+									<FavoriteIcon sx={{ color: 'var(--pp-like-red)' }} />
 								) : (
-									<FavoriteIcon />
+									<FavoriteBorderIcon sx={{ color: 'var(--pp-like-red)' }} />
 								)}
 							</IconButton>
 							<Typography className="view-cnt">{listing?.listingLikes}</Typography>

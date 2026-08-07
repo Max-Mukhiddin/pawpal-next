@@ -1,0 +1,41 @@
+/**
+ * Site-wide fixed bottom vignette — soft forest fade + light blur.
+ * z-index 900: above page content, below chat FAB (999), navbar (1000+), toasts (10000).
+ */
+
+.pp-bottom-vignette {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: clamp(120px, 14vh, 160px);
+	z-index: 900;
+	pointer-events: none;
+	opacity: 1;
+	transition: opacity 250ms ease;
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	background: linear-gradient(
+		to top,
+		rgba(23, 62, 50, 0.25) 0%,
+		rgba(23, 62, 50, 0.08) 50%,
+		transparent 100%
+	);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	/* Fade the blur edge so it doesn't read as a hard bar */
+	mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+	-webkit-mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+
+	&--at-top,
+	&--hidden {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pp-bottom-vignette {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		transition: none;
+	}
+}

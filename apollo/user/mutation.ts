@@ -54,6 +54,18 @@ export const LOGIN = gql`
 	}
 `;
 
+export const APPLY_AS_SPECIALIST = gql`
+	mutation ApplyAsSpecialist($memberDesc: String!) {
+		applyAsSpecialist(memberDesc: $memberDesc) {
+			_id
+			memberType
+			isPendingSpecialist
+			memberDesc
+			accessToken
+		}
+	}
+`;
+
 export const UPDATE_MEMBER = gql`
 	mutation UpdateMember($input: MemberUpdate!) {
 		updateMember(input: $input) {
@@ -385,6 +397,33 @@ export const UNSUBSCRIBE = gql`
 			followerId
 			followingId
 			createdAt
+		}
+	}
+`;
+
+/**************************
+ *      NOTIFICATION      *
+ *************************/
+
+export const MARK_NOTIFICATION_READ = gql`
+	mutation MarkNotificationRead($notificationId: String!) {
+		markNotificationRead(notificationId: $notificationId) {
+			_id
+			notificationStatus
+		}
+	}
+`;
+
+export const MARK_ALL_NOTIFICATIONS_READ = gql`
+	mutation MarkAllNotificationsRead {
+		markAllNotificationsRead
+	}
+`;
+
+export const DELETE_NOTIFICATION = gql`
+	mutation DeleteNotification($notificationId: String!) {
+		deleteNotification(notificationId: $notificationId) {
+			_id
 		}
 	}
 `;

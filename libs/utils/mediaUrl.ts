@@ -1,6 +1,6 @@
 import { REACT_APP_API_URL } from '../config';
 
-const API_BASE = REACT_APP_API_URL || 'http://localhost:5007';
+const API_BASE = REACT_APP_API_URL || 'http://localhost:3007';
 
 const isLocalAssetPath = (path: string) =>
 	path.startsWith('/images/') || path.startsWith('/img/') || path.startsWith('/public/') || path.startsWith('/icons/');

@@ -13,8 +13,8 @@ import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
 import { UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { useRouter } from 'next/router';
 import Moment from 'react-moment';
-import { REACT_APP_API_URL } from '../../config';
 import { getArticleCategoryLabel } from '../../utils/articleCategoryMap';
+import { resolveArticleImage } from '../../utils/articleCardHelpers';
 import { BoardArticleStatus } from '../../enums/board-article.enum';
 import { sweetConfirmAlert, sweetErrorHandling } from '../../sweetAlert';
 
@@ -118,9 +118,10 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 					</div>
 				) : boardArticles?.length > 0 ? (
 					boardArticles.map((article: BoardArticle) => {
-						const imageSrc = article.articleImage
-							? `${REACT_APP_API_URL}/${article.articleImage}`
-							: '/img/community/communityImg.png';
+						const imageSrc = resolveArticleImage(
+							article.articleImage,
+							'/img/community/communityImg.png',
+						);
 						const categoryLabel = getArticleCategoryLabel(article.articleCategory);
 
 						return (
@@ -176,6 +177,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 					<Stack className="pagination-conf">
 						<Stack className="pagination-box">
 							<Pagination
+								className="pp-pagination"
 								count={Math.ceil(totalCount / searchCommunity.limit)}
 								page={searchCommunity.page}
 								shape="circular"

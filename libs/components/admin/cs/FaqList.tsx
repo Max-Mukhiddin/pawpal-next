@@ -1,202 +1,96 @@
 import React from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
 import {
-	TableCell,
-	TableHead,
-	TableBody,
-	TableRow,
-	Table,
-	TableContainer,
-	Button,
-	Menu,
 	Fade,
+	IconButton,
+	Menu,
 	MenuItem,
+	Stack,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
 } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
-import { Stack } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import type { Faq } from '../../../types/cs/faq';
+import { formatDisplayDateTime } from '../../../utils/formatDisplayDateTime';
+import {
+	formatCsCategory,
+	formatCsStatusLabel,
+	getCsStatusBadgeClass,
+} from '../../../utils/csDisplay';
 
-interface Data {
-	category: string;
-	title: string;
-	writer: string;
-	date: string;
-	status: string;
-	id?: string;
-}
+type FaqListProps = {
+	faqs: Faq[];
+	actionsAnchorEl: Record<string, HTMLElement | null>;
+	onActionsOpen: (event: React.MouseEvent<HTMLElement>, id: string) => void;
+	onActionsClose: () => void;
+	onEdit: (faq: Faq) => void;
+};
 
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-	if (b[orderBy] < a[orderBy]) {
-		return -1;
-	}
-	if (b[orderBy] > a[orderBy]) {
-		return 1;
-	}
-	return 0;
-}
-
-type Order = 'asc' | 'desc';
-
-interface HeadCell {
-	disablePadding: boolean;
-	id: keyof Data;
-	label: string;
-	numeric: boolean;
-}
-
-const headCells: readonly HeadCell[] = [
-	{
-		id: 'category',
-		numeric: true,
-		disablePadding: false,
-		label: 'CATEGORY',
-	},
-	{
-		id: 'title',
-		numeric: true,
-		disablePadding: false,
-		label: 'TITLE',
-	},
-
-	{
-		id: 'writer',
-		numeric: true,
-		disablePadding: false,
-		label: 'WRITER',
-	},
-	{
-		id: 'date',
-		numeric: true,
-		disablePadding: false,
-		label: 'DATE',
-	},
-	{
-		id: 'status',
-		numeric: false,
-		disablePadding: false,
-		label: 'STATUS',
-	},
-];
-
-interface EnhancedTableProps {
-	numSelected: number;
-	onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Data) => void;
-	onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-	order: Order;
-	orderBy: string;
-	rowCount: number;
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-	const { onSelectAllClick } = props;
-
-	return (
-		<TableHead>
-			<TableRow>
-				{headCells.map((headCell) => (
-					<TableCell
-						key={headCell.id}
-						align={headCell.numeric ? 'left' : 'center'}
-						padding={headCell.disablePadding ? 'none' : 'normal'}
-					>
-						{headCell.label}
-					</TableCell>
-				))}
-			</TableRow>
-		</TableHead>
-	);
-}
-
-interface FaqArticlesPanelListType {
-	dense?: boolean;
-	membersData?: any;
-	searchMembers?: any;
-	anchorEl?: any;
-	handleMenuIconClick?: any;
-	handleMenuIconClose?: any;
-	generateMentorTypeHandle?: any;
-}
-
-export const FaqArticlesPanelList = (props: FaqArticlesPanelListType) => {
-	const {
-		dense,
-		membersData,
-		searchMembers,
-		anchorEl,
-		handleMenuIconClick,
-		handleMenuIconClose,
-		generateMentorTypeHandle,
-	} = props;
-	const router = useRouter();
-
-	/** APOLLO REQUESTS **/
-	/** LIFECYCLES **/
-	/** HANDLERS **/
-
+export function FaqArticlesPanelList({
+	faqs,
+	actionsAnchorEl,
+	onActionsOpen,
+	onActionsClose,
+	onEdit,
+}: FaqListProps) {
 	return (
 		<Stack>
 			<TableContainer>
-				<Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size={dense ? 'small' : 'medium'}>
-					{/*@ts-ignore*/}
-					<EnhancedTableHead />
+				<Table sx={{ minWidth: 900 }} aria-label="FAQ table" size="medium">
+					<TableHead>
+						<TableRow>
+							<TableCell>Category</TableCell>
+							<TableCell>Title / Question</TableCell>
+							<TableCell>Writer</TableCell>
+							<TableCell>Date</TableCell>
+							<TableCell align="center">Status</TableCell>
+							<TableCell align="center">Actions</TableCell>
+						</TableRow>
+					</TableHead>
 					<TableBody>
-						{[1, 2, 3, 4, 5].map((ele: any, index: number) => {
-							const member_image = '/img/profile/defaultUser.svg';
+						{faqs.length === 0 && (
+							<TableRow>
+								<TableCell align="center" colSpan={6}>
+									<span className="no-data">data not found!</span>
+								</TableCell>
+							</TableRow>
+						)}
 
-							let status_class_name = '';
-
-							return (
-								<TableRow hover key={'member._id'} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-									<TableCell align="left">mb id</TableCell>
-									<TableCell align="left">member.mb_full_name</TableCell>
-									<TableCell align="left" className={'name'}>
-										<Stack direction={'row'}>
-											<Link href={`/_admin/users/detail?mb_id=$'{member._id'}`}>
-												<div>
-													<Avatar alt="Remy Sharp" src={member_image} sx={{ ml: '2px', mr: '10px' }} />
-												</div>
-											</Link>
-											<Link href={`/_admin/users/detail?mb_id=${'member._id'}`}>
-												<div>member.mb_nick</div>
-											</Link>
-										</Stack>
-									</TableCell>
-									<TableCell align="left">member.mb_phone</TableCell>
-									<TableCell align="center">
-										<Button onClick={(e: any) => handleMenuIconClick(e, index)} className={'badge success'}>
-											member.mb_type
-										</Button>
-
-										<Menu
-											className={'menu-modal'}
-											MenuListProps={{
-												'aria-labelledby': 'fade-button',
-											}}
-											anchorEl={anchorEl[index]}
-											open={Boolean(anchorEl[index])}
-											onClose={handleMenuIconClose}
-											TransitionComponent={Fade}
-											sx={{ p: 1 }}
-										>
-											<MenuItem onClick={(e) => generateMentorTypeHandle('member._id', 'mentor', 'originate')}>
-												<Typography variant={'subtitle1'} component={'span'}>
-													MENTOR
-												</Typography>
-											</MenuItem>
-											<MenuItem onClick={(e) => generateMentorTypeHandle('member._id', 'user', 'remove')}>
-												<Typography variant={'subtitle1'} component={'span'}>
-													USER
-												</Typography>
-											</MenuItem>
-										</Menu>
-									</TableCell>
-								</TableRow>
-							);
-						})}
+						{faqs.map((faq) => (
+							<TableRow hover key={faq._id} className="admin-table-row" sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+								<TableCell align="left">
+									<span className="admin-badge admin-badge--user">{formatCsCategory(faq.faqCategory)}</span>
+								</TableCell>
+								<TableCell align="left" className="admin-cs-title-cell">
+									{faq.faqQuestion}
+								</TableCell>
+								<TableCell align="left">PawPal Staff</TableCell>
+								<TableCell align="left">{formatDisplayDateTime(faq.createdAt)}</TableCell>
+								<TableCell align="center">
+									<span className={getCsStatusBadgeClass(faq.faqStatus)}>{formatCsStatusLabel(faq.faqStatus)}</span>
+								</TableCell>
+								<TableCell align="center">
+									<IconButton size="small" aria-label="FAQ actions" onClick={(e) => onActionsOpen(e, faq._id)}>
+										<MoreHorizIcon />
+									</IconButton>
+									<Menu
+										className="admin-menu-modal menu-modal"
+										anchorEl={actionsAnchorEl[faq._id]}
+										open={Boolean(actionsAnchorEl[faq._id])}
+										onClose={onActionsClose}
+										TransitionComponent={Fade}
+									>
+										<MenuItem onClick={() => onEdit(faq)}>Edit FAQ</MenuItem>
+									</Menu>
+								</TableCell>
+							</TableRow>
+						))}
 					</TableBody>
 				</Table>
 			</TableContainer>
 		</Stack>
 	);
-};
+}

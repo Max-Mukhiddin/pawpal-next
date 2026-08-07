@@ -62,6 +62,7 @@ const requestJwtToken = async ({
 	}
 };
 
+/** Throws on failure so callers can show the error — success is only reached with a stored JWT. */
 export const signUp = async (
 	nick: string,
 	password: string,
@@ -69,24 +70,21 @@ export const signUp = async (
 	memberType: string,
 	options?: { memberDesc?: string; isPendingSpecialist?: boolean },
 ): Promise<void> => {
-	try {
-		const { jwtToken } = await requestSignUpJwtToken({
-			nick,
-			password,
-			phone,
-			memberType,
-			memberDesc: options?.memberDesc,
-			isPendingSpecialist: options?.isPendingSpecialist,
-		});
+	const { jwtToken } = await requestSignUpJwtToken({
+		nick,
+		password,
+		phone,
+		memberType,
+		memberDesc: options?.memberDesc,
+		isPendingSpecialist: options?.isPendingSpecialist,
+	});
 
-		if (jwtToken) {
-			updateStorage({ jwtToken });
-			updateUserInfo(jwtToken);
-		}
-	} catch (err) {
-		console.warn('login err', err);
-		logOut();
+	if (!jwtToken) {
+		throw new Error('Signup failed. Please try again.');
 	}
+
+	updateStorage({ jwtToken });
+	updateUserInfo(jwtToken);
 };
 
 const requestSignUpJwtToken = async ({
@@ -132,16 +130,10 @@ const requestSignUpJwtToken = async ({
 
 		return { jwtToken: accessToken };
 	} catch (err: any) {
-		console.error('request token err', err.graphQLErrors);
-		switch (err.graphQLErrors[0].message) {
-			case 'Definer: login and password do not match':
-				await sweetMixinErrorAlert('Please check your password again');
-				break;
-			case 'Definer: user has been blocked!':
-				await sweetMixinErrorAlert('User has been blocked!');
-				break;
-		}
-		throw new Error('token error');
+		console.error('request token err', err?.graphQLErrors);
+		const msg =
+			err?.graphQLErrors?.[0]?.message ?? err?.message ?? 'Signup failed. Please try again.';
+		throw new Error(msg);
 	}
 };
 
@@ -195,6 +187,31 @@ export const logOut = () => {
 	window.location.reload();
 };
 
+type RouterLike = { push: (url: string) => void | Promise<boolean> };
+
+/** Redirect to join when a like/bookmark mutation fails due to auth expiry. */
+export const handleLikeMutationAuthError = async (
+	err: unknown,
+	router: RouterLike,
+): Promise<boolean> => {
+	const errorMessage =
+		(err as { message?: string })?.message ||
+		(err as { graphQLErrors?: { message?: string }[] })?.graphQLErrors?.[0]?.message ||
+		'';
+
+	if (
+		errorMessage.toLowerCase().includes('jwt') ||
+		errorMessage.toLowerCase().includes('expired') ||
+		errorMessage.toLowerCase().includes('unauthorized') ||
+		errorMessage.toLowerCase().includes('unauthenticated')
+	) {
+		logOut();
+		await router.push('/account/join');
+		return true;
+	}
+	return false;
+};
+
 const deleteStorage = () => {
 	localStorage.removeItem('accessToken');
 	window.localStorage.setItem('logout', Date.now().toString());
@@ -226,3 +243,11 @@ const deleteUserInfo = () => {
 		memberBlocks: 0,
 	} as any);
 };
+
+export {
+	requireSignIn,
+	handleSignInRequiredError,
+	isSignInRequiredMessage,
+	type SignInAction,
+	type RouterLike as SignInRouterLike,
+} from './signInPrompt';

@@ -13,12 +13,16 @@ import {
 	MenuItem,
 	Chip,
 } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import { Stack } from '@mui/material';
 import { Member } from '../../../types/member/member';
-import { REACT_APP_API_URL } from '../../../config';
 import { MemberStatus, MemberType } from '../../../enums/member.enum';
+import AdminMemberAvatar from '../AdminMemberAvatar';
+import {
+	formatAdminMemberType,
+	getAdminMemberTypeBadgeClass,
+	getAdminStatusBadgeClass,
+} from '../../../utils/adminDisplay';
 
 interface Data {
 	id: string;
@@ -173,19 +177,14 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 
 						{members.length !== 0 &&
 							members.map((member: Member, index: number) => {
-								const member_image = member.memberImage
-									? `${REACT_APP_API_URL}/${member.memberImage}`
-									: '/img/profile/defaultUser.svg';
 								return (
-									<TableRow hover key={member?._id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+									<TableRow hover key={member?._id} className="admin-table-row" sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
 										<TableCell align="left">{member._id}</TableCell>
 
-										<TableCell align="left" className={'name'}>
-											<Stack direction={'row'}>
+										<TableCell align="left" className="name">
+											<Stack direction="row" alignItems="center">
 												<Link href={`/member?memberId=${member._id}`}>
-													<div>
-														<Avatar alt="Remy Sharp" src={member_image} sx={{ ml: '2px', mr: '10px' }} />
-													</div>
+													<AdminMemberAvatar imagePath={member.memberImage} alt={member.memberNick} />
 												</Link>
 												<Link href={`/member?memberId=${member._id}`}>
 													<div>{member.memberNick}</div>
@@ -197,12 +196,15 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 										<TableCell align="left">{member.memberPhone}</TableCell>
 
 										<TableCell align="center">
-											<Button onClick={(e: any) => menuIconClickHandler(e, index)} className={'badge success'}>
-												{member.memberType}
+											<Button
+												onClick={(e: any) => menuIconClickHandler(e, index)}
+												className={getAdminMemberTypeBadgeClass(member.memberType)}
+											>
+												{formatAdminMemberType(member.memberType)}
 											</Button>
 
 											<Menu
-												className={'menu-modal'}
+												className="admin-menu-modal menu-modal"
 												MenuListProps={{
 													'aria-labelledby': 'fade-button',
 												}}
@@ -219,8 +221,8 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 															onClick={() => updateMemberHandler({ _id: member._id, memberType: type })}
 															key={type}
 														>
-															<Typography variant={'subtitle1'} component={'span'}>
-																{type}
+															<Typography variant="subtitle1" component="span">
+																{formatAdminMemberType(type)}
 															</Typography>
 														</MenuItem>
 													))}
@@ -230,12 +232,15 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 										<TableCell align="center">{member.memberWarnings}</TableCell>
 										<TableCell align="center">{member.memberBlocks}</TableCell>
 										<TableCell align="center">
-											<Button onClick={(e: any) => menuIconClickHandler(e, member._id)} className={'badge success'}>
+											<Button
+												onClick={(e: any) => menuIconClickHandler(e, member._id)}
+												className={getAdminStatusBadgeClass(member.memberStatus)}
+											>
 												{member.memberStatus}
 											</Button>
 
 											<Menu
-												className={'menu-modal'}
+												className="admin-menu-modal menu-modal"
 												MenuListProps={{
 													'aria-labelledby': 'fade-button',
 												}}
@@ -252,7 +257,7 @@ export const MemberPanelList = (props: MemberPanelListType) => {
 															onClick={() => updateMemberHandler({ _id: member._id, memberStatus: status })}
 															key={status}
 														>
-															<Typography variant={'subtitle1'} component={'span'}>
+															<Typography variant="subtitle1" component="span">
 																{status}
 															</Typography>
 														</MenuItem>

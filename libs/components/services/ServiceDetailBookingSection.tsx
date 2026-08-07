@@ -1,10 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { useMutation } from '@apollo/client';
+import { useRouter } from 'next/router';
 import type { Service } from '../../types/services/service';
 import type { T } from '../../types/common';
 import { CREATE_BOOKING } from '../../../apollo/user/mutation';
-import { Message } from '../../enums/common.enum';
+import { requireSignIn } from '../../auth';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { getUserReadableErrorMessage } from '../../utils/graphqlErrorMessage';
 
@@ -20,6 +21,7 @@ function toDateTimeLocalString(d: Date): string {
 
 /** Service-only booking request: date/time + optional note (`createBooking`). */
 const ServiceDetailBookingSection: React.FC<ServiceDetailBookingSectionProps> = ({ service, user }) => {
+	const router = useRouter();
 	const listingId = service?._id;
 	const [dateTimeLocal, setDateTimeLocal] = useState('');
 	const [note, setNote] = useState('');
@@ -38,10 +40,7 @@ const ServiceDetailBookingSection: React.FC<ServiceDetailBookingSectionProps> = 
 	}, []);
 
 	const onSubmit = async () => {
-		if (!user?._id) {
-			await sweetMixinErrorAlert(Message.NOT_AUTHENTICATED);
-			return;
-		}
+		if (requireSignIn(router, user?._id, 'book')) return;
 		if (!listingId) {
 			await sweetMixinErrorAlert('This service is unavailable. Refresh the page and try again.');
 			return;
@@ -68,7 +67,7 @@ const ServiceDetailBookingSection: React.FC<ServiceDetailBookingSectionProps> = 
 					},
 				},
 			});
-			await sweetTopSmallSuccessAlert('Your booking request was sent. You will see it under My bookings.', 2800);
+			await sweetTopSmallSuccessAlert('Booked!', 2800);
 			setDateTimeLocal('');
 			setNote('');
 		} catch (err: unknown) {

@@ -16,13 +16,11 @@
 		&__card {
 			display: flex;
 			align-items: stretch;
-			background: #fffaf5;
-			border: 1px solid rgba(224, 123, 58, 0.14);
+			background: #ffffff;
+			border: 1px solid var(--pp-border-subtle);
 			border-radius: 28px;
 			overflow: hidden;
-			box-shadow:
-				0 4px 16px rgba(42, 36, 30, 0.05),
-				0 20px 56px rgba(42, 36, 30, 0.08);
+			box-shadow: var(--pp-shadow-on-mist);
 			min-height: 220px;
 			position: relative;
 		}
@@ -89,7 +87,7 @@
 
 			&--primary {
 				background: var(--pp-primary);
-				color: #fff;
+				color: var(--pp-honey);
 				border: 2px solid transparent;
 
 				&:hover {
@@ -121,7 +119,7 @@
 				content: '';
 				position: absolute;
 				inset: 0;
-				background: linear-gradient(90deg, #fffaf5 0%, transparent 30%);
+				background: linear-gradient(90deg, #ffffff 0%, transparent 30%);
 				z-index: 1;
 				pointer-events: none;
 			}
@@ -182,7 +180,7 @@
 				height: 200px;
 
 				&::before {
-					background: linear-gradient(0deg, #fffaf5 0%, transparent 40%);
+					background: linear-gradient(0deg, #ffffff 0%, transparent 40%);
 				}
 			}
 

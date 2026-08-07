@@ -1,117 +1,246 @@
 import Link from 'next/link';
-import { useMemo } from 'react';
-import { useQuery } from '@apollo/client';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useMutation, useQuery } from '@apollo/client';
+import { useRouter } from 'next/router';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
+import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
 import { ListingType } from '../../enums/listing.enum';
 import type { Listing } from '../../types/listing/listing';
-import { resolveListingImageUrl } from '../../utils/mediaUrl';
+import type { Product } from '../../types/products/product';
+import { T } from '../../types/common';
+import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { likeToastMessage, readWasLiked } from '../../utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../auth';
+import { withActionGate } from '../../utils/actionGate';
+import ProductCard from '../products/ProductCard';
 
-interface ProductCard {
-    _id: string;
-    title: string;
-    price: number;
-    image: string;
-    href: string;
-}
-
-const FALLBACK_PRODUCTS: ProductCard[] = [
-    { _id: 'fp-1', title: 'Pro Grooming Brush Set', price: 49, image: '/images/products/product-brush.jpg', href: '/product' },
-    { _id: 'fp-2', title: '10m Long Training Lead', price: 63, image: '/images/products/product-lead.jpg', href: '/product' },
-    { _id: 'fp-3', title: 'Dental Care Starter Kit', price: 56, image: '/images/products/product-dental.jpg', href: '/product' },
-    { _id: 'fp-4', title: 'Interactive Puzzle Feeder', price: 32, image: '/images/products/product-feeder.jpg', href: '/product' },
+const FALLBACK_PRODUCTS: Product[] = [
+	{
+		_id: 'fp-1',
+		listingTitle: 'Pro Grooming Brush Set',
+		listingPrice: 49000,
+		listingImages: ['/img/listing/junho_groom_brush.jpg'],
+		listingDesc: 'A complete grooming kit with a slicker brush, comb and de-shedding tool.',
+	} as Product,
+	{
+		_id: 'fp-2',
+		listingTitle: '10m Long Training Lead',
+		listingPrice: 63000,
+		listingImages: ['/img/listing/minjun_trainer_leash.jpg'],
+		listingDesc: 'Durable 10-metre lead for recall and obedience training.',
+	} as Product,
+	{
+		_id: 'fp-3',
+		listingTitle: 'Dental Care Starter Kit',
+		listingPrice: 56000,
+		listingImages: ['/img/listing/haerin_vet_dental_kit.jpg'],
+		listingDesc: 'Brush, paste and dental chews for fresh breath and clean teeth.',
+	} as Product,
+	{
+		_id: 'fp-4',
+		listingTitle: 'Interactive Puzzle Feeder',
+		listingPrice: 32000,
+		listingImages: ['/img/listing/jiwoo_catcare_puzzle.jpg'],
+		listingDesc: 'Slow-feed puzzle bowl that keeps curious pets engaged.',
+	} as Product,
+	{
+		_id: 'fp-5',
+		listingTitle: 'Cozy Orthopedic Pet Bed',
+		listingPrice: 78000,
+		listingImages: ['/img/listing/jiwoo_catcare_scratcher.jpg'],
+		listingDesc: 'Memory-foam bed that cushions joints for restful sleep.',
+	} as Product,
 ];
 
-const formatPrice = (price: number): string =>
-    `₩${Number(price).toLocaleString('ko-KR')}`;
+const AUTO_SCROLL_SPEED = 1.2;
+const DRAG_THRESHOLD = 8;
 
 export default function FeaturedProducts() {
-    const variables = useMemo(
-        () => ({
-            input: {
-                page: 1,
-                limit: 4,
-                sort: 'listingViews',
-                direction: 'DESC',
-                search: { typeList: [ListingType.PRODUCT] },
-            },
-        }),
-        [],
-    );
+	const router = useRouter();
+	const variables = useMemo(
+		() => ({
+			input: {
+				page: 1,
+				limit: 8,
+				sort: 'createdAt',
+				direction: 'DESC',
+				search: { typeList: [ListingType.PRODUCT] },
+			},
+		}),
+		[],
+	);
 
-    const { data } = useQuery(GET_LISTINGS, {
-        variables,
-        fetchPolicy: 'cache-and-network',
-    });
+	const { data, refetch } = useQuery(GET_LISTINGS, {
+		variables,
+		fetchPolicy: 'cache-and-network',
+	});
 
-    const listings: Listing[] = data?.getListings?.list ?? [];
+	const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
 
-    const cards: ProductCard[] = listings.length >= 4
-        ? listings.slice(0, 4).map((l) => ({
-                _id: l._id,
-                title: l.listingTitle,
-                price: (l as any).listingPrice ?? 0,
-                image: l.listingImages?.[0] ?? '',
-                href: `/product/detail?id=${l._id}`,
-            }))
-        : FALLBACK_PRODUCTS;
+	useAnimeSectionReveal({
+		sectionSelector: '.pp-products',
+		deps: [data],
+	});
 
-    return (
-        <section className="featured-products animate-on-scroll" aria-labelledby="featured-products-title">
-            <div className="featured-products__shapes" aria-hidden>
-                <span className="featured-products__shape featured-products__shape--1" />
-                <span className="featured-products__shape featured-products__shape--2" />
-                <span className="featured-products__shape featured-products__shape--3" />
-            </div>
-            <div className="featured-products__container">
-                <header className="featured-products__header">
-                    <p className="featured-products__label">OUR PRODUCTS</p>
-                    <h2 id="featured-products-title" className="featured-products__title">
-                        Everything your pet needs
-                    </h2>
-                    <p className="featured-products__subtitle">
-                        From nutrition to comfort, discover quality picks trusted by PawPal families.
-                    </p>
-                </header>
+	const listings: Listing[] = data?.getListings?.list ?? [];
+	const products: Product[] = listings.length > 0 ? listings : FALLBACK_PRODUCTS;
 
-                <div className="featured-products__grid">
-                    {cards.map((card, index) => {
-                        const imageUrl = resolveListingImageUrl(card.image, '/img/listing/default-listing.webp');
-                        return (
-                            <Link
-                                href={card.href}
-                                className={`featured-products__card featured-products__card--${index + 1}`}
-                                key={card._id}
-                            >
-                                <span className="featured-products__rotated-title">{card.title}</span>
-                                <div className="featured-products__media">
-                                    <img
-                                        src={imageUrl}
-                                        alt={card.title}
-                                        className="featured-products__img"
-                                        loading="lazy"
-                                        onError={(e) => {
-                                            e.currentTarget.src = '/img/listing/default-listing.webp';
-                                        }}
-                                    />
-                                </div>
-                                <p className="featured-products__price">{formatPrice(card.price)}</p>
-                                <span className="featured-products__cta">View Product</span>
-                            </Link>
-                        );
-                    })}
-                </div>
+	const likeProductHandler = async (user: T, id: string) => {
+		await withActionGate(`like:listing:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'like')) return;
+				const wasLiked = readWasLiked(products.find((p) => p._id === id));
+				await likeTargetListing({ variables: { input: id } });
+				await refetch(variables);
+				await sweetTopSmallSuccessAlert(likeToastMessage(wasLiked), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'like')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.log('ERROR likeProductHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
+	};
 
-                {/* Centered Footer Button matching image_adeae5.jpg layout */}
-                <div className="featured-products__footer">
-                    <Link href="/product" className="featured-products__browse-btn">
-                        <span>Browse all products</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                            <polyline points="12 5 19 12 12 19"></polyline>
-                        </svg>
-                    </Link>
-                </div>
-            </div>
-        </section>
-    );
+	const viewportRef = useRef<HTMLDivElement>(null);
+	const trackRef = useRef<HTMLDivElement>(null);
+	const offsetRef = useRef(0);
+	const directionRef = useRef(-1);
+	const isDraggingRef = useRef(false);
+	const didDragRef = useRef(false);
+	const dragStartXRef = useRef(0);
+	const dragStartOffsetRef = useRef(0);
+	const boundsRef = useRef({ min: 0, max: 0 });
+
+	const recalcBounds = useCallback(() => {
+		if (!trackRef.current || !viewportRef.current) {
+			boundsRef.current = { min: 0, max: 0 };
+			return;
+		}
+		const trackWidth = trackRef.current.scrollWidth;
+		const viewportWidth = viewportRef.current.clientWidth;
+		const min = -Math.max(0, trackWidth - viewportWidth);
+		boundsRef.current = { min, max: 0 };
+	}, []);
+
+	const applyOffset = useCallback((next: number) => {
+		offsetRef.current = next;
+		if (trackRef.current) {
+			trackRef.current.style.transform = `translate3d(${next}px, 0, 0)`;
+		}
+	}, []);
+
+	useEffect(() => {
+		const rafId = requestAnimationFrame(() => recalcBounds());
+		window.addEventListener('resize', recalcBounds);
+		return () => {
+			cancelAnimationFrame(rafId);
+			window.removeEventListener('resize', recalcBounds);
+		};
+	}, [recalcBounds, products.length]);
+
+	useEffect(() => {
+		let frameId: number;
+
+		const tick = () => {
+			if (!isDraggingRef.current) {
+				const { min, max } = boundsRef.current;
+				if (min < 0) {
+					let next = offsetRef.current + directionRef.current * AUTO_SCROLL_SPEED;
+					if (next <= min) {
+						next = min;
+						directionRef.current = 1;
+					} else if (next >= max) {
+						next = max;
+						directionRef.current = -1;
+					}
+					applyOffset(next);
+				}
+			}
+			frameId = requestAnimationFrame(tick);
+		};
+
+		frameId = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frameId);
+	}, [applyOffset]);
+
+	const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+		isDraggingRef.current = true;
+		didDragRef.current = false;
+		dragStartXRef.current = e.clientX;
+		dragStartOffsetRef.current = offsetRef.current;
+
+		const onMove = (ev: PointerEvent) => {
+			if (!isDraggingRef.current) return;
+			const delta = ev.clientX - dragStartXRef.current;
+			if (Math.abs(delta) >= DRAG_THRESHOLD) {
+				didDragRef.current = true;
+				const { min, max } = boundsRef.current;
+				const next = Math.max(min, Math.min(max, dragStartOffsetRef.current + delta));
+				applyOffset(next);
+			}
+		};
+
+		const onUp = () => {
+			isDraggingRef.current = false;
+			window.removeEventListener('pointermove', onMove);
+			window.removeEventListener('pointerup', onUp);
+			window.removeEventListener('pointercancel', onUp);
+		};
+
+		window.addEventListener('pointermove', onMove);
+		window.addEventListener('pointerup', onUp);
+		window.addEventListener('pointercancel', onUp);
+	};
+
+	const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (didDragRef.current) {
+			e.preventDefault();
+			e.stopPropagation();
+			setTimeout(() => {
+				didDragRef.current = false;
+			}, 0);
+		}
+	};
+
+	return (
+		<section className="pp-products pp-section" aria-labelledby="our-products-title">
+			<div className="pp-container pp-products__inner">
+				<div className="pp-products__aside" data-section-reveal="header">
+					<span className="pp-eyebrow">Our products</span>
+					<h2 id="our-products-title" className="pp-heading pp-products__title">
+						Everything your pet needs
+					</h2>
+					<p className="pp-subtitle">From nutrition to comfort, quality picks trusted by PawPal families.</p>
+					<Link href="/product" className="pp-btn pp-btn--primary pp-products__browse" data-section-reveal="cta">
+						Browse all products
+						<ArrowForwardOutlinedIcon aria-hidden />
+					</Link>
+				</div>
+
+				<div
+					ref={viewportRef}
+					className="pp-products__viewport"
+					onPointerDown={handlePointerDown}
+					onClickCapture={handleClickCapture}
+				>
+					<div ref={trackRef} className="pp-products__track">
+						{products.map((product) => (
+							<ProductCard
+								key={product._id}
+								product={product}
+								onLike={likeProductHandler}
+								className="pp-product-card--rail"
+							/>
+						))}
+					</div>
+				</div>
+			</div>
+		</section>
+	);
 }

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
-import { Pagination, Stack, Typography } from '@mui/material';
+import { Pagination } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { useRouter } from 'next/router';
-import CommunityCard from '../common/CommunityCard';
 import { T } from '../../types/common';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { BoardArticlesInquiry } from '../../types/board-article/board-article.input';
-import { useMutation, useQuery } from '@apollo/client';
-import { LIKE_TARGET_BOARD_ARTICLE } from '../../../apollo/user/mutation';
+import { useQuery } from '@apollo/client';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
-import { Messages } from '../../config';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import ArticleHoverCard from '../articles/ArticleHoverCard';
+import { getArticleCategoryLabel } from '../../utils/articleCategoryMap';
+import {
+	formatArticleDate,
+	makeArticleExcerpt,
+	resolveArticleImage,
+} from '../../utils/articleCardHelpers';
 
 const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
@@ -21,15 +24,7 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 	const [searchFilter, setSearchFilter] = useState<BoardArticlesInquiry>(initialInput);
 	const [memberBoArticles, setMemberBoArticles] = useState<BoardArticle[]>([]);
 
-	/** APOLLO REQUESTS **/
-	const [likeTargetBoardArticle] = useMutation(LIKE_TARGET_BOARD_ARTICLE);
-
-	const {
-		loading: boardArticlesLoading,
-		data: boardArticles,
-		error: getBoardArticlesError,
-		refetch: boardArticlesRefetch,
-	} = useQuery(GET_BOARD_ARTICLES, {
+	const { data: boardArticles } = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: searchFilter,
@@ -41,83 +36,59 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 		},
 	});
 
-	/** LIFECYCLES **/
 	useEffect(() => {
 		if (memberId) setSearchFilter({ ...initialInput, search: { memberId: memberId } });
 	}, [memberId]);
 
-	/** HANDLERS **/
 	const paginationHandler = (e: T, value: number) => {
 		setSearchFilter({ ...searchFilter, page: value });
 	};
 
-	const likeArticleHandler = async (e: any, user: any, id: string) => {
-		try {
-			e.stopPropagation();
-			if (!id) return;
-			if (!user._id) throw new Error(Messages.error2);
-
-		await likeTargetBoardArticle({
-			variables: {
-				articleId: id,
-			},
-		});
-
-			await boardArticlesRefetch({ input: searchFilter });
-			await sweetTopSmallSuccessAlert('Success!', 800);
-		} catch (err: any) {
-			console.log('ERROR, likePropertyHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
-	};
-
 	if (device === 'mobile') {
 		return <div>MEMBER ARTICLES MOBILE</div>;
-	} else {
-		return (
-			<div id="member-articles-page">
-				<Stack className="main-title-box">
-					<Stack className="right-box">
-						<Typography className="main-title">Articles</Typography>
-					</Stack>
-				</Stack>
-				<Stack className="articles-list-box">
-					{memberBoArticles?.length === 0 && (
-						<div className={'no-data'}>
-							<img src="/img/icons/icoAlert.svg" alt="" />
-							<p>No Articles found!</p>
-						</div>
-					)}
-					{memberBoArticles?.map((boardArticle: BoardArticle) => {
-						return (
-							<CommunityCard
-								boardArticle={boardArticle}
-								likeArticleHandler={likeArticleHandler}
-								key={boardArticle?._id}
-								size={'small'}
-							/>
-						);
-					})}
-				</Stack>
-				{memberBoArticles?.length !== 0 && (
-					<Stack className="pagination-config">
-						<Stack className="pagination-box">
-							<Pagination
-								count={Math.ceil(total / searchFilter.limit) || 1}
-								page={searchFilter.page}
-								shape="circular"
-								color="primary"
-								onChange={paginationHandler}
-							/>
-						</Stack>
-						<Stack className="total-result">
-							<Typography>{total} listing available</Typography>
-						</Stack>
-					</Stack>
-				)}
-			</div>
-		);
 	}
+
+	return (
+		<div className="member-content">
+			<h1 className="member-content__title">Articles</h1>
+			{memberBoArticles?.length === 0 ? (
+				<div className="member-content__empty">
+					<img src="/img/icons/icoAlert.svg" alt="" />
+					<p>No articles found!</p>
+				</div>
+			) : (
+				<div className="member-content__grid pp-article-card-grid">
+					{memberBoArticles.map((boardArticle: BoardArticle) => (
+						<ArticleHoverCard
+							key={boardArticle._id}
+							href={`/blog/detail?id=${boardArticle._id}`}
+							category={getArticleCategoryLabel(boardArticle.articleCategory)}
+							dateLabel={
+								formatArticleDate(boardArticle.createdAt) ??
+								formatArticleDate(boardArticle.updatedAt) ??
+								'Recent'
+							}
+							title={boardArticle.articleTitle ?? 'Untitled article'}
+							excerpt={makeArticleExcerpt(boardArticle.articleContent)}
+							image={resolveArticleImage(boardArticle.articleImage)}
+						/>
+					))}
+				</div>
+			)}
+			{memberBoArticles?.length !== 0 ? (
+				<div className="member-content__pagination">
+					<Pagination
+						className="pp-pagination"
+						count={Math.ceil(total / searchFilter.limit) || 1}
+						page={searchFilter.page}
+						shape="circular"
+						color="primary"
+						onChange={paginationHandler}
+					/>
+				</div>
+			) : null}
+		</div>
+	);
 };
 
 MemberArticles.defaultProps = {

@@ -1,10 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 58">
-  <ellipse cx="38" cy="39" rx="24" ry="17" fill="#FF7A1A"/>
-  <ellipse cx="16" cy="19" rx="8.5" ry="10.5" fill="#FF7A1A"/>
-  <ellipse cx="30" cy="11" rx="8.5" ry="10.5" fill="#FF7A1A"/>
-  <ellipse cx="46" cy="11" rx="8.5" ry="10.5" fill="#FF7A1A"/>
-  <ellipse cx="60" cy="19" rx="8.5" ry="10.5" fill="#FF7A1A"/>
-  <text x="82" y="40" font-family="Georgia, serif" font-weight="bold" font-size="32">
-    <tspan fill="#FF7A1A">Paw</tspan><tspan fill="#1a1a1a">Pal</tspan>
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300">
+<rect width="100%" height="100%" fill="none"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="10">
+<path d="M120 210 C70 180,70 120,110 95 C120 70,150 60,180 75 C220 95,220 170,210 230 L120 230 Z" stroke="#124734"/>
+<path d="M160 210 C175 175,190 165,215 160" stroke="#D89A32"/>
+<path d="M210 230 C210 120,250 65,320 65 C355 65,380 85,395 95" stroke="#D89A32"/>
+<path d="M300 230 L300 150 C300 115,330 100,360 100" stroke="#D89A32"/>
+</g>
+<text x="420" y="190" font-size="110" font-family="Georgia, serif" fill="#124734">Paw</text>
+<text x="650" y="190" font-size="110" font-family="Georgia, serif" fill="#D89A32">Pal</text>
 </svg>

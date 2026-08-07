@@ -15,7 +15,9 @@ const ServiceBenefits: React.FC<ServiceBenefitsProps> = ({ block, items }) => (
 		<div className="pawpal-static-page__benefits-grid">
 			{items.map((benefit, index) => (
 				<article key={benefit.title} className="pawpal-static-page__benefit">
-					<span className="pawpal-static-page__benefit-icon">{String(index + 1).padStart(2, '0')}</span>
+					<span className="pawpal-static-page__benefit-icon" aria-hidden>
+						{String(index + 1).padStart(2, '0')}
+					</span>
 					<h3>{benefit.title}</h3>
 					<p>{benefit.text}</p>
 				</article>

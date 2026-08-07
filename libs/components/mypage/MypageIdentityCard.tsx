@@ -3,6 +3,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { resolveMemberImageUrl } from '../../utils/mediaUrl';
+import { getMemberTypeLabel } from '../../utils/memberDisplay';
 
 const MypageIdentityCard = () => {
 	const user = useReactiveVar(userVar);
@@ -29,7 +30,7 @@ const MypageIdentityCard = () => {
 						rel="noreferrer"
 						className="mypage-identity-card__badge mypage-identity-card__badge--admin"
 					>
-						{user.memberType}
+						{getMemberTypeLabel(user.memberType)}
 					</a>
 				) : (
 					<span
@@ -39,7 +40,7 @@ const MypageIdentityCard = () => {
 								: 'mypage-identity-card__badge--user'
 						}`}
 					>
-						{user?.memberType ?? '—'}
+						{getMemberTypeLabel(user?.memberType)}
 					</span>
 				)}
 			</Stack>

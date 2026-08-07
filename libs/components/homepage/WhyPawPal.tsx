@@ -1,128 +1,105 @@
 /**
- * Why PawPal — Matches reference layout:
- * Label → Title (italic orange second line) → Image → Features grid with descriptions
+ * Why PawPal — horizontal stat / value strip (distinct from About page icon grid).
  */
 
+import Link from 'next/link';
 import React from 'react';
+import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
 
-const ICONS = {
-    expert: (
-        <svg className="why-pawpal__icon-svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M4 10l8-4 8 4-8 4-8-4Z" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
-            <path
-                d="M6 11.5V16c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-4.5"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    ),
-    safe: (
-        <svg className="why-pawpal__icon-svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-                d="M12 3l7.5 3.4v5.1c0 4.8-3.2 9.2-7.5 10.1C7.7 20.7 4.5 16.3 4.5 11.5V6.4L12 3Z"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinejoin="round"
-            />
-            <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    ),
-    personalized: (
-        <svg className="why-pawpal__icon-svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-            <circle cx={12} cy={8} r={4} stroke="currentColor" strokeWidth={1.8} />
-            <path
-                d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-            />
-            <path d="M17 11l1.5 1.5L21 10" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    ),
-    easy: (
-        <svg className="why-pawpal__icon-svg" width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden>
-            <rect x={4} y={5} width={16} height={15} rx={2} stroke="currentColor" strokeWidth={1.8} />
-            <path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
-            <path d="M9 14h2M13 14h2M9 17h6" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
-        </svg>
-    ),
-} as const;
+/** Landscape puppies — entropy crop keeps subjects in frame (avoids tall-box cover cropping to green bokeh). */
+const PROMISE_IMAGE =
+	'https://images.unsplash.com/photo-1546238232-20216dec9f72?fm=jpg&q=80&w=1200&h=800&fit=crop&crop=entropy';
+const PROMISE_IMAGE_WIDTH = 1200;
+const PROMISE_IMAGE_HEIGHT = 800;
 
-const FEATURES = [
-    {
-        id: 'expert',
-        iconKey: 'expert' as const,
-        title: 'Expert pet specialists',
-        description: 'Vetted professionals dedicated to your pet\'s unique temperament.',
-    },
-    {
-        id: 'safe',
-        iconKey: 'safe' as const,
-        title: 'Safe & trusted care',
-        description: 'Comprehensive insurance and safety protocols for total peace of mind.',
-    },
-    {
-        id: 'personalized',
-        iconKey: 'personalized' as const,
-        title: 'Personalized services',
-        description: 'Tailored routines that respect your pet\'s existing schedule and needs.',
-    },
-    {
-        id: 'easy',
-        iconKey: 'easy' as const,
-        title: 'Convenient booking',
-        description: 'Seamlessly manage appointments through our boutique digital platform.',
-    },
+const STATS = [
+	{
+		id: 'vetted',
+		value: '100%',
+		label: 'Vetted specialists',
+		detail: 'Background-checked and verified before they join PawPal.',
+		tone: 'honey' as const,
+	},
+	{
+		id: 'pricing',
+		value: 'Clear',
+		label: 'Transparent pricing',
+		detail: 'Upfront rates — no surprise fees at checkout.',
+		tone: 'forest' as const,
+	},
+	{
+		id: 'insured',
+		value: 'Insured',
+		label: 'Every visit covered',
+		detail: 'Safety protocols and coverage for peace of mind.',
+		tone: 'forest' as const,
+	},
+	{
+		id: 'booking',
+		value: 'Same-day',
+		label: 'Easy booking',
+		detail: 'Schedule care when you need it, from any device.',
+		tone: 'honey' as const,
+	},
 ] as const;
 
-const STORY_IMAGE = '/images/hero/pawpal-hero.jpg';
-
 export default function WhyPawPal() {
-    return (
-        <section className="pawpal-home-section why-pawpal animate-on-scroll" aria-labelledby="why-pawpal-title">
-            {/* Subtle dot/paw pattern overlay */}
-            <div className="why-pawpal__pattern" aria-hidden />
+	useAnimeSectionReveal({
+		sectionSelector: '.pp-why',
+		supportSelector: '[data-section-reveal="support"]',
+	});
 
-            <div className="why-pawpal__inner">
-                {/* Header: label + title */}
-                <header className="why-pawpal__head">
-                    <p className="why-pawpal__label">WHY PAWPAL</p>
-                    <h2 id="why-pawpal-title" className="why-pawpal__title">
-                        Care You Can Trust,{' '}
-                        <em className="why-pawpal__title-em">Love They Can Feel</em>
-                    </h2>
-                </header>
+	return (
+		<section className="pp-why pp-section" aria-labelledby="why-pawpal-title">
+			<div className="pp-container pp-why__inner">
+				<div className="pp-why__header pp-section-head centered" data-section-reveal="header">
+					<span className="pp-eyebrow">Why PawPal</span>
+					<h2 id="why-pawpal-title" className="pp-heading pp-why__title">
+						The difference is in the details
+					</h2>
+				</div>
 
-                {/* Image — sits between title and features */}
-                <div className="why-pawpal__story">
-                    <div className="why-pawpal__story-frame">
-                        <img
-                            className="why-pawpal__story-img"
-                            src={STORY_IMAGE}
-                            alt="Pet parent spending time with their dog"
-                            width={1200}
-                            height={560}
-                            loading="lazy"
-                            onError={(e) => { e.currentTarget.src = '/img/banner/about.jpg'; }}
-                        />
-                    </div>
-                </div>
+				<div className="pp-why__strip" role="list" data-section-reveal="card">
+					{STATS.map((stat, index) => (
+						<div key={stat.id} className="pp-why__stat" role="listitem">
+							{index > 0 ? <span className="pp-why__divider" aria-hidden /> : null}
+							<div className="pp-why__stat-body">
+								<p className={`pp-why__value pp-why__value--${stat.tone}`}>{stat.value}</p>
+								<p className="pp-why__label">{stat.label}</p>
+								<p className="pp-why__detail">{stat.detail}</p>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
 
-                {/* Features grid — below image */}
-                <ul className="why-pawpal__features" role="list">
-                    {FEATURES.map((item) => (
-                        <li key={item.id} className="why-pawpal__feature">
-                            <div className="why-pawpal__icon-wrap" aria-hidden>
-                                {ICONS[item.iconKey]}
-                            </div>
-                            <h3 className="why-pawpal__feature-title">{item.title}</h3>
-                            <p className="why-pawpal__feature-desc">{item.description}</p>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </section>
-    );
+			<div className="pp-why-promise">
+				<div className="pp-container pp-why-promise__grid">
+					<div className="pp-why-promise__copy" data-section-reveal="support">
+						<span className="pp-eyebrow pp-why-promise__eyebrow">Our promise</span>
+						<h3 className="pp-why-promise__title">Care That Feels Like Family</h3>
+						<p className="pp-why-promise__lead">
+							PawPal is built around people who treat your pet like their own — vetted specialists, thoughtful
+							follow-up, and a community that stays with you between visits. Every booking is a relationship, not a
+							transaction.
+						</p>
+						<Link href="/specialist" className="pp-btn pp-why-promise__cta">
+							Meet our specialists
+						</Link>
+					</div>
+					<div className="pp-why-promise__media" data-section-reveal="card">
+						<img
+							src={PROMISE_IMAGE}
+							alt="Golden retriever puppies playing together"
+							width={PROMISE_IMAGE_WIDTH}
+							height={PROMISE_IMAGE_HEIGHT}
+							loading="eager"
+							decoding="async"
+							{...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
+						/>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
 }

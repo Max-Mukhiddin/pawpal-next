@@ -1,55 +1,51 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
+import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
 import type { Listing } from '../../types/listing/listing';
 import { resolveListingImageUrl } from '../../utils/mediaUrl';
+import { sanitizeListingDescription } from '../../utils/listingTextHelpers';
+import { normalizeCardText } from '../../utils/truncateText';
+import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
 
-interface FeaturedCard {
-	_id: string;
-	title: string;
-	description: string;
-	image: string;
-	href: string;
-}
+/** Most recently created service with two uploaded images (Signature Bath & Style Session). */
+const PREFERRED_FEATURED_SERVICE_ID = '6a4c9ad7f4cebd54e6216422';
 
-const FALLBACK_CARDS: FeaturedCard[] = [
-	{
-		_id: 'fb-1',
-		title: 'Spa & Wellness Journeys',
-		description: 'Hand-crafted grooming rituals tailored for serene companions.',
-		image: '/images/services/service-spa.jpg',
-		href: '/service',
-	},
-	{
-		_id: 'fb-2',
-		title: 'Culinary Pet Dining',
-		description: 'Nutritionist-designed menus with fresh, seasonal ingredients.',
-		image: '/images/services/service-dining.jpg',
-		href: '/service',
-	},
-	{
-		_id: 'fb-3',
-		title: 'Luxury Accommodation',
-		description: 'Quiet, climate-controlled overnight stays for restful nights.',
-		image: '/images/services/service-boarding.jpg',
-		href: '/service',
-	},
-	{
-		_id: 'fb-4',
-		title: 'Behavioral Architecture',
-		description: 'One-on-one training to shape confident, well-adjusted behavior.',
-		image: '/images/services/service-training.jpg',
-		href: '/service',
-	},
-];
+const FALLBACK_PRIMARY_IMAGE = '/images/services/service-grooming.jpg';
+const FALLBACK_SECONDARY_IMAGE = '/images/services/service-grooming.jpg';
 
-const truncate = (text: string, max = 90): string => {
-	const clean = (text || '').trim();
-	if (!clean) return 'Premium care crafted with attention to every detail.';
-	if (clean.length <= max) return clean;
-	return `${clean.slice(0, max).trimEnd()}…`;
+const FALLBACK = {
+	_id: 'fb-featured-service',
+	title: 'Full-Service Spa & Grooming',
+	primaryDescription:
+		'Hand-crafted grooming rituals tailored for serene companions — bath, style, and coat care.',
+	toolsTitle: 'Professional Grooming Products',
+	toolsDescription:
+		'Vet-approved shampoos, conditioners, and styling formulas chosen for sensitive coats and lasting shine.',
+	primaryImage: FALLBACK_PRIMARY_IMAGE,
+	secondaryImage: FALLBACK_SECONDARY_IMAGE,
+	href: '/service',
+};
+
+const toolsBlurb = (desc: string | undefined): string => {
+	const clean = normalizeCardText(desc);
+	const toolsMatch = clean.match(/(?:using|with)\s+(.+?)(?:\.|$)/i);
+	if (toolsMatch?.[1]) {
+		const phrase = toolsMatch[1].trim();
+		return `${phrase.charAt(0).toUpperCase()}${phrase.slice(1)}.`;
+	}
+	return FALLBACK.toolsDescription;
+};
+
+const pickFeaturedService = (listings: Listing[]): Listing | null => {
+	const preferred = listings.find((listing) => listing._id === PREFERRED_FEATURED_SERVICE_ID);
+	if (preferred && (preferred.listingImages?.length ?? 0) >= 2) return preferred;
+
+	return (
+		listings.find((listing) => (listing.listingImages?.length ?? 0) >= 2) ?? null
+	);
 };
 
 export default function FeaturedServices() {
@@ -57,8 +53,8 @@ export default function FeaturedServices() {
 		() => ({
 			input: {
 				page: 1,
-				limit: 4,
-				sort: 'listingViews',
+				limit: 20,
+				sort: 'createdAt',
 				direction: 'DESC',
 				search: { typeList: [ListingType.SERVICE] },
 			},
@@ -71,59 +67,95 @@ export default function FeaturedServices() {
 		fetchPolicy: 'cache-and-network',
 	});
 
-	const listings: Listing[] = data?.getListings?.list ?? [];
+	useAnimeSectionReveal({
+		sectionSelector: '.pp-featured',
+		featuredSelector: '[data-section-reveal="featured"]',
+		supportSelector: '[data-section-reveal="support"]',
+		deps: [data],
+	});
 
-	const cards: FeaturedCard[] = listings.length >= 4
-		? listings.slice(0, 4).map((l) => ({
-				_id: l._id,
-				title: l.listingTitle,
-				description: truncate((l as any).listingDesc),
-				image: l.listingImages?.[0] ?? '',
-				href: `/service/detail?id=${l._id}`,
-			}))
-		: FALLBACK_CARDS;
+	const listings: Listing[] = data?.getListings?.list ?? [];
+	const featured = pickFeaturedService(listings);
+
+	const title = featured?.listingTitle ?? FALLBACK.title;
+	const href = featured?._id ? `/service/detail?id=${featured._id}` : FALLBACK.href;
+	const listingDesc = sanitizeListingDescription(
+		(featured as Listing & { listingDesc?: string })?.listingDesc,
+	);
+	const primaryDescription = listingDesc || FALLBACK.primaryDescription;
+	const toolsDescription = toolsBlurb(listingDesc || undefined);
+	const primaryImage = resolveListingImageUrl(
+		featured?.listingImages?.[0],
+		FALLBACK_PRIMARY_IMAGE,
+	);
+	const secondaryImage = resolveListingImageUrl(
+		featured?.listingImages?.[1] ?? featured?.listingImages?.[0],
+		FALLBACK_SECONDARY_IMAGE,
+	);
 
 	return (
-		<section className="featured-services animate-on-scroll" aria-labelledby="featured-services-title">
-			<div className="featured-services__shapes" aria-hidden>
-				<span className="featured-services__shape featured-services__shape--1" />
-				<span className="featured-services__shape featured-services__shape--2" />
-				<span className="featured-services__shape featured-services__shape--3" />
-			</div>
-			<div className="featured-services__container">
-				<header className="featured-services__header">
-					<p className="featured-services__label">FEATURED SERVICES</p>
-					<h2 id="featured-services-title" className="featured-services__title">
-						Premium Pet Care Atelier
-					</h2>
-				</header>
+		<section className="pp-featured pp-section" aria-labelledby="featured-services-title">
+			<div className="pp-container">
+				<div className="pp-featured__head" data-section-reveal="header">
+					<div className="pp-featured__intro">
+						<span className="pp-eyebrow">Featured services</span>
+						<h2 id="featured-services-title" className="pp-heading pp-featured__title">
+							Our premium <span className="pp-accent">care offerings</span>
+						</h2>
+						<p className="pp-subtitle pp-featured__desc">
+							A curated sanctuary of services designed to treat your pet like royalty — each
+							delivered by a vetted specialist who treats every companion like their own.
+						</p>
+					</div>
+					<Link href="/service" className="pp-featured__explore" data-section-reveal="cta">
+						Explore all services
+						<ArrowForwardOutlinedIcon aria-hidden />
+					</Link>
+				</div>
 
-				<div className="featured-services__grid">
-					{cards.map((card, index) => {
-						const imageUrl = resolveListingImageUrl(card.image, '/img/listing/default-listing.webp');
-						return (
-							<Link
-								href={card.href}
-								className={`featured-services__card featured-services__card--${index + 1}`}
-								key={card._id}
-							>
-								<div className="featured-services__media">
-									<img
-										src={imageUrl}
-										alt={card.title}
-										className="featured-services__img"
-										loading="lazy"
-										onError={(e) => {
-											e.currentTarget.src = '/img/listing/default-listing.webp';
-										}}
-									/>
-								</div>
-								<h3 className="featured-services__card-title">{card.title}</h3>
-								<p className="featured-services__card-desc">{card.description}</p>
-								<span className="featured-services__cta">Explore Service</span>
+				<div className="pp-featured__duo">
+					<Link
+						href={href}
+						className="pp-featured__hero-card pp-card"
+						data-section-reveal="featured"
+					>
+						<img
+							className="pp-featured__hero-img"
+							src={primaryImage}
+							alt=""
+							loading="lazy"
+							onError={(e) => {
+								e.currentTarget.src = FALLBACK_PRIMARY_IMAGE;
+							}}
+						/>
+						<span className="pp-featured__badge">Most popular</span>
+						<div className="pp-featured__hero-overlay">
+							<h3 className="pp-featured__hero-title">{title}</h3>
+							<p className="pp-featured__hero-desc">{primaryDescription}</p>
+						</div>
+					</Link>
+
+					<article className="pp-featured__side-card" data-section-reveal="support">
+						<div className="pp-featured__side-media">
+							<img
+								className="pp-featured__side-img"
+								src={secondaryImage}
+								alt=""
+								loading="lazy"
+								onError={(e) => {
+									e.currentTarget.src = FALLBACK_SECONDARY_IMAGE;
+								}}
+							/>
+						</div>
+						<div className="pp-featured__side-body">
+							<h3 className="pp-featured__side-title">{FALLBACK.toolsTitle}</h3>
+							<p className="pp-featured__side-desc">{toolsDescription}</p>
+							<Link href={href} className="pp-featured__side-link">
+								Learn more
+								<ArrowForwardOutlinedIcon aria-hidden />
 							</Link>
-						);
-					})}
+						</div>
+					</article>
 				</div>
 			</div>
 		</section>

@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
-import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import withLayoutFull from '../../libs/components/layout/LayoutFull';
 import { NextPage } from 'next';
 import Link from 'next/link';
@@ -22,22 +21,24 @@ import { Message } from '../../libs/enums/common.enum';
 import { ListingType } from '../../libs/enums/listing.enum';
 import { CREATE_COMMENT, LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { likeToastMessage } from '../../libs/utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../libs/auth';
+import { withActionGate } from '../../libs/utils/actionGate';
 import ServiceReviewCard from '../../libs/components/services/ServiceReviewCard';
-import ServiceDetailMobile from '../../libs/components/services/ServiceDetailMobile';
 import ServiceDetailBookingSection from '../../libs/components/services/ServiceDetailBookingSection';
 import { resolveListingImageUrl, resolveMemberImageUrl } from '../../libs/utils/mediaUrl';
+import PpLoader from '../../libs/components/common/PpLoader';
+import { useFadeUpOnScroll } from '../../libs/hooks/useFadeUpOnScroll';
 
 export const getStaticProps = async ({ locale }: any) => ({
     props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
 const ServiceDetail: NextPage = ({ initialComment }: any) => {
-    const device = useDeviceDetect();
     const router = useRouter();
     const user = useReactiveVar(userVar);
     const [serviceId, setServiceId] = useState<string | null>(null);
     const [service, setService] = useState<Service | null>(null);
-    const [slideImage, setSlideImage] = useState<string>('');
     const [activeTab, setActiveTab] = useState<'about' | 'details'>('about');
     const [relatedServices, setRelatedServices] = useState<Service[]>([]);
     const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
@@ -51,6 +52,8 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 
     const [likeTargetListing] = useMutation(LIKE_TARGET_LISTING);
     const [createComment] = useMutation(CREATE_COMMENT);
+    const mainRevealRef = useFadeUpOnScroll<HTMLDivElement>();
+    const bottomRevealRef = useFadeUpOnScroll<HTMLDivElement>();
 
     const relatedServiceCatalogInquiry = useMemo(
         () => ({ page: 1, limit: 5, sort: 'createdAt', direction: 'DESC', search: { typeList: [ListingType.SERVICE] } }),
@@ -75,7 +78,6 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
         notifyOnNetworkStatusChange: false,
         onCompleted: (data: T) => {
             if (data?.getListing) setService(data.getListing);
-            if (data?.getListing?.listingImages?.length) setSlideImage(data.getListing.listingImages[0]);
         },
     });
 
@@ -115,7 +117,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
         if (refId && refId.length === 24) getCommentsRefetch({ input: commentInquiry });
     }, [commentInquiry]);
 
-    const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/girlBrunette.png');
+    const getListingImg = (p?: string) => resolveListingImageUrl(p, '/img/listing/default-listing.webp');
     const getMemberImg = (p?: string) => resolveMemberImageUrl(p, '/img/profile/defaultUser.svg');
     const heroImage = service?.listingImages?.[0]
         ? resolveListingImageUrl(service.listingImages[0], '/img/banner/services.webp')
@@ -123,21 +125,25 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 
     // Optimistic like — no page reload
     const likeServiceHandler = async (user: T, id: string) => {
-        try {
-            if (!id) return;
-            if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-            const wasLiked = service?.meLiked?.[0]?.myFavorite;
-            setService((prev) => prev ? {
-                ...prev,
-                listingLikes: wasLiked ? Math.max(0, (prev.listingLikes ?? 0) - 1) : (prev.listingLikes ?? 0) + 1,
-                meLiked: [{ memberId: user._id, likeRefId: id, myFavorite: !wasLiked }],
-            } : prev);
-            await likeTargetListing({ variables: { input: id } });
-            await sweetTopSmallSuccessAlert('success', 800);
-        } catch (err: any) {
-            void getServiceRefetch({ input: serviceId });
-            sweetMixinErrorAlert(err.message).then();
-        }
+        await withActionGate(`like:listing:${id}`, async () => {
+            try {
+                if (!id) return;
+                if (requireSignIn(router, user._id, 'like')) return;
+                const wasLiked = service?.meLiked?.[0]?.myFavorite;
+                setService((prev) => prev ? {
+                    ...prev,
+                    listingLikes: wasLiked ? Math.max(0, (prev.listingLikes ?? 0) - 1) : (prev.listingLikes ?? 0) + 1,
+                    meLiked: [{ memberId: user._id, likeRefId: id, myFavorite: !wasLiked }],
+                } : prev);
+                await likeTargetListing({ variables: { input: id } });
+                await sweetTopSmallSuccessAlert(likeToastMessage(Boolean(wasLiked)), 800);
+            } catch (err: any) {
+                if (handleSignInRequiredError(err, router, 'like')) return;
+                if (await handleLikeMutationAuthError(err, router)) return;
+                void getServiceRefetch({ input: serviceId });
+                sweetMixinErrorAlert(err.message).then();
+            }
+        });
     };
 
     const commentPaginationChangeHandler = async (event: ChangeEvent<unknown>, value: number) => {
@@ -147,12 +153,12 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
 
     const createCommentHandler = async () => {
         try {
-            if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
+            if (requireSignIn(router, user._id, 'comment')) return;
             await createComment({ variables: { input: insertCommentData } });
             setInsertCommentData({ ...insertCommentData, commentContent: '' });
             await getCommentsRefetch({ input: commentInquiry });
         } catch (err: any) {
-            await sweetErrorHandling(err);
+            await sweetErrorHandling(err, { router, action: 'comment' });
         }
     };
 
@@ -161,23 +167,8 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
     if (serviceDetailLoading && !service) {
         return (
             <Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '1080px' }}>
-                <CircularProgress size={'4rem'} />
+                <PpLoader size={64} />
             </Stack>
-        );
-    }
-
-    if (device === 'mobile') {
-        return (
-            <ServiceDetailMobile
-                service={service} user={user} slideImage={slideImage}
-                onSlideImageChange={(img: string) => setSlideImage(img)}
-                onLike={likeServiceHandler} relatedServices={relatedServices}
-                serviceComments={serviceComments} commentTotal={commentTotal}
-                commentInquiry={commentInquiry} onCommentPageChange={commentPaginationChangeHandler}
-                insertCommentData={insertCommentData}
-                onCommentTextChange={(value: string) => setInsertCommentData((prev) => ({ ...prev, commentContent: value }))}
-                onSubmitComment={createCommentHandler}
-            />
         );
     }
 
@@ -185,7 +176,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
         <div className="detail-page">
 
             {/* ── MAIN: left hero panel | right sidebar ── */}
-            <div className="detail-page__main">
+            <div ref={mainRevealRef} className="detail-page__main">
 
                 {/* LEFT: hero background + floating card */}
                 <div className="detail-page__left-panel">
@@ -212,7 +203,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
                                     {service?.listingViews ?? 0}
                                 </span>
                                 <button type="button" className="detail-card__like-btn" onClick={() => likeServiceHandler(user, service?._id as string)}>
-                                    {isLiked ? <FavoriteIcon sx={{ fontSize: 14 }} htmlColor="var(--pp-primary)" /> : <FavoriteBorderIcon sx={{ fontSize: 14 }} htmlColor="#888" />}
+                                    {isLiked ? <FavoriteIcon sx={{ fontSize: 14, color: 'var(--pp-like-red)' }} /> : <FavoriteBorderIcon sx={{ fontSize: 14, color: 'var(--pp-like-red)' }} />}
                                     <span>{service?.listingLikes ?? 0}</span>
                                 </button>
                             </span>
@@ -234,6 +225,26 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
                                 </>
                             )}
                         </div>
+
+                        {(service?.listingImages?.length ?? 0) > 1 && (
+                            <section className="detail-card__gallery" aria-label="Service gallery">
+                                <h3 className="detail-card__gallery-title">Tools &amp; products we use</h3>
+                                <div className="detail-card__gallery-grid">
+                                    {service?.listingImages?.slice(1).map((img, index) => (
+                                        <figure key={`${img}-${index}`} className="detail-card__gallery-item">
+                                            <img
+                                                src={getListingImg(img)}
+                                                alt=""
+                                                loading="lazy"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/img/banner/services.webp';
+                                                }}
+                                            />
+                                        </figure>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
                     </div>
                 </div>
 
@@ -258,7 +269,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
             </div>
 
             {/* ── BOTTOM: reviews + leave review + related ── */}
-            <div className="detail-page__bottom">
+            <div ref={bottomRevealRef} className="detail-page__bottom">
                 <div className="detail-page__container">
                     {commentTotal !== 0 && (
                         <Stack className="detail-reviews">
@@ -268,7 +279,7 @@ const ServiceDetail: NextPage = ({ initialComment }: any) => {
                                     <ServiceReviewCard comment={comment} key={comment?._id} />
                                 ))}
                                 <Box component="div" className="detail-reviews__pagination">
-                                    <MuiPagination page={commentInquiry.page} count={Math.ceil(commentTotal / commentInquiry.limit)} onChange={commentPaginationChangeHandler} shape="circular" color="primary" />
+                                    <MuiPagination className="pp-pagination" page={commentInquiry.page} count={Math.ceil(commentTotal / commentInquiry.limit)} onChange={commentPaginationChangeHandler} shape="circular" color="primary" />
                                 </Box>
                             </Stack>
                         </Stack>

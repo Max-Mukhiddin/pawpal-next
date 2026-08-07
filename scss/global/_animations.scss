@@ -1,0 +1,156 @@
+/**
+ * Global micro-animations — decorative only, no layout shift.
+ */
+
+@keyframes pp-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
+}
+
+@keyframes pp-pulse-honey {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(232, 160, 75, 0.4);
+	}
+	50% {
+		box-shadow: 0 0 0 12px rgba(232, 160, 75, 0);
+	}
+}
+
+@keyframes pp-wag {
+	0%,
+	100% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(-8deg);
+	}
+	75% {
+		transform: rotate(8deg);
+	}
+}
+
+/* Heart pop — 3-phase spring: brief squish (anticipation), overshoot, settle.
+ * ~380ms total. Reads as physical elasticity rather than a flat scale-and-back.
+ * Curves chosen from easing.dev's cubic-bezier(0.34, 1.56, 0.64, 1) family. */
+@keyframes pp-heart-pop {
+	0% {
+		transform: scale(1);
+	}
+	22% {
+		transform: scale(0.86);
+	}
+	52% {
+		transform: scale(1.28);
+	}
+	78% {
+		transform: scale(0.96);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+@keyframes pp-ken-burns {
+	from {
+		transform: scale(1);
+	}
+	to {
+		transform: scale(1.04);
+	}
+}
+
+/* Hero carousel Ken Burns — a slightly deeper, slower push that runs for the
+ * full slide hold so the photo keeps drifting through the crossfade. */
+@keyframes pp-ken-burns-hero {
+	from {
+		transform: scale(1.02);
+	}
+	to {
+		transform: scale(1.09);
+	}
+}
+
+/* Hero progress bar fill — linear so it reads as a true timer. */
+@keyframes pp-hero-progress {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+/* Barely-perceptible idle float for hero overlays (search + specialist card). */
+@keyframes pp-hero-breathe {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-3px);
+	}
+}
+
+.pp-float {
+	animation: pp-float 3s ease-in-out infinite;
+}
+
+.pp-pulse {
+	animation: pp-pulse-honey 3.5s ease-in-out infinite;
+}
+
+.pp-brand-honey-hover {
+	transition: color 0.3s ease;
+
+	&:hover {
+		color: #e8a04b;
+	}
+}
+
+.pp-heart-pop .MuiSvgIcon-root {
+	animation: pp-heart-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Follow button micro-bounce — fires when .is-following class is added.
+ * Tiny 3-step scale so the state change feels satisfying without being loud. */
+@keyframes pp-follow-bounce {
+	0% {
+		transform: scale(1);
+	}
+	40% {
+		transform: scale(0.94);
+	}
+	70% {
+		transform: scale(1.04);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.pp-follow-bounce {
+	animation: pp-follow-bounce 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pp-float,
+	.pp-pulse {
+		animation: none !important;
+	}
+
+	.pp-hero__slide-img,
+	.pp-hero__search {
+		animation: none !important;
+	}
+
+	.pp-heart-pop .MuiSvgIcon-root,
+	.pp-follow-bounce {
+		animation: none !important;
+	}
+}

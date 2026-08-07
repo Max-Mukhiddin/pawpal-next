@@ -2,6 +2,7 @@ import React, { ChangeEvent, MouseEvent, useEffect, useMemo, useRef, useState } 
 import { NextPage } from 'next';
 import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import { useDebouncedValue } from '../../libs/hooks/useDebouncedValue';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
 import { ProductsInquiry } from '../../libs/types/products/product.input';
@@ -15,7 +16,11 @@ import { GET_LISTINGS } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { LIKE_TARGET_LISTING } from '../../apollo/user/mutation';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import ProductsFilterBar from '../../libs/components/products/ProductsFilterBar';
+import { likeToastMessage, readWasLiked } from '../../libs/utils/likeToastMessage';
+import { handleLikeMutationAuthError, requireSignIn, handleSignInRequiredError } from '../../libs/auth';
+import { withActionGate } from '../../libs/utils/actionGate';
+import CatalogSidebarFilter from '../../libs/components/listings/CatalogSidebarFilter';
+import CatalogSortToolbar from '../../libs/components/listings/CatalogSortToolbar';
 import ProductsList from '../../libs/components/products/ProductsList';
 import ProductFeatureBanner from '../../libs/components/products/ProductFeatureBanner';
 import ProductsCta from '../../libs/components/products/ProductsCta';
@@ -34,13 +39,17 @@ export const getStaticProps = async ({ locale }: any) => ({
 
 // ─── Static page data ────────────────────────────────────────────────────────
 
+// Unsplash — Ayla Verschueren: https://images.unsplash.com/photo-1714068691210-073dc52c6c1d
+const FEATURE_BANNER_IMAGE =
+	'https://images.unsplash.com/photo-1714068691210-073dc52c6c1d?fm=jpg&q=80&w=1600&auto=format&fit=crop';
+
 const featureBannerData: ProductFeatureBannerContent = {
 	title: 'Premium Nutrition for Every Life Stage',
 	description: 'Vet-formulated recipes with real meat, fresh vegetables, and zero artificial fillers — made for pets that deserve the best.',
 	chips: ['Grain Free', 'High Protein', 'Vet Approved', 'Natural Ingredients'],
 	ctaPrimary: 'Shop Nutrition',
 	ctaSecondary: 'Learn More',
-	image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80',
+	image: FEATURE_BANNER_IMAGE,
 };
 
 const trustItems: ProductTrustItem[] = [
@@ -90,7 +99,9 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 	const [sortingOpen, setSortingOpen] = useState(false);
 	const [filterSortName, setFilterSortName] = useState('New');
 	const [searchText, setSearchText] = useState<string>('');
+	const debouncedSearchText = useDebouncedValue(searchText, 300);
 	const [activeCategory, setActiveCategory] = useState<string>('All');
+	const [isCatalogReady, setIsCatalogReady] = useState(false);
 
 	const productCatalogInquiry = useMemo(
 		() => withProductsListingTypeFilter(productInquiry),
@@ -121,6 +132,30 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 		setCurrentPage(page);
 	}, [router.isReady, router.query.page]);
 
+	useEffect(() => {
+		if (router.isReady) {
+			setIsCatalogReady(true);
+		}
+	}, [router.isReady]);
+
+	const showCatalogSkeleton = !isCatalogReady || (productsLoading && products.length === 0);
+	const searchBusy =
+		searchText !== debouncedSearchText || (productsLoading && products.length > 0);
+
+	useEffect(() => {
+		const nextText = debouncedSearchText.trim();
+		setProductInquiry((prev) => {
+			const prevText = (prev.search?.text ?? '').trim();
+			if (nextText === prevText) return prev;
+			setCurrentPage(1);
+			return withProductsListingTypeFilter({
+				...prev,
+				page: 1,
+				search: { ...prev.search, text: nextText },
+			});
+		});
+	}, [debouncedSearchText]);
+
 	// Client-side category filter
 	const filteredProducts = useMemo(() => {
 		if (activeCategory === 'All') return products;
@@ -132,6 +167,13 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 		});
 	}, [products, activeCategory]);
 
+	const resetCatalogPage = (patch: Partial<ProductsInquiry> = {}) => {
+		const next = withProductsListingTypeFilter({ ...productInquiry, page: 1, ...patch });
+		setProductInquiry(next);
+		setCurrentPage(1);
+		void router.push(`/product?page=1`, undefined, { shallow: true });
+	};
+
 	const handlePaginationChange = async (event: ChangeEvent<unknown>, value: number) => {
 		const next = withProductsListingTypeFilter({ ...productInquiry, page: value });
 		setProductInquiry(next);
@@ -141,20 +183,25 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 
 	const handleCategorySelect = (label: string) => {
 		setActiveCategory(label);
-		setCurrentPage(1);
+		resetCatalogPage();
 	};
 
 	const likeProductHandler = async (user: T, id: string) => {
-		try {
-			if (!id) return;
-			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-			await likeTargetListing({ variables: { input: id } });
-			await getProductsCatalogRefetch({ input: productCatalogInquiryRef.current });
-			await sweetTopSmallSuccessAlert('success', 800);
-		} catch (err: any) {
-			console.log('ERROR likeProductHandler:', err.message);
-			sweetMixinErrorAlert(err.message).then();
-		}
+		await withActionGate(`like:listing:${id}`, async () => {
+			try {
+				if (!id) return;
+				if (requireSignIn(router, user._id, 'like')) return;
+				const wasLiked = readWasLiked(products.find((p) => p._id === id));
+				await likeTargetListing({ variables: { input: id } });
+				await getProductsCatalogRefetch({ input: productCatalogInquiryRef.current });
+				await sweetTopSmallSuccessAlert(likeToastMessage(wasLiked), 800);
+			} catch (err: any) {
+				if (handleSignInRequiredError(err, router, 'like')) return;
+				if (await handleLikeMutationAuthError(err, router)) return;
+				console.log('ERROR likeProductHandler:', err.message);
+				sweetMixinErrorAlert(err.message).then();
+			}
+		});
 	};
 
 	const sortingClickHandler = (e: MouseEvent<HTMLElement>) => {
@@ -170,16 +217,16 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 	const sortingHandler = (e: React.MouseEvent<HTMLLIElement>) => {
 		switch (e.currentTarget.id) {
 			case 'new':
-				setProductInquiry(withProductsListingTypeFilter({ ...productInquiry, sort: 'createdAt', direction: Direction.ASC }));
 				setFilterSortName('New');
+				resetCatalogPage({ sort: 'createdAt', direction: Direction.ASC });
 				break;
 			case 'lowest':
-				setProductInquiry(withProductsListingTypeFilter({ ...productInquiry, sort: 'listingPrice', direction: Direction.ASC }));
 				setFilterSortName('Lowest Price');
+				resetCatalogPage({ sort: 'listingPrice', direction: Direction.ASC });
 				break;
 			case 'highest':
-				setProductInquiry(withProductsListingTypeFilter({ ...productInquiry, sort: 'listingPrice', direction: Direction.DESC }));
 				setFilterSortName('Highest Price');
+				resetCatalogPage({ sort: 'listingPrice', direction: Direction.DESC });
 				break;
 		}
 		setSortingOpen(false);
@@ -187,86 +234,93 @@ const ProductsListPage: NextPage = ({ initialInput }: any) => {
 	};
 
 	const handleSearchEnter = () => {
-		setProductInquiry(withProductsListingTypeFilter({
-			...productInquiry,
-			search: { ...productInquiry.search, text: searchText },
-		}));
+		const nextText = searchText.trim();
+		setProductInquiry((prev) =>
+			withProductsListingTypeFilter({
+				...prev,
+				page: 1,
+				search: { ...prev.search, text: nextText },
+			}),
+		);
+		setCurrentPage(1);
+	};
+
+	const handleFilterReset = () => {
+		setSearchText('');
+		setActiveCategory('All');
+		resetCatalogPage({ search: { ...productInquiry.search, text: '' } });
 	};
 
 	return (
 		<Stack className="pawpal-static-page pawpal-static-page--products">
 			<Stack className="container" sx={device === 'mobile' ? { px: { xs: 1.5, sm: 2 } } : undefined}>
 
-				{/* ── 1. Category pills ── */}
-				<div className="services-categories" style={{ paddingTop: 32 }}>
-					{PRODUCT_CATEGORIES.map(({ label, icon }) => (
-						<button
-							key={label}
-							type="button"
-							className={`services-categories__pill${activeCategory === label ? ' is-active' : ''}`}
-							onClick={() => handleCategorySelect(label)}
-						>
-							<span className="services-categories__icon" aria-hidden>{icon}</span>
-							<span className="services-categories__label">{label}</span>
-						</button>
-					))}
-				</div>
-
-				{/* ── 2. Filter bar ── */}
-				<Stack className="products-catalog-page">
-					<ProductsFilterBar
+				<div className="catalog-directory">
+					<CatalogSidebarFilter
+						searchPlaceholder="Search products"
 						searchText={searchText}
 						onSearchTextChange={setSearchText}
 						onSearchEnter={handleSearchEnter}
-						filterSortName={filterSortName}
-						anchorEl={anchorEl}
-						sortingOpen={sortingOpen}
-						onSortingClick={sortingClickHandler}
-						onSortingClose={sortingCloseHandler}
-						onSortingSelect={sortingHandler}
+						searchLoading={searchBusy}
+						categoryGroupLabel="Product type"
+						categories={PRODUCT_CATEGORIES.map(({ label, icon }) => ({ label, icon }))}
+						activeCategory={activeCategory}
+						onCategorySelect={handleCategorySelect}
+						onReset={handleFilterReset}
 					/>
 
-					{/* ── 3. Products grid + pagination ── */}
-					<Stack className="products-catalog-page__main" mb={device === 'mobile' ? '32px' : '76px'}>
-						{productsLoading && products.length === 0 ? (
-							<Stack className="products-catalog-page__grid">
-								{Array.from({ length: 4 }).map((_, i) => (
-									<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
-								))}
-							</Stack>
-						) : (
-							<ProductsList products={filteredProducts} onLike={likeProductHandler} />
-						)}
+					<div className={`catalog-directory__main${searchBusy ? ' is-filter-loading' : ''}`}>
+						<CatalogSortToolbar
+							filterSortName={filterSortName}
+							anchorEl={anchorEl}
+							sortingOpen={sortingOpen}
+							onSortingClick={sortingClickHandler}
+							onSortingClose={sortingCloseHandler}
+							onSortingSelect={sortingHandler}
+						/>
 
-						<Stack className="pagination-config">
-							{filteredProducts.length !== 0 && (
-								<Stack className="pagination-box">
-									<Pagination
-										page={currentPage}
-										count={Math.ceil(total / productInquiry.limit)}
-										onChange={handlePaginationChange}
-										shape="circular"
-										color="primary"
-										size={device === 'mobile' ? 'small' : 'medium'}
-									/>
-								</Stack>
+						<Stack className="products-catalog-page__main" mb={device === 'mobile' ? '32px' : '48px'}>
+							{showCatalogSkeleton ? (
+								<div className="products-catalog-page__grid">
+									{Array.from({ length: 6 }).map((_, i) => (
+										<div key={i} className="skeleton-card" style={{ height: 320, borderRadius: 16, background: '#f0ede8', animation: 'shimmer 1.5s infinite' }} />
+									))}
+								</div>
+							) : (
+								<ProductsList products={filteredProducts} onLike={likeProductHandler} />
 							)}
-							{filteredProducts.length !== 0 && (
-								<Stack className="total-result">
-									<Typography>
-										Total {filteredProducts.length} product{filteredProducts.length > 1 ? 's' : ''}
-										{activeCategory !== 'All' ? ` in ${activeCategory}` : ' available'}
-									</Typography>
-								</Stack>
-							)}
-							{filteredProducts.length === 0 && products.length > 0 && (
-								<Stack className="total-result">
-									<Typography>No products found in {activeCategory}</Typography>
-								</Stack>
-							)}
+
+							<Stack className="pagination-config">
+								{filteredProducts.length !== 0 && (
+									<Stack className="pagination-box">
+										<Pagination
+											className="pp-pagination"
+											page={currentPage}
+											count={Math.ceil(total / productInquiry.limit)}
+											onChange={handlePaginationChange}
+											shape="circular"
+											color="primary"
+											size={device === 'mobile' ? 'small' : 'medium'}
+										/>
+									</Stack>
+								)}
+								{filteredProducts.length !== 0 && (
+									<Stack className="total-result">
+										<Typography>
+											Total {filteredProducts.length} product{filteredProducts.length > 1 ? 's' : ''}
+											{activeCategory !== 'All' ? ` in ${activeCategory}` : ' available'}
+										</Typography>
+									</Stack>
+								)}
+								{filteredProducts.length === 0 && products.length > 0 && (
+									<Stack className="total-result">
+										<Typography>No products found in {activeCategory}</Typography>
+									</Stack>
+								)}
+							</Stack>
 						</Stack>
-					</Stack>
-				</Stack>
+					</div>
+				</div>
 
 				{/* ── 5. Feature banner ── */}
 				<ProductFeatureBanner data={featureBannerData} />
