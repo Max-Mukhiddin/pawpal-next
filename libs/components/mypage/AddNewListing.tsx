@@ -163,7 +163,7 @@ const AddNewListing = ({ initialValues, ...props }: any) => {
 				  }`,
 					variables: {
 						files: [null, null, null, null, null],
-						target: 'property',
+						target: 'listing',
 					},
 				}),
 			);
