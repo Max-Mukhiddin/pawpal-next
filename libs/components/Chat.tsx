@@ -33,6 +33,7 @@ const Chat = () => {
 	const { t } = useTranslation('common');
 	const chatContentRef = useRef<HTMLDivElement>(null);
 	const aiEndRef = useRef<HTMLDivElement>(null);
+	const liveEndRef = useRef<HTMLDivElement>(null);
 	const [messagesList, setMessagesList] = useState<MessagePayload[]>([]);
 	const [onlineUsers, setOnlineUsers] = useState<number>(0);
 	const [messageInput, setMessageInput] = useState<string>('');
@@ -199,6 +200,17 @@ const Chat = () => {
 		if (mode !== 'ai' || aiMessages.length === 0) return;
 		aiEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
 	}, [aiMessages, aiTyping, mode]);
+
+	/**
+	 * Follow the live conversation down as messages arrive — same end-sentinel approach the
+	 * Ask AI tab uses. Gated on `open` because the panel only slides offscreen (it stays in
+	 * the DOM), and socket messages can land while it is closed; scrolling the sentinel into
+	 * view then would scroll the page behind it.
+	 */
+	useEffect(() => {
+		if (!open || mode !== 'live' || messagesList.length === 0) return;
+		liveEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+	}, [messagesList, mode, open]);
 
 	const onAiKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
@@ -400,6 +412,7 @@ const Chat = () => {
 											</Box>
 										);
 									})}
+									<div ref={liveEndRef} aria-hidden />
 								</Stack>
 							</ScrollableFeed>
 						</Box>

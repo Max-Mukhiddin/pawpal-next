@@ -223,6 +223,9 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 	const user = useReactiveVar(userVar);
 	const listEndRef = useRef<HTMLDivElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
+	const composerRef = useRef<HTMLTextAreaElement>(null);
+	/** Set on a successful send so the composer can reclaim focus once it re-enables. */
+	const refocusComposerRef = useRef(false);
 	/** Ids present at first load — only messages arriving after this batch get the entrance animation. */
 	const initialIdsRef = useRef<Set<string> | null>(null);
 
@@ -404,6 +407,20 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 		if (open && messages.length > 0) scrollToBottom(true);
 	}, [messages.length, open, scrollToBottom]);
 
+	/**
+	 * The composer is `disabled` while a send is in flight, and disabling an element drops
+	 * its focus — so after Enter/send the caret ends up on <body> and the next keystroke goes
+	 * nowhere. Restore focus once the textarea has re-enabled (this effect runs after commit,
+	 * so the element is interactive again). Skipped while editing an existing message, which
+	 * owns focus via its own autoFocus textarea.
+	 */
+	useEffect(() => {
+		if (sending || !refocusComposerRef.current) return;
+		refocusComposerRef.current = false;
+		if (editingId) return;
+		composerRef.current?.focus();
+	}, [sending, editingId]);
+
 	const isAdminSupportThread = isAdminSupport || conversationType === 'ADMIN_SUPPORT';
 
 	const headerTitle = isAdminSupportThread
@@ -434,6 +451,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 				await loadMessages(resolvedId, { silent: true });
 			}
 			setDraft('');
+			refocusComposerRef.current = true;
 			scrollToBottom(true);
 			await markRead(resolvedId);
 		} catch (err: any) {
@@ -818,6 +836,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 					}}
 				>
 					<textarea
+						ref={composerRef}
 						className="chat-ai-input"
 						placeholder="Type a message…"
 						value={draft}

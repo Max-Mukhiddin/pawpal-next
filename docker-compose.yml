@@ -1,4 +1,4 @@
-version: "3.3"
+
 services: 
   pawpal-next:
     container_name: pawpal-next
