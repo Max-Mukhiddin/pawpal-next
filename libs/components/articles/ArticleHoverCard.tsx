@@ -15,8 +15,9 @@ export type ArticleHoverCardProps = {
 const DEFAULT_FALLBACK = '/images/services/service-grooming.jpg';
 
 /**
- * Hover-reveal article card — fixed dimensions, image fades in on hover.
- * One DOM element per text field; colors transition via CSS custom properties.
+ * Editorial article card — fixed dimensions.
+ * One DOM element per text field; colors set via CSS custom properties.
+ * Touch devices show the image immediately; pointer devices keep the hover-reveal design.
  */
 export default function ArticleHoverCard({
 	href,

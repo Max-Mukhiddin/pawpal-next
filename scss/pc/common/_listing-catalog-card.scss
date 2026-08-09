@@ -415,6 +415,103 @@
 			background: var(--pp-primary);
 		}
 	}
+
+	/*
+	 * Phone compaction for the product + service cards. At two columns a card is ~170px
+	 * wide, so the body drops to a title + price/CTA stack and the media squares up. The
+	 * description is the only element removed — it is unreadable clamped at this width and
+	 * is present in full on the detail page.
+	 */
+	@media (max-width: 599px) {
+		.services-list-card__media {
+			aspect-ratio: 1 / 1;
+		}
+
+		.services-list-card__duration-pill {
+			font-size: 0.6rem;
+			padding: 3px 7px;
+		}
+
+		.services-list-card__body {
+			padding: 10px 10px 12px;
+			gap: 6px;
+		}
+
+		.services-list-card__top {
+			gap: 6px;
+		}
+
+		.services-list-card__badge {
+			font-size: 0.6rem;
+		}
+
+		.services-list-card__title {
+			font-size: 0.88rem;
+			line-height: 1.25;
+		}
+
+		.services-list-card__desc {
+			display: none;
+		}
+
+		.services-list-card__foot {
+			flex-wrap: wrap;
+			gap: 6px;
+			padding-top: 2px;
+		}
+
+		.services-list-card__price {
+			font-size: 0.92rem;
+		}
+
+		.services-list-card__book {
+			width: 100%;
+			padding: 8px 10px;
+			font-size: 0.72rem;
+		}
+
+		.pp-product-card__img-wrap {
+			aspect-ratio: 1 / 1;
+		}
+
+		.pp-product-card__body {
+			padding: 10px 10px 12px;
+			gap: 6px;
+		}
+
+		.pp-product-card__top {
+			gap: 6px;
+		}
+
+		.pp-product-card__badge {
+			font-size: 0.6rem;
+		}
+
+		.pp-product-card__name {
+			font-size: 0.88rem;
+			line-height: 1.25;
+		}
+
+		.pp-product-card__desc {
+			display: none;
+		}
+
+		.pp-product-card__foot {
+			flex-wrap: wrap;
+			gap: 6px;
+			padding-top: 2px;
+		}
+
+		.pp-product-card__price {
+			font-size: 0.92rem;
+		}
+
+		.pp-product-card__btn {
+			width: 100%;
+			padding: 8px 10px;
+			font-size: 0.72rem;
+		}
+	}
 }
 
 :root[data-theme='dark'] {

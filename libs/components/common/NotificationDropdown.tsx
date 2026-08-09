@@ -10,9 +10,14 @@ import PetsIcon from '@mui/icons-material/Pets';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import { userVar } from '../../../apollo/store';
 import { GET_NOTIFICATIONS } from '../../../apollo/user/query';
-import { MARK_ALL_NOTIFICATIONS_READ, MARK_NOTIFICATION_READ } from '../../../apollo/user/mutation';
+import {
+	CLEAR_ALL_NOTIFICATIONS,
+	CLEAR_READ_NOTIFICATIONS,
+	MARK_ALL_NOTIFICATIONS_READ,
+	MARK_NOTIFICATION_READ,
+} from '../../../apollo/user/mutation';
 import type { Notification } from '../../types/notification/notification';
-import { errorToast, successToast } from '../../sweetAlert';
+import { errorToast, successToast, sweetConfirmAlert } from '../../sweetAlert';
 import { timeAgo } from '../../utils/timeAgo';
 import { useTranslation } from 'next-i18next';
 import ChatPopup from '../messaging/ChatPopup';
@@ -57,9 +62,12 @@ export default function NotificationDropdown() {
 
 	const [markRead] = useMutation(MARK_NOTIFICATION_READ);
 	const [markAllRead, { loading: markingAll }] = useMutation(MARK_ALL_NOTIFICATIONS_READ);
+	const [clearRead, { loading: clearingRead }] = useMutation(CLEAR_READ_NOTIFICATIONS);
+	const [clearAll, { loading: clearingAll }] = useMutation(CLEAR_ALL_NOTIFICATIONS);
 
 	const notifications = (data?.getNotifications?.list ?? []) as Notification[];
 	const unreadCount = data?.getNotifications?.unreadCount ?? 0;
+	const busy = markingAll || clearingRead || clearingAll;
 
 	const closeDropdown = useCallback(() => setOpen(false), []);
 
@@ -116,11 +124,47 @@ export default function NotificationDropdown() {
 	}, []);
 
 	const handleMarkAllRead = async () => {
-		if (unreadCount === 0) return;
+		if (unreadCount === 0 || busy) return;
 		try {
 			await markAllRead();
 			await refetch();
 			successToast(t('toast.allCaughtUp'));
+		} catch {
+			errorToast(t('toast.couldNotUpdate'));
+		}
+	};
+
+	/**
+	 * Both clear handlers refetch rather than patch the cache: deletion changes which rows the
+	 * list contains, which a normalized cache write cannot express. The panel renders straight
+	 * off `data`, so the refetched result reaches the UI without any local-state mirror.
+	 */
+	const handleClearRead = async () => {
+		if (notifications.length === 0 || busy) return;
+		try {
+			const res = await clearRead();
+			const removed = (res.data?.clearReadNotifications ?? 0) as number;
+			await refetch();
+			successToast(removed > 0 ? t('notify.cleared', { count: removed }) : t('notify.noReadToClear'));
+		} catch {
+			errorToast(t('toast.couldNotUpdate'));
+		}
+	};
+
+	const handleClearAll = async () => {
+		if (notifications.length === 0 || busy) return;
+		// Destroys unread items too and cannot be undone — confirm first.
+		// zIndex clears the panel's own stacking (.pp-notify__panel is z-index 1200).
+		const confirmed = await sweetConfirmAlert(t('notify.clearAllConfirm'), {
+			zIndex: 2000,
+		});
+		if (!confirmed) return;
+
+		try {
+			const res = await clearAll();
+			const removed = (res.data?.clearAllNotifications ?? 0) as number;
+			await refetch();
+			successToast(t('notify.cleared', { count: removed }));
 		} catch {
 			errorToast(t('toast.couldNotUpdate'));
 		}
@@ -132,33 +176,40 @@ export default function NotificationDropdown() {
 			<button
 				type="button"
 				className="pp-notify__bell"
-				aria-label="Notifications"
+				aria-label={t('notify.title')}
 				aria-expanded={open}
 				onClick={() => setOpen((v) => !v)}
 			>
 				<NotificationsOutlinedIcon />
 				{unreadCount > 0 && (
-					<span className="pp-notify__badge notification-badge" aria-label={`${unreadCount} unread`}>
+					<span
+						className="pp-notify__badge notification-badge"
+						aria-label={t('notify.unread', { count: unreadCount })}
+					>
 						{unreadCount > 9 ? '9+' : unreadCount}
 					</span>
 				)}
 			</button>
 
 			{open && (
-				<div className="pp-notify__panel" role="dialog" aria-label="Notifications">
+				<div className="pp-notify__panel" role="dialog" aria-label={t('notify.title')}>
 					<div className="pp-notify__head">
-						<strong>Notifications</strong>
-						{unreadCount > 0 && <span className="pp-notify__unread-label">{unreadCount} new</span>}
+						<strong>{t('notify.title')}</strong>
+						{unreadCount > 0 && (
+							<span className="pp-notify__unread-label">
+								{t('notify.newCount', { count: unreadCount })}
+							</span>
+						)}
 					</div>
 
 					{loading && notifications.length === 0 ? (
 						<div className="pp-notify__empty">
-							<p>Loading…</p>
+							<p>{t('notify.loading')}</p>
 						</div>
 					) : notifications.length === 0 ? (
 						<div className="pp-notify__empty">
 							<PetsIcon aria-hidden />
-							<p>No notifications yet</p>
+							<p>{t('notify.empty')}</p>
 						</div>
 					) : (
 						<ul className="pp-notify__list">
@@ -189,10 +240,26 @@ export default function NotificationDropdown() {
 						<button
 							type="button"
 							className="pp-notify__mark-all"
-							disabled={unreadCount === 0 || markingAll}
+							disabled={unreadCount === 0 || busy}
 							onClick={handleMarkAllRead}
 						>
-							Mark all as read
+							{t('notify.markAllRead')}
+						</button>
+						<button
+							type="button"
+							className="pp-notify__clear"
+							disabled={notifications.length === 0 || busy}
+							onClick={handleClearRead}
+						>
+							{t('notify.clearRead')}
+						</button>
+						<button
+							type="button"
+							className="pp-notify__clear pp-notify__clear--danger"
+							disabled={notifications.length === 0 || busy}
+							onClick={handleClearAll}
+						>
+							{t('notify.clearAll')}
 						</button>
 					</div>
 				</div>

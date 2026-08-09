@@ -865,21 +865,35 @@
 		margin-top: 12px;
 		padding-top: 12px;
 		border-top: 1px solid rgba(30, 107, 79, 0.1);
-		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		flex-wrap: wrap;
 	}
 
-	&__mark-all {
+	&__mark-all,
+	&__clear {
 		border: none;
 		background: transparent;
 		color: #1e6b4f;
 		font-size: 0.82rem;
 		font-weight: 600;
 		cursor: pointer;
+		padding: 4px 2px;
+
+		&:hover:not(:disabled) {
+			text-decoration: underline;
+		}
 
 		&:disabled {
 			opacity: 0.45;
 			cursor: not-allowed;
 		}
+	}
+
+	&__clear--danger {
+		color: #c62828;
 	}
 }
 

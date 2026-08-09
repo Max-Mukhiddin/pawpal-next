@@ -1,5 +1,6 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { fadeUp } from '../../hooks/useFadeUpOnScroll';
@@ -21,8 +22,6 @@ const HERO_SLIDES = [
 
 const HERO_BG_FALLBACK = '/images/hero/pawpal-hero-1.jpg';
 
-const HEADLINE_LINES = ['Trusted care', 'for your best friend'] as const;
-
 const HERO_ENTRANCE = [
 	{ selector: '.pp-hero__eyebrow', delay: 0 },
 	{ selector: '.pp-hero__line--1', delay: 80 },
@@ -40,6 +39,7 @@ const prefersReducedMotion = () =>
 	window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export default function HeroSection() {
+	const { t } = useTranslation('common');
 	const router = useRouter();
 	const heroRef = useRef<HTMLElement>(null);
 	const bgRef = useRef<HTMLDivElement>(null);
@@ -254,17 +254,14 @@ export default function HeroSection() {
 
 			<div className="pp-hero__inner">
 				<div className="pp-hero__content">
-					<span className="pp-hero__eyebrow">PawPal — Premium Pet Care</span>
+					<span className="pp-hero__eyebrow">{t('hero.eyebrow')}</span>
 
 					<h1 id="hero-pawpal-title" className="pp-hero__title">
-						<span className="pp-hero__line pp-hero__line--1">{HEADLINE_LINES[0]}</span>
-						<span className="pp-hero__line pp-hero__line--2">{HEADLINE_LINES[1]}</span>
+						<span className="pp-hero__line pp-hero__line--1">{t('hero.title.line1')}</span>
+						<span className="pp-hero__line pp-hero__line--2">{t('hero.title.line2')}</span>
 					</h1>
 
-					<p className="pp-hero__sub">
-						Vetted specialists for every stage of your pet&apos;s life — book in minutes, near
-						you.
-					</p>
+					<p className="pp-hero__sub">{t('hero.subtitle')}</p>
 
 					<div className="pp-hero__search-wrap" ref={searchWrapRef}>
 						<button
@@ -272,7 +269,7 @@ export default function HeroSection() {
 							className="pp-hero__specialist-btn"
 							onClick={goToSpecialists}
 						>
-							Talk to a Specialist
+							{t('hero.ctaSpecialist')}
 							<ArrowForwardOutlinedIcon aria-hidden />
 						</button>
 
@@ -281,7 +278,7 @@ export default function HeroSection() {
 							<input
 								type="search"
 								className="pp-hero__search-input"
-								placeholder="Search specialists, services, or products"
+								placeholder={t('hero.searchPlaceholder')}
 								value={searchQuery}
 								onChange={(e) => {
 									setSearchQuery(e.target.value);
@@ -291,14 +288,14 @@ export default function HeroSection() {
 									if (searchQuery.trim().length >= 2) setOpen(true);
 								}}
 								onKeyDown={handleSearchKeyDown}
-								aria-label="Search specialists, services, or products"
+								aria-label={t('hero.searchPlaceholder')}
 								aria-expanded={showDropdown}
 								aria-controls={showDropdown ? listboxId : undefined}
 								aria-autocomplete="list"
 								role="combobox"
 								autoComplete="off"
 							/>
-							<button type="submit" className="pp-hero__search-btn" aria-label="Search">
+							<button type="submit" className="pp-hero__search-btn" aria-label={t('hero.searchSubmit')}>
 								<ArrowForwardOutlinedIcon fontSize="small" aria-hidden />
 							</button>
 						</form>

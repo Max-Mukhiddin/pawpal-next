@@ -379,8 +379,10 @@
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
+		/* Phones keep two columns — product cards are image-led and read fine at ~170px */
 		@media (max-width: 599px) {
-			grid-template-columns: minmax(0, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
 		}
 	}
 

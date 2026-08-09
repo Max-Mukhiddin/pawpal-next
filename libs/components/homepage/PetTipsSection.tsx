@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
 import { Direction } from '../../enums/common.enum';
 import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
@@ -78,6 +79,7 @@ const ARTICLES_QUERY_VARS = {
 };
 
 export default function PetTipsSection() {
+	const { t } = useTranslation('common');
 	const { data } = useQuery(GET_BOARD_ARTICLES, {
 		variables: ARTICLES_QUERY_VARS,
 		fetchPolicy: 'cache-and-network',
@@ -119,23 +121,20 @@ export default function PetTipsSection() {
 		<section className="pp-tips pp-section" aria-labelledby="pawpal-home-tips-title">
 			<div className="pp-container pp-tips__content">
 				<header className="pp-tips__header" data-section-reveal="header">
-					<span className="pp-tips__eyebrow">Latest articles</span>
+					<span className="pp-tips__eyebrow">{t('petTips.eyebrow')}</span>
 					<div className="pp-tips__head-row">
 						<div className="pp-tips__head-copy">
 							<h2 id="pawpal-home-tips-title" className="pp-tips__heading">
-								Tips & stories for pet parents
+								{t('petTips.heading')}
 							</h2>
-							<p className="pp-tips__subtext">
-								Practical reads from grooming, activity, and nutrition experts to support
-								better daily care.
-							</p>
+							<p className="pp-tips__subtext">{t('petTips.subtitle')}</p>
 						</div>
 						<Link
 							href="/blog"
 							className="pp-btn pp-btn--primary pp-tips__view-all"
 							data-section-reveal="cta"
 						>
-							View all articles →
+							{t('petTips.viewAll')}
 						</Link>
 					</div>
 				</header>

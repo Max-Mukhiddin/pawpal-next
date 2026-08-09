@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
@@ -29,6 +30,7 @@ const AUTO_SCROLL_SPEED = 1.2;
 const DRAG_THRESHOLD = 8;
 
 export default function OurServices() {
+	const { t } = useTranslation('common');
 	const router = useRouter();
 	const variables = useMemo(
 		() => ({
@@ -183,20 +185,17 @@ export default function OurServices() {
 		<section className="pp-services pp-section" aria-labelledby="our-services-title">
 			<div className="pp-container pp-services__inner">
 				<div className="pp-services__aside" data-section-reveal="header">
-					<span className="pp-eyebrow">Our services</span>
+					<span className="pp-eyebrow">{t('ourServices.eyebrow')}</span>
 					<h2 id="our-services-title" className="pp-heading pp-services__title">
-						Everything your pet needs, in one place
+						{t('ourServices.heading')}
 					</h2>
-					<p className="pp-subtitle">
-						Grooming, wellness, boarding and training — each booked through a vetted
-						specialist who treats your pet like their own.
-					</p>
+					<p className="pp-subtitle">{t('ourServices.subtitle')}</p>
 					<Link
 						href="/service"
 						className="pp-btn pp-btn--primary pp-services__browse"
 						data-section-reveal="cta"
 					>
-						Browse all services
+						{t('ourServices.browseAll')}
 						<ArrowForwardOutlinedIcon aria-hidden />
 					</Link>
 				</div>

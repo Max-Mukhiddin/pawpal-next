@@ -428,5 +428,18 @@ export const DELETE_NOTIFICATION = gql`
 	}
 `;
 
+/** Both clear mutations return the number of notifications removed. */
+export const CLEAR_READ_NOTIFICATIONS = gql`
+	mutation ClearReadNotifications {
+		clearReadNotifications
+	}
+`;
+
+export const CLEAR_ALL_NOTIFICATIONS = gql`
+	mutation ClearAllNotifications {
+		clearAllNotifications
+	}
+`;
+
 /** Admin member updates (same document as `apollo/admin/mutation`). */
 export { UPDATE_MEMBER_BY_ADMIN } from '../admin/mutation';

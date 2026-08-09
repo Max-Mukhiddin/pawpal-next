@@ -1,3 +1,5 @@
+import { useTranslation } from 'next-i18next';
+
 const BRAND_LOGOS = [
 	{ name: 'Petco', src: '/img/brands/petco.svg' },
 	{ name: 'Chewy', src: '/img/brands/chewy.svg' },
@@ -9,10 +11,11 @@ const BRAND_LOGOS = [
 ] as const;
 
 export default function TrustMarquee() {
+	const { t } = useTranslation('common');
 	const track = [...BRAND_LOGOS, ...BRAND_LOGOS];
 
 	return (
-		<section className="pp-trust-marquee" aria-label="Trusted pet brands">
+		<section className="pp-trust-marquee" aria-label={t('trustMarquee.ariaLabel')}>
 			<div className="pp-trust-marquee__viewport">
 				<div className="pp-trust-marquee__fade pp-trust-marquee__fade--left" aria-hidden />
 				<div className="pp-trust-marquee__fade pp-trust-marquee__fade--right" aria-hidden />

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { LIKE_TARGET_LISTING } from '../../../apollo/user/mutation';
@@ -58,6 +59,7 @@ const AUTO_SCROLL_SPEED = 1.2;
 const DRAG_THRESHOLD = 8;
 
 export default function FeaturedProducts() {
+	const { t } = useTranslation('common');
 	const router = useRouter();
 	const variables = useMemo(
 		() => ({
@@ -212,13 +214,13 @@ export default function FeaturedProducts() {
 		<section className="pp-products pp-section" aria-labelledby="our-products-title">
 			<div className="pp-container pp-products__inner">
 				<div className="pp-products__aside" data-section-reveal="header">
-					<span className="pp-eyebrow">Our products</span>
+					<span className="pp-eyebrow">{t('featuredProducts.eyebrow')}</span>
 					<h2 id="our-products-title" className="pp-heading pp-products__title">
-						Everything your pet needs
+						{t('featuredProducts.heading')}
 					</h2>
-					<p className="pp-subtitle">From nutrition to comfort, quality picks trusted by PawPal families.</p>
+					<p className="pp-subtitle">{t('featuredProducts.subtitle')}</p>
 					<Link href="/product" className="pp-btn pp-btn--primary pp-products__browse" data-section-reveal="cta">
-						Browse all products
+						{t('featuredProducts.browseAll')}
 						<ArrowForwardOutlinedIcon aria-hidden />
 					</Link>
 				</div>

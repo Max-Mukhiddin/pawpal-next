@@ -495,11 +495,116 @@
 			.container .card-wrap {
 				grid-template-columns: repeat(2, minmax(0, 1fr));
 			}
+
+			/*
+			 * No-photo cards take the compact frame from tablet down. Two columns at this
+			 * width give a ~409px card, so the 4/5 portrait frame rendered as a ~511px empty
+			 * grey block — taller than the rest of the card combined. Photo cards are
+			 * deliberately untouched here and keep their portrait crop; only the placeholder
+			 * state changes. The ≤599px block re-states this after squaring the photo frame,
+			 * so the placeholder stays 4/3 on phones too.
+			 */
+			.specialist-card--editorial .specialist-card__photo-wrap--placeholder {
+				aspect-ratio: 4 / 3;
+			}
 		}
 
+		/*
+		 * Phone layout for the specialist directory.
+		 *
+		 * The editorial card used a 4/5 portrait frame, which on a full-width phone card
+		 * rendered as a ~438px block — and for specialists with no photo that block was an
+		 * empty grey placeholder taller than the rest of the card combined. Two columns plus
+		 * a square frame cuts it to roughly a quarter of the area while keeping the name,
+		 * role and CTA fully legible.
+		 */
 		@media (max-width: 599px) {
+			/* Trim the page header + toolbar so the grid starts roughly a screen sooner */
+			.specialists-page-header {
+				padding-bottom: 16px;
+
+				&__eyebrow {
+					margin-bottom: 6px;
+					font-size: 0.62rem;
+					letter-spacing: 0.16em;
+				}
+
+				&__title {
+					font-size: clamp(1.4rem, 6.5vw, 1.7rem);
+				}
+			}
+
+			.specialist-directory__search {
+				margin-bottom: 14px;
+			}
+
+			.specialist-directory__search-input {
+				padding: 11px 40px 11px 16px;
+				font-size: 0.9rem;
+			}
+
+			.specialist-directory__toolbar {
+				gap: 10px;
+				margin-bottom: 14px;
+			}
+
 			.container .card-wrap {
-				grid-template-columns: 1fr;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 14px;
+			}
+
+			.container .card-wrap--editorial {
+				column-gap: 14px;
+				row-gap: 22px;
+			}
+
+			.specialist-card--editorial {
+				.specialist-card__media {
+					margin-bottom: 10px;
+				}
+
+				.specialist-card__photo-wrap {
+					aspect-ratio: 1 / 1;
+					border-radius: 14px;
+				}
+
+				/* Placeholder cards shrink further — there is no photo worth the height */
+				.specialist-card__photo-wrap--placeholder {
+					aspect-ratio: 4 / 3;
+				}
+
+				.specialist-card__photo-fallback img {
+					width: 34%;
+					max-width: 56px;
+					max-height: 56%;
+				}
+
+				.specialist-card__eyebrow {
+					margin-bottom: 5px;
+					font-size: 9.5px;
+					letter-spacing: 0.12em;
+				}
+
+				.specialist-card__name {
+					font-size: 1rem;
+					line-height: 1.22;
+				}
+
+				.specialist-card__role {
+					margin-top: 2px;
+					font-size: 12px;
+					line-height: 1.35;
+				}
+
+				.specialist-card__cta {
+					margin-top: 8px;
+					font-size: 9.5px;
+					letter-spacing: 0.08em;
+				}
+
+				.specialist-card__cta-icon {
+					font-size: 0.8rem !important;
+				}
 			}
 		}
 

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import StarIcon from '@mui/icons-material/Star';
 import { GET_AGENTS } from '../../../apollo/user/query';
@@ -12,35 +13,13 @@ import { hasRealMemberPhoto } from '../../utils/memberSpecialty';
 import { getMemberTypeLabel } from '../../utils/memberDisplay';
 import { MemberType } from '../../enums/member.enum';
 
+/** Ids + icons are static; title/description are resolved per-locale inside the component. */
 const SPECIALTY_PILLARS = [
-	{
-		id: 'vets',
-		icon: '🩺',
-		title: 'Veterinarians',
-		description: 'Licensed clinicians for wellness visits, urgent concerns, and ongoing care plans.',
-	},
-	{
-		id: 'groomers',
-		icon: '✂️',
-		title: 'Groomers',
-		description: 'Patient, breed-savvy groomers who keep coats healthy and anxious pets at ease.',
-	},
-	{
-		id: 'trainers',
-		icon: '🎓',
-		title: 'Trainers',
-		description: 'Positive-reinforcement coaches for puppies, rescues, and everyday behavior goals.',
-	},
-	{
-		id: 'sitters',
-		icon: '🐾',
-		title: 'Sitters & Walkers',
-		description: 'Reliable companions for walks, boarding, and the routines your pet already knows.',
-	},
+	{ id: 'vets', icon: '🩺' },
+	{ id: 'groomers', icon: '✂️' },
+	{ id: 'trainers', icon: '🎓' },
+	{ id: 'sitters', icon: '🐾' },
 ] as const;
-
-const EDITORIAL_BODY =
-	'Every PawPal specialist is reviewed for credentials, responsiveness, and real care standards before they can list services. Families book with confidence knowing each profile reflects verified experience — not just a photo and a bio.';
 
 const DEFAULT_AVATAR = '/img/profile/defaultUser.svg';
 
@@ -81,6 +60,7 @@ const prefersReducedMotion = () =>
 	window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export default function TopPetSpecialists() {
+	const { t } = useTranslation('common');
 	const [imageFailed, setImageFailed] = useState(false);
 	const featuredRef = useRef<HTMLAnchorElement>(null);
 	const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
@@ -171,7 +151,7 @@ export default function TopPetSpecialists() {
 		<section className="pp-spec pp-section" aria-labelledby="team-pawpal-title">
 			<div className="pp-container">
 				{loading ? (
-					<p className="pp-spec__loading">Loading specialists…</p>
+					<p className="pp-spec__loading">{t('topSpecialists.loading')}</p>
 				) : featuredSpecialist ? (
 					<div className="pp-spec__showcase">
 						<Link
@@ -191,7 +171,7 @@ export default function TopPetSpecialists() {
 						>
 							<span className="pp-spec__featured-verified">
 								<CheckCircleOutlinedIcon fontSize="inherit" aria-hidden />
-								Verified
+								{t('topSpecialists.verified')}
 							</span>
 
 							<div className="pp-spec__featured-media">
@@ -211,7 +191,7 @@ export default function TopPetSpecialists() {
 							<div className="pp-spec__featured-copy">
 								<span className="pp-spec__featured-rating">
 									<StarIcon fontSize="inherit" aria-hidden />
-									{ratingValue} ({reviewCount} reviews)
+									{ratingValue} ({t('topSpecialists.reviews', { count: reviewCount })})
 								</span>
 								<p className="pp-spec__featured-role">
 									{formatRole(featuredSpecialist.memberType)}
@@ -224,11 +204,11 @@ export default function TopPetSpecialists() {
 						</Link>
 
 						<aside className="pp-spec__editorial" data-section-reveal="support">
-							<span className="pp-spec__editorial-eyebrow">Our specialists</span>
+							<span className="pp-spec__editorial-eyebrow">{t('topSpecialists.editorialEyebrow')}</span>
 							<h2 id="team-pawpal-title" className="pp-spec__editorial-title">
-								Loyal, passionate, and driven
+								{t('topSpecialists.editorialTitle')}
 							</h2>
-							<p className="pp-spec__editorial-body">{EDITORIAL_BODY}</p>
+							<p className="pp-spec__editorial-body">{t('topSpecialists.editorialBody')}</p>
 
 							{(networkAvatars.length > 0 || moreSpecialistsCount > 0) && (
 								<div className="pp-spec__editorial-network">
@@ -254,36 +234,36 @@ export default function TopPetSpecialists() {
 									)}
 									{moreSpecialistsCount > 0 && (
 										<span className="pp-spec__editorial-network-label">
-											+ {moreSpecialistsCount} more
+											{t('topSpecialists.networkMore', { count: moreSpecialistsCount })}
 										</span>
 									)}
 								</div>
 							)}
 
-							<div className="pp-spec__editorial-stats" aria-label="Specialist network highlights">
+							<div className="pp-spec__editorial-stats" aria-label={t('topSpecialists.statsAriaLabel')}>
 								<div className="pp-spec__editorial-stat">
 									<strong>{specialistsStat}</strong>
-									<span>Verified Specialists</span>
+									<span>{t('topSpecialists.statVerified')}</span>
 								</div>
 								<span className="pp-spec__editorial-stat-divider" aria-hidden />
 								<div className="pp-spec__editorial-stat">
 									<strong>{ratingValue}</strong>
-									<span>Avg Rating</span>
+									<span>{t('topSpecialists.statRating')}</span>
 								</div>
 								<span className="pp-spec__editorial-stat-divider" aria-hidden />
 								<div className="pp-spec__editorial-stat">
 									<strong>{bookingsStat}</strong>
-									<span>Bookings</span>
+									<span>{t('topSpecialists.statBookings')}</span>
 								</div>
 							</div>
 
 							<Link href="/specialist" className="pp-spec__editorial-cta">
-								Meet all specialists →
+								{t('topSpecialists.meetAll')}
 							</Link>
 						</aside>
 					</div>
 				) : (
-					<p className="pp-spec__loading">No specialists available yet.</p>
+					<p className="pp-spec__loading">{t('topSpecialists.empty')}</p>
 				)}
 
 				<div className="pp-spec__pillars" role="list">
@@ -297,8 +277,8 @@ export default function TopPetSpecialists() {
 							<span className="pp-spec__pillar-icon" aria-hidden>
 								{pillar.icon}
 							</span>
-							<h4 className="pp-spec__pillar-title">{pillar.title}</h4>
-							<p className="pp-spec__pillar-desc">{pillar.description}</p>
+							<h4 className="pp-spec__pillar-title">{t(`topSpecialists.pillars.${pillar.id}.title`)}</h4>
+							<p className="pp-spec__pillar-desc">{t(`topSpecialists.pillars.${pillar.id}.description`)}</p>
 						</div>
 					))}
 				</div>

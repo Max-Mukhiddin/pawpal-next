@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'next-i18next';
 import { useAnimeSectionReveal } from '../../hooks/useAnimeSectionReveal';
 
 const VIDEO_SRC = '/video/pawpal-care.mp4';
@@ -9,6 +10,7 @@ const prefersReducedMotion = () =>
 	window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export default function BrandShowcase() {
+	const { t } = useTranslation('common');
 	const mediaRef = useRef<HTMLDivElement>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [loadVideo, setLoadVideo] = useState(false);
@@ -53,7 +55,7 @@ export default function BrandShowcase() {
 	}, [loadVideo, useStaticPoster]);
 
 	return (
-		<section className="pp-about pp-section" aria-label="About PawPal">
+		<section className="pp-about pp-section" aria-label={t('brandShowcase.ariaLabel')}>
 			<div className="pp-container pp-about__inner">
 				<div className="pp-about__media" data-section-reveal="card" ref={mediaRef}>
 					<div className="pp-about__video-wrap">

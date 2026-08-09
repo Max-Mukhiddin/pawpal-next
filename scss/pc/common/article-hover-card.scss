@@ -1,18 +1,28 @@
 /**
- * Hover-reveal article card — fixed card size, image opacity 0→1 on hover.
- * Single text layer; colors transition via CSS custom properties (no duplicates).
+ * Editorial article card — fixed card size.
+ * Single text layer; colors set via CSS custom properties (no duplicates).
  * Shared by homepage preview + blog listing grid.
+ *
+ * Two presentations, split by input capability:
+ *   - Touch — the base/unqualified rules below: image + scrim painted immediately, light
+ *     ink over them. `(hover: hover) and (pointer: fine)` never matches on touch, so a
+ *     hover-gated image could never appear there at all. That was the bug.
+ *   - Pointer — inside the hover query: the original hover-reveal design is restored.
+ *     Bare mist background with dark ink, image + scrim fading in on `:hover`.
+ *
+ * The split is ordering, not duplication: the hover query comes later in source at equal
+ * specificity, so it overrides the touch base on pointer devices only.
  */
 
 .pp-article-card {
-	/* Default ink tokens — overridden on hover */
-	--pp-article-title: var(--pp-primary-hover);
-	--pp-article-excerpt: #50625a;
-	--pp-article-read: var(--pp-primary-hover);
-	--pp-article-date: #50625a;
-	--pp-article-cat-bg: transparent;
-	--pp-article-cat-color: #e8a04b;
-	--pp-article-cat-border: rgba(232, 160, 75, 0.45);
+	/* Base (touch) ink tokens — these read against the visible image + scrim, so light */
+	--pp-article-title: #f0f8f3;
+	--pp-article-excerpt: rgba(240, 248, 243, 0.92);
+	--pp-article-read: #f0f8f3;
+	--pp-article-date: #f0f8f3;
+	--pp-article-cat-bg: #e8a04b;
+	--pp-article-cat-color: #15241e;
+	--pp-article-cat-border: #e8a04b;
 
 	position: relative;
 	display: flex;
@@ -32,7 +42,7 @@
 	box-sizing: border-box;
 	transition: box-shadow 400ms ease-out;
 
-	/* Image layer — always in DOM, fills card, hidden until hover */
+	/* Image layer — fills the card; visible by default (touch), hidden again for pointer */
 	&__media {
 		position: absolute;
 		inset: 0;
@@ -51,24 +61,29 @@
 		min-height: 100%;
 		object-fit: cover;
 		object-position: center top;
-		opacity: 0;
-		transition: opacity 400ms ease-out;
+		opacity: 1;
+		transform: scale(1);
+		transition: transform 400ms ease-out;
 	}
 
-	/* Dark gradient — fades in with image for text legibility */
+	/*
+	 * Dark gradient carrying text legibility over the photo. On by default for touch; the
+	 * hover query below fades it in with the image instead. It keeps a floor of tint at the
+	 * top edge (it used to reach `transparent`) so the category chip and date stay readable
+	 * over light photos — which matters in both presentations.
+	 */
 	&__scrim {
 		position: absolute;
 		inset: 0;
 		z-index: 1;
 		background: linear-gradient(
 			to top,
-			rgba(23, 62, 50, 0.85) 0%,
-			rgba(23, 62, 50, 0.4) 42%,
-			transparent 70%
+			rgba(23, 62, 50, 0.88) 0%,
+			rgba(23, 62, 50, 0.55) 42%,
+			rgba(23, 62, 50, 0.32) 100%
 		);
-		opacity: 0;
+		opacity: 1;
 		pointer-events: none;
-		transition: opacity 400ms ease-out;
 	}
 
 	/* Single text stack — always visible, sits above image + scrim */
@@ -158,7 +173,32 @@
 		transition: color 400ms ease-out;
 	}
 
+	/*
+	 * Pointer devices only — restores the original hover-reveal design.
+	 * Resets the base (touch) presentation back to a bare mist card with dark ink, then
+	 * `:hover` fades the image + scrim in and swaps to the light-on-scrim ink.
+	 */
 	@media (hover: hover) and (pointer: fine) {
+		--pp-article-title: var(--pp-primary-hover);
+		--pp-article-excerpt: #50625a;
+		--pp-article-read: var(--pp-primary-hover);
+		--pp-article-date: #50625a;
+		--pp-article-cat-bg: transparent;
+		--pp-article-cat-color: #e8a04b;
+		--pp-article-cat-border: rgba(232, 160, 75, 0.45);
+
+		&__img {
+			opacity: 0;
+			transition:
+				opacity 400ms ease-out,
+				transform 400ms ease-out;
+		}
+
+		&__scrim {
+			opacity: 0;
+			transition: opacity 400ms ease-out;
+		}
+
 		&:hover {
 			--pp-article-title: #f0f8f3;
 			--pp-article-excerpt: rgba(240, 248, 243, 0.92);
@@ -172,6 +212,7 @@
 
 			.pp-article-card__img {
 				opacity: 1;
+				transform: scale(1.04);
 			}
 
 			.pp-article-card__scrim {
@@ -262,10 +303,10 @@
 			transition: none !important;
 		}
 
+		/* Hover still reveals (instantly, transitions are off above) — just drop the zoom. */
 		@media (hover: hover) and (pointer: fine) {
-			&:hover .pp-article-card__img,
-			&:hover .pp-article-card__scrim {
-				opacity: 1;
+			&:hover .pp-article-card__img {
+				transform: none;
 			}
 		}
 	}

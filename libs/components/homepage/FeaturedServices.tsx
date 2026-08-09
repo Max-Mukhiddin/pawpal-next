@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import { GET_LISTINGS } from '../../../apollo/user/query';
 import { ListingType } from '../../enums/listing.enum';
@@ -49,6 +50,7 @@ const pickFeaturedService = (listings: Listing[]): Listing | null => {
 };
 
 export default function FeaturedServices() {
+	const { t } = useTranslation('common');
 	const variables = useMemo(
 		() => ({
 			input: {
@@ -98,17 +100,15 @@ export default function FeaturedServices() {
 			<div className="pp-container">
 				<div className="pp-featured__head" data-section-reveal="header">
 					<div className="pp-featured__intro">
-						<span className="pp-eyebrow">Featured services</span>
+						<span className="pp-eyebrow">{t('featuredServices.eyebrow')}</span>
 						<h2 id="featured-services-title" className="pp-heading pp-featured__title">
-							Our premium <span className="pp-accent">care offerings</span>
+							{t('featuredServices.headingLead')}{' '}
+							<span className="pp-accent">{t('featuredServices.headingAccent')}</span>
 						</h2>
-						<p className="pp-subtitle pp-featured__desc">
-							A curated sanctuary of services designed to treat your pet like royalty — each
-							delivered by a vetted specialist who treats every companion like their own.
-						</p>
+						<p className="pp-subtitle pp-featured__desc">{t('featuredServices.subtitle')}</p>
 					</div>
 					<Link href="/service" className="pp-featured__explore" data-section-reveal="cta">
-						Explore all services
+						{t('featuredServices.exploreAll')}
 						<ArrowForwardOutlinedIcon aria-hidden />
 					</Link>
 				</div>
@@ -128,7 +128,7 @@ export default function FeaturedServices() {
 								e.currentTarget.src = FALLBACK_PRIMARY_IMAGE;
 							}}
 						/>
-						<span className="pp-featured__badge">Most popular</span>
+						<span className="pp-featured__badge">{t('featuredServices.badgeMostPopular')}</span>
 						<div className="pp-featured__hero-overlay">
 							<h3 className="pp-featured__hero-title">{title}</h3>
 							<p className="pp-featured__hero-desc">{primaryDescription}</p>
@@ -148,10 +148,10 @@ export default function FeaturedServices() {
 							/>
 						</div>
 						<div className="pp-featured__side-body">
-							<h3 className="pp-featured__side-title">{FALLBACK.toolsTitle}</h3>
+							<h3 className="pp-featured__side-title">{t('featuredServices.toolsTitle')}</h3>
 							<p className="pp-featured__side-desc">{toolsDescription}</p>
 							<Link href={href} className="pp-featured__side-link">
-								Learn more
+								{t('featuredServices.learnMore')}
 								<ArrowForwardOutlinedIcon aria-hidden />
 							</Link>
 						</div>

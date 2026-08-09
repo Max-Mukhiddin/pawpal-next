@@ -533,8 +533,10 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        /* Phones keep two columns — see the compaction rules in _listing-catalog-card.scss */
         @media (max-width: 599px) {
-            grid-template-columns: minmax(0, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
         }
     }
 

@@ -174,14 +174,105 @@
 		}
 	}
 
+	/*
+	 * Desktop: the panel is transparent to layout, so the search + category blocks remain
+	 * direct children of .catalog-sidebar exactly as before this wrapper existed.
+	 */
+	.catalog-sidebar__panel,
+	.catalog-sidebar__panel-inner {
+		display: contents;
+	}
+
+	.catalog-sidebar__toggle {
+		display: none;
+	}
+
 	@media (max-width: 1023px) {
 		.catalog-directory {
 			grid-template-columns: 1fr;
+			/* 40px column gap becomes dead vertical space once stacked */
+			gap: 14px;
+			margin-top: 0;
 		}
 
 		.catalog-sidebar {
 			position: static;
-			padding: 0 0 8px;
+			padding: 0;
+		}
+
+		/* Collapse the filter stack behind a single row so the grid starts near the top */
+		.catalog-sidebar__head {
+			margin-bottom: 0;
+			gap: 12px;
+		}
+
+		.catalog-sidebar__title {
+			display: none;
+		}
+
+		.catalog-sidebar__toggle {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			flex: 1;
+			min-height: 44px;
+			padding: 10px 14px;
+			border: 1px solid rgba(30, 107, 79, 0.22);
+			border-radius: 999px;
+			background: #ffffff;
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.88rem;
+			font-weight: 600;
+			color: var(--pp-primary-hover);
+			cursor: pointer;
+
+			&-icon {
+				font-size: 1.05rem !important;
+			}
+
+			&-count {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 20px;
+				height: 20px;
+				padding: 0 6px;
+				border-radius: 999px;
+				background: #e8a04b;
+				color: #15241e;
+				font-size: 0.72rem;
+				font-weight: 700;
+			}
+
+			&-chevron {
+				margin-left: auto;
+				font-size: 1.15rem !important;
+				transition: transform 200ms ease;
+			}
+
+			&.is-open &-chevron {
+				transform: rotate(180deg);
+			}
+		}
+
+		.catalog-sidebar__panel {
+			display: grid;
+			grid-template-rows: 0fr;
+			transition: grid-template-rows 240ms ease;
+
+			&.is-open {
+				grid-template-rows: 1fr;
+			}
+		}
+
+		.catalog-sidebar__panel-inner {
+			display: block;
+			min-height: 0;
+			overflow: hidden;
+		}
+
+		.catalog-sidebar__panel.is-open .catalog-sidebar__panel-inner {
+			padding-top: 14px;
 		}
 	}
 }

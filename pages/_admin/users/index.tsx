@@ -20,7 +20,6 @@ import { sweetErrorHandling, sweetMixinSuccessAlert } from '../../../libs/sweetA
 import { MemberUpdate } from '../../../libs/types/member/member.update';
 import { useMutation, useQuery } from '@apollo/client';
 import { GET_ALL_MEMBERS_BY_ADMIN } from '../../../apollo/user/query';
-import { T } from '../../../libs/types/common';
 import { UPDATE_MEMBER_BY_ADMIN } from '../../../apollo/user/mutation';
 import { useDebouncedValue } from '../../../libs/hooks/useDebouncedValue';
 
@@ -28,8 +27,6 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	const router = useRouter();
 	const [anchorEl, setAnchorEl] = useState<[] | HTMLElement[]>([]);
 	const [membersInquiry, setMembersInquiry] = useState<MembersInquiry>(initialInquiry);
-	const [members, setMembers] = useState<Member[]>([]);
-	const [membersTotal, setMembersTotal] = useState<number>(0);
 	const [value, setValue] = useState(
 		membersInquiry?.search?.memberStatus ? membersInquiry?.search?.memberStatus : 'ALL',
 	);
@@ -45,19 +42,29 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	const {
 		loading: getAllMembersByAdminLoading,
 		data: getAllMembersByAdminData,
+		previousData: getAllMembersByAdminPreviousData,
 		error: getAllMembersByAdminError,
 		refetch: getAllMembersRefetch,
 	} = useQuery(GET_ALL_MEMBERS_BY_ADMIN, {
 		fetchPolicy: 'network-only',
 		variables: { input: membersInquiry },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			const rawList: Member[] = data?.getAllMembersByAdmin?.list ?? [];
-			const metaTotal = data?.getAllMembersByAdmin?.metaCounter[0]?.total ?? 0;
-			setMembers(rawList);
-			setMembersTotal(metaTotal);
-		},
 	});
+
+	/**
+	 * Render straight off the query result rather than mirroring it into local state.
+	 * With an `onCompleted` mirror, a mutation's normalized cache patch never reached the
+	 * table: the follow-up refetch returned an unchanged result, Apollo skipped the
+	 * notification, and the setter never ran — so rows stayed stale until a manual refresh.
+	 *
+	 * `previousData` keeps the current rows on screen while a new page/filter is in flight,
+	 * which is the one thing the local mirror was doing usefully.
+	 */
+	const membersPayload =
+		getAllMembersByAdminData?.getAllMembersByAdmin ??
+		getAllMembersByAdminPreviousData?.getAllMembersByAdmin;
+	const members: Member[] = membersPayload?.list ?? [];
+	const membersTotal: number = membersPayload?.metaCounter?.[0]?.total ?? 0;
 
 	/** LIFECYCLES **/
 	useEffect(() => {
@@ -75,10 +82,6 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 			search: { isPendingSpecialist: true },
 		});
 	}, [router.isReady, router.query.pendingSpecialists, initialInquiry?.limit]);
-
-	useEffect(() => {
-		getAllMembersRefetch({ input: membersInquiry }).then();
-	}, [membersInquiry]);
 
 	useEffect(() => {
 		const nextText = debouncedSearchText.trim();
@@ -102,17 +105,13 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	}, [debouncedSearchText]);
 
 	/** HANDLERS **/
-	const changePageHandler = async (event: unknown, newPage: number) => {
-		membersInquiry.page = newPage + 1;
-		await getAllMembersRefetch({ input: membersInquiry });
-		setMembersInquiry({ ...membersInquiry });
+	/* Updating the inquiry changes the query variables, which drives the fetch on its own. */
+	const changePageHandler = (event: unknown, newPage: number) => {
+		setMembersInquiry((prev) => ({ ...prev, page: newPage + 1 }));
 	};
 
-	const changeRowsPerPageHandler = async (event: React.ChangeEvent<HTMLInputElement>) => {
-		membersInquiry.limit = parseInt(event.target.value, 10);
-		membersInquiry.page = 1;
-		await getAllMembersRefetch({ input: membersInquiry });
-		setMembersInquiry({ ...membersInquiry });
+	const changeRowsPerPageHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setMembersInquiry((prev) => ({ ...prev, limit: parseInt(event.target.value, 10), page: 1 }));
 	};
 
 	const menuIconClickHandler = (e: any, index: number) => {

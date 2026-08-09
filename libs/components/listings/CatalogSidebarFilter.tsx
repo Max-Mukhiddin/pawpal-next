@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useId, useState } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import TuneIcon from '@mui/icons-material/Tune';
 
 export interface CatalogCategoryOption {
 	label: string;
@@ -29,15 +31,45 @@ const CatalogSidebarFilter: React.FC<CatalogSidebarFilterProps> = ({
 	activeCategory,
 	onCategorySelect,
 	onReset,
-}) => (
+}) => {
+	/**
+	 * Mobile only: the search + category panel collapses behind a "Filter" button so the
+	 * listing grid is reachable without scrolling past the whole filter stack. Desktop is
+	 * unaffected — the panel is `display: contents` above the breakpoint, so the DOM order
+	 * and grid layout stay exactly as before.
+	 */
+	const [filtersOpen, setFiltersOpen] = useState(false);
+	const panelId = useId();
+	const activeCount = (activeCategory && activeCategory !== 'All' ? 1 : 0) + (searchText.trim() ? 1 : 0);
+
+	return (
 	<aside className="catalog-sidebar">
 		<div className="catalog-sidebar__head">
 			<h2 className="catalog-sidebar__title">Filter</h2>
+			<button
+				type="button"
+				className={`catalog-sidebar__toggle${filtersOpen ? ' is-open' : ''}`}
+				onClick={() => setFiltersOpen((v) => !v)}
+				aria-expanded={filtersOpen}
+				aria-controls={panelId}
+			>
+				<TuneIcon className="catalog-sidebar__toggle-icon" aria-hidden />
+				<span>Filter</span>
+				{activeCount > 0 ? (
+					<span className="catalog-sidebar__toggle-count">{activeCount}</span>
+				) : null}
+				<ExpandMoreIcon className="catalog-sidebar__toggle-chevron" aria-hidden />
+			</button>
 			<button type="button" className="catalog-sidebar__reset" onClick={onReset}>
 				Reset
 			</button>
 		</div>
 
+		<div
+			id={panelId}
+			className={`catalog-sidebar__panel${filtersOpen ? ' is-open' : ''}`}
+		>
+		<div className="catalog-sidebar__panel-inner">
 		<div className="catalog-sidebar__search-wrap">
 			<input
 				className="catalog-sidebar__search"
@@ -74,7 +106,10 @@ const CatalogSidebarFilter: React.FC<CatalogSidebarFilterProps> = ({
 				);
 			})}
 		</div>
+		</div>
+		</div>
 	</aside>
-);
+	);
+};
 
 export default CatalogSidebarFilter;

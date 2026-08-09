@@ -1,7 +1,11 @@
 /** VARIABLES **/
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
+/**
+ * Poppins is loaded via a <link> in `pages/_document.tsx`, alongside Playfair Display and
+ * Fraunces — NOT with `@import url(...)` here. This file is inlined into ~9 stylesheets, so
+ * a CSS @import lands deep inside the concatenated bundle, where browsers ignore it
+ * ("An @import rule was ignored because it wasn't defined at the top of the stylesheet").
+ */
 $font: 'Poppins', sans-serif;
 
 @import '/scss/global/_text-truncate.scss';

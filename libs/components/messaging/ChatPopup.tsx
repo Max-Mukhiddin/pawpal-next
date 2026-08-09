@@ -5,6 +5,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import CloseIcon from '@mui/icons-material/Close';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { userVar } from '../../../apollo/store';
+import { MemberType } from '../../enums/member.enum';
 import { sweetConfirmAlert } from '../../sweetAlert';
 import { resolveMemberImageUrl } from '../../utils/mediaUrl';
 import { getMemberInitials } from '../../utils/memberDisplay';
@@ -423,16 +424,25 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 
 	const isAdminSupportThread = isAdminSupport || conversationType === 'ADMIN_SUPPORT';
 
-	const headerTitle = isAdminSupportThread
+	/**
+	 * The support branding is one-directional: the member is talking to "PawPal Support",
+	 * but the admin on the other end is talking to a specific person. Keying the header off
+	 * the conversation type alone showed every admin-support thread as "PawPal Support" with
+	 * the logo mark, so an admin handling several threads could not tell them apart.
+	 */
+	const viewerIsAdmin = user?.memberType === MemberType.ADMIN;
+	const showSupportBranding = isAdminSupportThread && !viewerIsAdmin;
+
+	const headerTitle = showSupportBranding
 		? 'PawPal Support'
 		: otherParty?.memberFullName?.trim() || otherParty?.memberNick || 'Conversation';
 
-	const headerAvatar = isAdminSupportThread
+	const headerAvatar = showSupportBranding
 		? '/img/logo/pawpal-logo-mark.png'
 		: resolveMemberImageUrl(otherParty?.memberImage, '/img/profile/defaultUser.svg');
 
 	// Same treatment as AdminTopBarAvatar: real photo when one exists, branded initials otherwise
-	const showHeaderPhoto = isAdminSupportThread || hasRealMemberPhoto(otherParty?.memberImage);
+	const showHeaderPhoto = showSupportBranding || hasRealMemberPhoto(otherParty?.memberImage);
 	const headerInitials = getMemberInitials(otherParty?.memberFullName || otherParty?.memberNick);
 
 	const handleSend = async () => {
@@ -640,7 +650,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 						>
 							{headerTitle}
 						</p>
-						{isAdminSupportThread ? (
+						{showSupportBranding ? (
 							<p style={{ margin: '2px 0 0', fontSize: 12, color: '#666' }}>We typically reply within a day</p>
 						) : null}
 					</div>
@@ -678,6 +688,20 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 							const isOwn = msg.senderId === user?._id;
 							const isEditing = editingId === msg._id;
 							const entered = initialIdsRef.current !== null && !initialIdsRef.current.has(msg._id);
+							/*
+							 * Inbound only — own messages are already identified by side + colour.
+							 * Also suppressed under support branding: the member sees a unified
+							 * "PawPal Support" identity, so labelling replies with the individual
+							 * staff account's nickname would contradict it and leak an internal
+							 * username. The admin's own view of the same thread still shows labels,
+							 * as do all DIRECT conversations.
+							 */
+							const senderLabel =
+								isOwn || showSupportBranding
+									? ''
+									: msg.senderData?.memberNick?.trim() ||
+										msg.senderData?.memberFullName?.trim() ||
+										'';
 
 							return (
 								<div
@@ -698,6 +722,25 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 											position: 'relative',
 										}}
 									>
+										{senderLabel ? (
+											<span
+												style={{
+													marginBottom: 4,
+													paddingInline: 4,
+													fontFamily: "'Poppins', sans-serif",
+													fontSize: 11,
+													fontWeight: 600,
+													/* #5f6b65 ≈ 5.5:1 on the light message pane */
+													color: '#5f6b65',
+													maxWidth: '100%',
+													overflow: 'hidden',
+													textOverflow: 'ellipsis',
+													whiteSpace: 'nowrap',
+												}}
+											>
+												{senderLabel}
+											</span>
+										) : null}
 										<div
 											style={{
 												padding: isEditing ? '10px 12px' : '10px 14px',

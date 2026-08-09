@@ -17,21 +17,18 @@ export default function ClosingCTA() {
 					<circle cx="52" cy="32" r="11" fill="#E8A04B" />
 					<circle cx="68" cy="48" r="10" fill="#E8A04B" />
 				</svg>
-				<span className="pp-eyebrow pp-closing__eyebrow">START TODAY</span>
+				<span className="pp-eyebrow pp-closing__eyebrow">{t('closingCta.eyebrow')}</span>
 				<h2 id="pp-closing-title" className="pp-closing__title">
-					Ready to give your pet world-class care?
+					{t('closingCta.title')}
 				</h2>
-				<p className="pp-closing__sub">
-					Book a vetted specialist in minutes — grooming, wellness, training and more, all in
-					one trusted place.
-				</p>
+				<p className="pp-closing__sub">{t('closingCta.subtitle')}</p>
 				<div className="pp-closing__actions">
 					<Link href="/service" className="pp-btn pp-btn--honey">
-						{t('Book a specialist')}
+						{t('closingCta.ctaBook')}
 						<ArrowForwardOutlinedIcon aria-hidden />
 					</Link>
 					<Link href="/about" className="pp-btn pp-btn--ghost-dark">
-						{t('How PawPal works')}
+						{t('closingCta.ctaHow')}
 					</Link>
 				</div>
 			</div>

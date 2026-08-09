@@ -775,7 +775,8 @@ $join-ease: cubic-bezier(0.23, 1, 0.32, 1);
 	.join-page {
 		align-items: flex-start;
 		justify-content: center;
-		padding: 88px 12px 24px;
+		/* Wider side gutters + a shorter top inset let the photo read around the card */
+		padding: 76px 18px 28px;
 
 		&__photo {
 			object-position: 42% 26%;
@@ -796,20 +797,106 @@ $join-ease: cubic-bezier(0.23, 1, 0.32, 1);
 			padding: 16px;
 		}
 
+		/*
+		 * The card previously filled 73–87% of the viewport height, so the background photo
+		 * barely read. The rules below tighten the card's own padding and its internal
+		 * vertical rhythm so it sits ON the photo rather than covering it. Nothing is hidden
+		 * or collapsed — every field, the divider, the social button and the submit button
+		 * stay rendered, and interactive targets stay at 44px minimum.
+		 */
 		&__card {
-			max-width: 100%;
-			padding: 26px 20px 30px;
+			/* Capped (not 100%) so the photo also shows down both sides on wider phones */
+			max-width: 380px;
+			padding: 20px 18px 24px;
 			background: rgba(255, 255, 255, 0.94);
 			border-radius: 22px;
 		}
 
 		&__form h2 {
-			font-size: clamp(1.5rem, 6.5vw, 1.78rem);
+			font-size: clamp(1.32rem, 5.4vw, 1.56rem);
+			margin-bottom: 6px;
 		}
 
 		&__subtitle {
-			margin-bottom: clamp(20px, 3vh, 26px);
-			font-size: 0.88rem;
+			margin-bottom: 14px;
+			font-size: 0.84rem;
+		}
+
+		.form-field {
+			margin-bottom: 12px;
+		}
+
+		.form-field__label {
+			margin-bottom: 6px;
+		}
+
+		/* 44px is the minimum comfortable tap target — do not shrink further */
+		.form-field input,
+		.form-field textarea {
+			min-height: 44px;
+			padding: 11px 14px;
+		}
+
+		.btn-primary {
+			min-height: 46px;
+			padding: 12px 20px;
+		}
+
+		&__divider {
+			margin: 14px 0;
+		}
+
+		.btn-social {
+			min-height: 44px;
+			padding: 11px 18px;
+		}
+
+		&__trust {
+			margin-top: 14px;
+		}
+
+		&__switch {
+			margin-top: 12px;
+		}
+
+		&__trust + &__switch {
+			margin-top: 10px;
+		}
+	}
+}
+
+/* Short phones (e.g. 375×667): trim further so the card clears the fold without scrolling. */
+@media (max-width: 767px) and (max-height: 700px) {
+	.join-page {
+		padding: 62px 16px 20px;
+
+		&__card {
+			padding: 16px 16px 18px;
+		}
+
+		&__form h2 {
+			font-size: clamp(1.24rem, 5vw, 1.4rem);
+		}
+
+		&__subtitle {
+			margin-bottom: 10px;
+		}
+
+		.form-field {
+			margin-bottom: 9px;
+		}
+
+		&__divider {
+			margin: 10px 0;
+		}
+
+		&__trust {
+			margin-top: 10px;
+		}
+
+		&__switch,
+		&__trust + &__switch {
+			margin-top: 8px;
 		}
 	}
 }
