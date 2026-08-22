@@ -7,6 +7,11 @@ export interface CatalogCategoryOption {
 	icon?: string;
 }
 
+export interface CatalogLocationOption {
+	label: string;
+	value: string;
+}
+
 export interface CatalogSidebarFilterProps {
 	searchPlaceholder: string;
 	searchText: string;
@@ -17,6 +22,10 @@ export interface CatalogSidebarFilterProps {
 	categories: CatalogCategoryOption[];
 	activeCategory: string;
 	onCategorySelect: (label: string) => void;
+	locationGroupLabel?: string;
+	locationOptions?: CatalogLocationOption[];
+	selectedLocations?: string[];
+	onLocationToggle?: (value: string) => void;
 	onReset: () => void;
 }
 
@@ -30,6 +39,10 @@ const CatalogSidebarFilter: React.FC<CatalogSidebarFilterProps> = ({
 	categories,
 	activeCategory,
 	onCategorySelect,
+	locationGroupLabel,
+	locationOptions = [],
+	selectedLocations = [],
+	onLocationToggle,
 	onReset,
 }) => {
 	/**
@@ -40,7 +53,10 @@ const CatalogSidebarFilter: React.FC<CatalogSidebarFilterProps> = ({
 	 */
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const panelId = useId();
-	const activeCount = (activeCategory && activeCategory !== 'All' ? 1 : 0) + (searchText.trim() ? 1 : 0);
+	const activeCount =
+		(activeCategory && activeCategory !== 'All' ? 1 : 0) +
+		(searchText.trim() ? 1 : 0) +
+		selectedLocations.length;
 
 	return (
 	<aside className="catalog-sidebar">
@@ -106,6 +122,25 @@ const CatalogSidebarFilter: React.FC<CatalogSidebarFilterProps> = ({
 				);
 			})}
 		</div>
+
+		{locationGroupLabel && locationOptions.length > 0 ? (
+			<div className="catalog-sidebar__group">
+				<h3 className="catalog-sidebar__group-label">{locationGroupLabel}</h3>
+				{locationOptions.map(({ label, value }) => {
+					const checked = selectedLocations.includes(value);
+					return (
+						<label key={value} className="catalog-sidebar__row">
+							<input
+								type="checkbox"
+								checked={checked}
+								onChange={() => onLocationToggle?.(value)}
+							/>
+							<span className={checked ? 'is-checked' : ''}>{label}</span>
+						</label>
+					);
+				})}
+			</div>
+		) : null}
 		</div>
 		</div>
 	</aside>

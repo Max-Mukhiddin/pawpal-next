@@ -7,7 +7,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
 import { ServicesInquiry } from '../../libs/types/services/service.input';
 import type { Service } from '../../libs/types/services/service';
-import { ListingType } from '../../libs/enums/listing.enum';
+import { ListingLocation, ListingType } from '../../libs/enums/listing.enum';
 import { withServicesListingTypeFilter } from '../../libs/utils/catalogListingInquiry';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { Direction, Message } from '../../libs/enums/common.enum';
@@ -42,6 +42,17 @@ export const getStaticProps = async ({ locale }: any) => ({
 });
 
 // ─── Static page data ────────────────────────────────────────────────────────
+
+/**
+ * `getListings`' `PISearch` input (pawpal-api) has no location argument today — only the
+ * admin-facing `getAllListings`/`ALPISearch` accepts `listingLocationList`. Until that's added
+ * to `PISearch`, this filter runs client-side over the already-fetched page via `listingLocation`
+ * (the field the query already returns), mirroring how "Service type" filters client-side too.
+ */
+const LOCATION_OPTIONS = Object.values(ListingLocation).map((value) => ({
+	value,
+	label: value.charAt(0) + value.slice(1).toLowerCase(),
+}));
 
 const featureBannerData = {
 	title: 'Premium Grooming for Every Breed',
@@ -141,6 +152,7 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	const [searchText, setSearchText] = useState<string>('');
 	const debouncedSearchText = useDebouncedValue(searchText, 300);
 	const [activeCategory, setActiveCategory] = useState<string>('All');
+	const [selectedLocations, setSelectedLocations] = useState<ListingLocation[]>([]);
 	const [isCatalogReady, setIsCatalogReady] = useState(false);
 
 	const serviceCatalogInquiry = useMemo(
@@ -197,14 +209,24 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	}, [debouncedSearchText]);
 
 	const filteredServices = useMemo(() => {
-		if (activeCategory === 'All') return services;
-		const cat = SERVICE_CATEGORIES.find((c) => c.label === activeCategory);
-		if (!cat || cat.keywords.length === 0) return services;
-		return services.filter((s) => {
-			const haystack = `${s.listingTitle} ${s.listingDesc ?? ''}`.toLowerCase();
-			return cat.keywords.some((kw) => haystack.includes(kw));
-		});
-	}, [services, activeCategory]);
+		let result = services;
+
+		if (activeCategory !== 'All') {
+			const cat = SERVICE_CATEGORIES.find((c) => c.label === activeCategory);
+			if (cat && cat.keywords.length > 0) {
+				result = result.filter((s) => {
+					const haystack = `${s.listingTitle} ${s.listingDesc ?? ''}`.toLowerCase();
+					return cat.keywords.some((kw) => haystack.includes(kw));
+				});
+			}
+		}
+
+		if (selectedLocations.length > 0) {
+			result = result.filter((s) => selectedLocations.includes(s.listingLocation));
+		}
+
+		return result;
+	}, [services, activeCategory, selectedLocations]);
 
 	const resetCatalogPage = (patch: Partial<ServicesInquiry> = {}) => {
 		const next = withServicesListingTypeFilter({ ...serviceInquiry, page: 1, ...patch });
@@ -222,6 +244,14 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 
 	const handleCategorySelect = (label: string) => {
 		setActiveCategory(label);
+		resetCatalogPage();
+	};
+
+	const handleLocationToggle = (value: string) => {
+		const location = value as ListingLocation;
+		setSelectedLocations((prev) =>
+			prev.includes(location) ? prev.filter((l) => l !== location) : [...prev, location],
+		);
 		resetCatalogPage();
 	};
 
@@ -287,6 +317,7 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 	const handleFilterReset = () => {
 		setSearchText('');
 		setActiveCategory('All');
+		setSelectedLocations([]);
 		resetCatalogPage({ search: { ...serviceInquiry.search, text: '' } });
 	};
 
@@ -305,6 +336,10 @@ const ServicesListPage: NextPage = ({ initialInput }: any) => {
 						categories={SERVICE_CATEGORIES.map(({ label, icon }) => ({ label, icon }))}
 						activeCategory={activeCategory}
 						onCategorySelect={handleCategorySelect}
+						locationGroupLabel="Location"
+						locationOptions={LOCATION_OPTIONS}
+						selectedLocations={selectedLocations}
+						onLocationToggle={handleLocationToggle}
 						onReset={handleFilterReset}
 					/>
 
