@@ -1,38 +1,121 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PawPal Web
 
-## Getting Started
+Frontend for **PawPal**, a full-stack pet-care marketplace connecting pet owners with specialists, services, and pet-product sellers.
 
-First, run the development server:
+This application is the customer-facing and specialist-facing web client for the PawPal platform and includes marketplace discovery, service/product flows, bookings, inquiries, community features, messaging, and admin-oriented interfaces.
+
+> Live product: https://pawpall.online  
+> Backend repository: https://github.com/Max-Mukhiddin/pawpal  
+> Portfolio: https://max-mukhiddin.github.io/homepage/
+
+## Tech Stack
+
+- **Next.js 14**
+- **React 18**
+- **TypeScript**
+- **Apollo Client** + GraphQL
+- **Material UI**
+- **Styled Components**
+- Sass / SCSS
+- TipTap rich-text editor
+- React Three Fiber / Three.js
+- i18next
+- WebSocket subscriptions
+
+## Product Areas
+
+### Marketplace
+
+- Product and service discovery
+- Category and location-based browsing
+- Specialist/service detail flows
+- Rich listing content and media
+
+### Bookings & Inquiries
+
+- Service booking flows
+- Customer inquiry submission
+- Specialist-side inquiry handling
+
+### Community
+
+- Articles
+- Comments
+- Likes
+- Follows
+- Views
+- Notifications
+
+### Messaging
+
+- Conversation UI
+- Real-time message feeds
+- WebSocket-enabled communication
+
+### Administration
+
+The frontend includes protected interfaces for managing platform content and operational workflows.
+
+## Architecture
+
+```text
+Next.js / React
+      |
+      v
+Apollo Client
+      |
+      v
+GraphQL API
+      |
+      v
+NestJS + MongoDB
+```
+
+## Local Development
+
+### Install
+
+```bash
+npm install
+```
+
+or
+
+```bash
+yarn
+```
+
+### Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### Start production build
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```bash
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Environment
 
-## Learn More
+Runtime configuration is kept outside the repository through local environment files. `.env`, `.env.local`, and development-specific environment files are excluded from version control.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Background
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+PawPal was developed as an independent portfolio product after learning marketplace architecture through earlier course work. The pet-care domain, product/service model, booking and inquiry workflows, communication features, visual system, and production deployment were developed specifically for PawPal.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Author
 
-## Deploy on Vercel
+**Mukhiddin “Max” Solijonov**  
+Full-Stack · DevOps · AI Engineer  
+South Korea
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Portfolio: https://max-mukhiddin.github.io/homepage/
+- GitHub: https://github.com/Max-Mukhiddin
